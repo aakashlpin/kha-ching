@@ -20,7 +20,7 @@ export default withSession(async (req, res) => {
     const user = { isLoggedIn: true, session: sessionData };
     req.session.set('user', user);
     await req.session.save();
-    res.redirect('/profile');
+    res.redirect('/dashboard');
   } catch (error) {
     const { response: fetchResponse } = error;
     res.status(fetchResponse?.status || 500).json(error.data);
