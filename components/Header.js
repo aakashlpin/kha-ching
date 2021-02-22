@@ -27,7 +27,7 @@ const Header = () => {
           {user?.isLoggedIn && (
             <>
               <li>
-                <Link href="/profile-sg">
+                <Link href="/profile">
                   <a>
                     <img
                       alt={user.session.user_shortname}
