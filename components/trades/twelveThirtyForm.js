@@ -25,7 +25,7 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
   <form onSubmit={onSubmit} noValidate>
     <Paper style={{ padding: 16 }}>
       <Grid container alignItems="flex-start" spacing={2}>
-        <Grid item>
+        <Grid item xs={12}>
           <FormControl component="fieldset">
             <FormLabel component="legend">Instruments</FormLabel>
             <FormGroup row>
@@ -62,44 +62,36 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
                   />
                 }
               />
-              <FormControlLabel
-                label="FINNIFTY"
-                control={
-                  <Checkbox
-                    name="instruments"
-                    checked={twelveThirtyState.instruments[INSTRUMENTS.FINNIFTY]}
-                    onChange={() =>
-                      onChange({
-                        instruments: {
-                          [INSTRUMENTS.FINNIFTY]: !twelveThirtyState.instruments[
-                            INSTRUMENTS.FINNIFTY
-                          ]
-                        }
-                      })
-                    }
-                  />
-                }
-              />
             </FormGroup>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <TextField
             fullWidth
             name="lots"
             value={twelveThirtyState.lots}
-            onChange={(val) => onChange({ lots: val })}
-            label="Number of lots per instrument"
+            onChange={(e) => onChange({ lots: e.target.value || '' })}
+            label="Lots per instrument"
           />
         </Grid>
-        <Grid item xs={6}>
-          <FormControlLabel
-            name="autoSquareOff"
-            label="Auto square off (3.20pm)"
-            control={<Checkbox name="autoSquareOff" type="checkbox" disabled />}
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            name="maxSkewPercent"
+            value={twelveThirtyState.maxSkewPercent}
+            onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
+            label="Acceptable skew %"
           />
         </Grid>
-
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            name="slmPercent"
+            value={twelveThirtyState.slmPercent}
+            onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
+            label="SLM %"
+          />
+        </Grid>
         <Grid item style={{ marginTop: 16 }}>
           <Button variant="contained" color="primary" type="submit">
             Submit
@@ -107,7 +99,6 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
         </Grid>
       </Grid>
     </Paper>
-    <pre>{JSON.stringify(twelveThirtyState, 0, 2)}</pre>
   </form>
 );
 

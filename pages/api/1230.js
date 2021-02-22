@@ -4,6 +4,8 @@ const fs = require('fs');
 import csv from 'csvtojson';
 import dayjs from 'dayjs';
 import { KiteConnect } from 'kiteconnect';
+
+import withSession from '../../lib/session';
 const isSameOrBefore = require('dayjs/plugin/isSameOrBefore');
 
 let kite;
@@ -11,7 +13,6 @@ let kite;
 dayjs.extend(isSameOrBefore);
 
 const apiKey = process.env.KITE_API_KEY;
-const accessToken = process.env.KITE_ACCESS_TOKEN;
 
 function saveInstrumentsToFile() {
   return new Promise((resolve) => {
@@ -94,7 +95,9 @@ const getOrders = async () => {
   return orders;
 };
 
-export default async (req, res) => {
+export default withSession(async (req, res) => {
+  const user = req.session.get('user');
+  const accessToken = user?.session?.access_token;
   kite = new KiteConnect({
     api_key: apiKey,
     access_token: accessToken
@@ -124,52 +127,67 @@ export default async (req, res) => {
   // });
   // return res.json({ orders, orderRes });
 
-  const { PE_STRING, CE_STRING } = await getATMStraddle(
-    UNDERLYING,
-    UNDERLYING_EXCHANGE,
-    NFO_SYMBOL,
-    SKEW_THRESHOLD
-  );
+  // const { PE_STRING, CE_STRING } = await getATMStraddle(
+  //   UNDERLYING,
+  //   UNDERLYING_EXCHANGE,
+  //   NFO_SYMBOL,
+  //   SKEW_THRESHOLD
+  // );
   // const PE_STRING = 'NIFTY21FEB15100PE';
   // const CE_STRING = 'NIFTY21FEB15100CE';
-  if (executeOrder) {
-    const orders = () =>
-      [PE_STRING, CE_STRING].map((symbol) =>
-        kite.placeOrder(kite.VARIETY_REGULAR, {
-          tradingsymbol: symbol,
-          quantity: 75 * LOTS,
-          exchange: kite.EXCHANGE_NFO,
-          transaction_type: kite.TRANSACTION_TYPE_SELL,
-          order_type: kite.ORDER_TYPE_MARKET,
-          product: kite.PRODUCT_MIS,
-          validity: kite.VALIDITY_DAY
-        })
-      );
+  // if (executeOrder) {
+  // const orders = () =>
+  //   [PE_STRING, CE_STRING].map((symbol) =>
+  //     kite.placeOrder(kite.VARIETY_REGULAR, {
+  //       tradingsymbol: symbol,
+  //       quantity: 75 * LOTS,
+  //       exchange: kite.EXCHANGE_NFO,
+  //       transaction_type: kite.TRANSACTION_TYPE_SELL,
+  //       order_type: kite.ORDER_TYPE_MARKET,
+  //       product: kite.PRODUCT_MIS,
+  //       validity: kite.VALIDITY_DAY
+  //     })
+  //   );
 
-    const orderAckResponses = await Promise.all(orders());
-    // delay by 10 seconds to ensure orders have went through
-    await delay(10 * 1000);
-    // get order responses from 0d
-    const orderResponses = await Promise.all(
-      orderAckResponses.map((orderAckRes) => kite.getOrderHistory(orderAckRes.order_id))
-    );
+  // const orderAckResponses = await Promise.all(orders());
+  // // delay by 10 seconds to ensure orders have went through
+  // await delay(10 * 1000);
+  // get order responses from 0d
+  //   const orderAckResponses = [
+  //     { order_id: '210222102563123' },
+  //     { order_id: '210222102563121' },
+  //     { order_id: '210222102563125' },
+  //     { order_id: '210222102563124' }
+  //   ];
 
-    const exitOrders = () =>
-      orderResponses.map((order) => {
-        const exitPrice = Math.round(order.average_price * 1.5);
-        return kite.placeOrder(kite.VARIETY_REGULAR, {
-          trigger_price: exitPrice,
-          tradingsymbol: order.tradingsymbol,
-          quantity: 75 * LOTS,
-          exchange: kite.EXCHANGE_NFO,
-          transaction_type: kite.TRANSACTION_TYPE_BUY,
-          order_type: kite.ORDER_TYPE_SLM,
-          product: kite.PRODUCT_MIS
-        });
-      });
+  //   const orderResponses = await Promise.all(
+  //     orderAckResponses.map((orderAckRes) => kite.getOrderHistory(orderAckRes.order_id))
+  //   );
 
-    await Promise.all(exitOrders());
-  }
+  //   // console.log(orderResponses);
+  //   // res.json(orderResponses);
 
-  res.json({ PE_STRING, CE_STRING });
-};
+  //   const exitOrders = () =>
+  //     orderResponses.map((orders) => {
+  //       const order = orders.find((odr) => odr.status === 'COMPLETE');
+  //       console.log(order);
+  //       const exitPrice = Math.round(order.average_price * 1.5);
+  //       return kite.placeOrder(kite.VARIETY_REGULAR, {
+  //         trigger_price: exitPrice,
+  //         tradingsymbol: order.tradingsymbol,
+  //         quantity: 75 * LOTS,
+  //         exchange: kite.EXCHANGE_NFO,
+  //         transaction_type: kite.TRANSACTION_TYPE_BUY,
+  //         order_type: kite.ORDER_TYPE_SLM,
+  //         product: kite.PRODUCT_MIS
+  //       });
+  //     });
+
+  //   await Promise.all(exitOrders());
+  // }
+
+  const positions = await kite.getPositions();
+  const misPositions = positions.net.filter((position) => position.product === 'CNC');
+
+  res.json(misPositions);
+});

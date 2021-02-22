@@ -9,22 +9,58 @@ import { INSTRUMENTS } from '../lib/constants';
 import useUser from '../lib/useUser';
 
 const Dashboard = () => {
-  const [db, setDb] = useState(() =>
-    typeof window !== 'undefined' && localStorage.getItem('khaching/trades')
-      ? JSON.parse(localStorage.getItem('khaching/trades'))
-      : {}
-  );
+  const [db, setDb] = useState(() => {
+    const existingDb =
+      typeof window !== 'undefined' && localStorage.getItem('khaching/trades')
+        ? JSON.parse(localStorage.getItem('khaching/trades'))
+        : null;
+
+    if (!existingDb) {
+      return {};
+    }
+
+    const twelveThirtyDb = existingDb.twelveThirty;
+    const validity = twelveThirtyDb?.validity;
+    if (!validity) {
+      return {};
+    }
+    // if seeing it next day
+    if (dayjs().isAfter(dayjs(validity), 'day')) {
+      // clean up trade from UI
+      return {};
+    }
+  });
+
   const [twelveThirtyState, setTwelveThirtyState] = useState({
     instruments: {
       [INSTRUMENTS.NIFTY]: true,
-      [INSTRUMENTS.BANKNIFTY]: true,
-      [INSTRUMENTS.FINNIFTY]: false
+      [INSTRUMENTS.BANKNIFTY]: true
     },
-    lots: 4
+    lots: 3,
+    maxSkewPercent: 5,
+    slmPercent: 50
   });
 
   useEffect(() => {
-    localStorage.setItem('khaching/trades', JSON.stringify(db));
+    async function fn() {
+      try {
+        const prevDb = JSON.parse(localStorage.getItem('khaching/trades'));
+        localStorage.setItem('khaching/trades', JSON.stringify(db));
+        if (prevDb.twelveThirty?.queue?.id && !db.twelveThirty?.queue?.id) {
+          try {
+            await axios.post('/api/delete_job', {
+              id: prevDb.twelveThirty?.queue?.id
+            });
+          } catch (e) {
+            console.log('error deleting job', e);
+          }
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    fn();
   }, [db]);
 
   const { user } = useUser({ redirectTo: '/' });
@@ -40,7 +76,9 @@ const Dashboard = () => {
       instruments: Object.keys(twelveThirtyState.instruments).filter(
         (key) => twelveThirtyState.instruments[key]
       ),
-      lots: twelveThirtyState.lots
+      lots: twelveThirtyState.lots,
+      maxSkewPercent: twelveThirtyState.maxSkewPercent,
+      slmPercent: twelveThirtyState.slmPercent
     };
 
     try {
@@ -72,6 +110,12 @@ const Dashboard = () => {
     }
   };
 
+  const onDeleteTwelveThirty = () => {
+    setDb({
+      twelveThirty: {}
+    });
+  };
+
   return (
     <Layout>
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
@@ -79,7 +123,10 @@ const Dashboard = () => {
       <div>
         <h3>12:30 trade</h3>
         {db.twelveThirty?.queue?.id ? (
-          <TwelveThirtyDetails twelveThirtyDb={db.twelveThirty} />
+          <TwelveThirtyDetails
+            twelveThirtyDb={db.twelveThirty}
+            onDeleteJob={onDeleteTwelveThirty}
+          />
         ) : (
           <TwelveThirtyForm
             twelveThirtyState={twelveThirtyState}
