@@ -1,6 +1,9 @@
 require('../../lib/queue-processor');
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 import { STRATEGIES } from '../../lib/constants';
 import queues from '../../lib/queue';
@@ -13,16 +16,16 @@ export default withSession(async (req, res) => {
     return res.status(401).send('Unauthorized');
   }
 
-  const { instruments, lots, maxSkewPercent, slmPercent } = req.body;
+  const {
+    instruments,
+    lots,
+    maxSkewPercent,
+    slmPercent,
+    runAt,
+    expireIfUnsuccessfulInMins
+  } = req.body;
 
-  // NB: adding 2 mins only for local testing
-  // REMOVE IT BEFORE PUSHING TO PROD
-  const day = dayjs().add('2', 'minutes');
-  const hour = day.format('H');
-  const minute = day.format('m');
-  const dayOfMonth = day.format('D');
-  const month = day.format('M');
-  // const dayOfWeek = day.format('d');
+  console.log('create job request', req.body);
 
   const queueRes = await queues.tradingQueue.add(
     {
@@ -31,16 +34,15 @@ export default withSession(async (req, res) => {
       lots,
       maxSkewPercent,
       slmPercent,
-      user
+      user,
+      expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').utc().format()
     },
     {
-      repeat: {
-        cron: `${minute} ${hour} ${dayOfMonth} ${month} *`,
-        tz: 'Asia/Kolkata',
-        limit: 1
-      }
+      delay: dayjs(runAt).subtract(dayjs()).get('milliseconds')
     }
   );
+
+  console.log('create job response', queueRes);
 
   res.json(queueRes);
 });

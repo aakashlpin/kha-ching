@@ -22,7 +22,12 @@ import useSWR from 'swr';
 import { INSTRUMENT_DETAILS, INSTRUMENTS } from '../../lib/constants';
 
 const TwelveThirtyDetails = ({ twelveThirtyDb, onDeleteJob }) => {
-  const { data: jobDetails } = useSWR(`/api/get_job?id=${twelveThirtyDb.queue.id}`);
+  const { data: jobDetails, error } = useSWR(`/api/get_job?id=${twelveThirtyDb.queue.id}`);
+
+  if (error) {
+    onDeleteJob();
+    return null;
+  }
 
   function handleDeleteJob() {
     const userResponse = window.confirm('Are you sure?');
@@ -55,7 +60,11 @@ const TwelveThirtyDetails = ({ twelveThirtyDb, onDeleteJob }) => {
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
-        <Button variant="contained" type="button" onClick={handleDeleteJob}>
+        <Button
+          variant="contained"
+          type="button"
+          onClick={handleDeleteJob}
+          disabled={jobDetails?.current_state === 'active'}>
           Delete
         </Button>
         <p>

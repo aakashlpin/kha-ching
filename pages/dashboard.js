@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 
 import Layout from '../components/Layout';
@@ -7,6 +8,8 @@ import TwelveThirtyDetails from '../components/trades/twelveThirtyDetails';
 import TwelveThirtyForm from '../components/trades/twelveThirtyForm';
 import { INSTRUMENTS } from '../lib/constants';
 import useUser from '../lib/useUser';
+
+dayjs.extend(utc);
 
 const Dashboard = () => {
   const [db, setDb] = useState(() => {
@@ -29,6 +32,8 @@ const Dashboard = () => {
       // clean up trade from UI
       return {};
     }
+
+    return existingDb;
   });
 
   const [twelveThirtyState, setTwelveThirtyState] = useState({
@@ -73,13 +78,18 @@ const Dashboard = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     // typeof window !== 'undefined' && window.alert(JSON.stringify(values, 0, 2));
+    const isProduction = !location.host.includes('localhost:');
     const jobProps = {
       instruments: Object.keys(twelveThirtyState.instruments).filter(
         (key) => twelveThirtyState.instruments[key]
       ),
       lots: twelveThirtyState.lots,
       maxSkewPercent: twelveThirtyState.maxSkewPercent,
-      slmPercent: twelveThirtyState.slmPercent
+      slmPercent: twelveThirtyState.slmPercent,
+      runAt: !isProduction
+        ? dayjs().add(1, 'minutes').utc().format()
+        : dayjs().set('hour', 12).set('minutes', 25).set('seconds', 0).utc().format(),
+      expireIfUnsuccessfulInMins: !isProduction ? 1 : 30
     };
 
     try {
