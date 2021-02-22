@@ -44,6 +44,7 @@ const Dashboard = () => {
   useEffect(() => {
     async function fn() {
       try {
+        if (!Object.isExtensible(db)) return;
         const prevDb = JSON.parse(localStorage.getItem('khaching/trades'));
         localStorage.setItem('khaching/trades', JSON.stringify(db));
         if (prevDb.twelveThirty?.queue?.id && !db.twelveThirty?.queue?.id) {
