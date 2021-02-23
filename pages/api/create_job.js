@@ -1,9 +1,6 @@
 require('../../lib/queue-processor');
 
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(utc);
 
 import { STRATEGIES } from '../../lib/constants';
 import queues from '../../lib/queue';
@@ -35,10 +32,10 @@ export default withSession(async (req, res) => {
       maxSkewPercent,
       slmPercent,
       user,
-      expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').utc().format()
+      expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
     },
     {
-      delay: dayjs(runAt).subtract(dayjs()).get('milliseconds')
+      delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
     }
   );
 
