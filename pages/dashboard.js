@@ -25,9 +25,10 @@ const Dashboard = () => {
           LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
           enabledInstruments={[INSTRUMENTS.NIFTY]}
           heading={`Wed & Thurs trade`}
+          runAt={dayjs().set('hour', 9).set('minutes', 25).set('seconds', 0).format()}
           detailsProps={{
             heading: `1x ATM straddle, and 2x +-50 strangle will be executed at 9.25am`,
-            deleteDisclaimer: `You can safely delete this task until 9.15AM, after which it'll go into processing.`
+            deleteDisclaimer: `You can safely delete this task until 9.20AM, after which it'll start processing.`
           }}
         />
         <TradeSetup
@@ -35,9 +36,10 @@ const Dashboard = () => {
           LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
           heading={`12:30pm trade`}
+          runAt={dayjs().set('hour', 12).set('minutes', 30).set('seconds', 0).format()}
           detailsProps={{
             heading: `1x short ATM straddle will be executed at 12.30pm`,
-            deleteDisclaimer: `You can safely delete this task until 12.25pm, after which it'll go into processing.`
+            deleteDisclaimer: `You can safely delete this task until 12.25pm, after which it'll start processing.`
           }}
         />
       </div>

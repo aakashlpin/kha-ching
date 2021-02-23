@@ -5,7 +5,14 @@ import React, { useEffect, useState } from 'react';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
-const TradeSetup = ({ heading, strategy, LOCALSTORAGE_KEY, enabledInstruments, detailsProps }) => {
+const TradeSetup = ({
+  heading,
+  strategy,
+  LOCALSTORAGE_KEY,
+  enabledInstruments,
+  detailsProps,
+  runAt
+}) => {
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -73,9 +80,7 @@ const TradeSetup = ({ heading, strategy, LOCALSTORAGE_KEY, enabledInstruments, d
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      runAt: !isProduction
-        ? dayjs()
-        : dayjs().set('hour', 12).set('minutes', 30).set('seconds', 0).format(),
+      runAt: !isProduction ? dayjs() : runAt,
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
       strategy
     };
