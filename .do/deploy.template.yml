@@ -7,10 +7,10 @@ spec:
       repo_clone_url: https://github.com/aakashlpin/kha-ching
     envs:
     - key: KITE_API_KEY
-      value: "Enter Kite API key"
+      value: "Your Kite API key"
       type: SECRET
     - key: KITE_API_SECRET
-      value: "Enter Kite Secret key"
+      value: "Your Kite Secret key"
       type: SECRET
     - key: SECRET_COOKIE_PASSWORD
       value: "A long 32 digit password"
@@ -19,8 +19,10 @@ spec:
       value: "Enter Redis connection string"
       type: SECRET
     - key: NEXT_PUBLIC_DEFAULT_LOTS
-      value: "Default # of lots"
+      value: "4"
     - key: NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
-      value: "Default skew percent"
+      value: "10"
     - key: NEXT_PUBLIC_DEFAULT_SLM_PERCENT
-      value: "Default SLM order percent"
+      value: "50"
+    - key: MOCK_ORDERS
+      value: "false"
