@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const https = require('https'); // or 'https' for https:// URLs
 const fs = require('fs');
 import csv from 'csvtojson';

@@ -1,12 +1,11 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Kha-ching
 
+This code repo is built for the CapitalMind Slack members. It helps you to easy take the daily 12.30 trades and Prof Rao's Wednesday/Thursday trades.
 ## Getting Started
 
 First, run the development server:
 
 ```bash
-npm run dev
-# or
 yarn dev
 ```
 

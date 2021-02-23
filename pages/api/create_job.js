@@ -2,7 +2,6 @@ require('../../lib/queue-processor');
 
 import dayjs from 'dayjs';
 
-import { STRATEGIES } from '../../lib/constants';
 import queues from '../../lib/queue';
 import withSession from '../../lib/session';
 
@@ -19,14 +18,15 @@ export default withSession(async (req, res) => {
     maxSkewPercent,
     slmPercent,
     runAt,
-    expireIfUnsuccessfulInMins
+    expireIfUnsuccessfulInMins,
+    strategy
   } = req.body;
 
   console.log('create job request', req.body);
 
   const queueRes = await queues.tradingQueue.add(
     {
-      strategy: STRATEGIES.ATM_STRADDLE,
+      strategy,
       instruments,
       lots,
       maxSkewPercent,

@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import {
   Button,
   Checkbox,
@@ -19,9 +18,9 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 
-import { INSTRUMENTS } from '../../lib/constants';
+import { INSTRUMENT_DETAILS } from '../../lib/constants';
 
-const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
+const TwelveThirtyForm = ({ enabledInstruments, state, onChange, onSubmit }) => (
   <form onSubmit={onSubmit} noValidate>
     <Paper style={{ padding: 16 }}>
       <Grid container alignItems="flex-start" spacing={2}>
@@ -29,39 +28,25 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
           <FormControl component="fieldset">
             <FormLabel component="legend">Instruments</FormLabel>
             <FormGroup row>
-              <FormControlLabel
-                label="NIFTY 50"
-                control={
-                  <Checkbox
-                    name="instruments"
-                    checked={twelveThirtyState.instruments[INSTRUMENTS.NIFTY]}
-                    onChange={(val) => {
-                      onChange({
-                        instruments: {
-                          [INSTRUMENTS.NIFTY]: !twelveThirtyState.instruments[INSTRUMENTS.NIFTY]
-                        }
-                      });
-                    }}
-                  />
-                }
-              />
-              <FormControlLabel
-                label="BANKNIFTY"
-                control={
-                  <Checkbox
-                    checked={twelveThirtyState.instruments[INSTRUMENTS.BANKNIFTY]}
-                    onChange={() =>
-                      onChange({
-                        instruments: {
-                          [INSTRUMENTS.BANKNIFTY]: !twelveThirtyState.instruments[
-                            INSTRUMENTS.BANKNIFTY
-                          ]
-                        }
-                      })
-                    }
-                  />
-                }
-              />
+              {enabledInstruments.map((instrument) => (
+                <FormControlLabel
+                  key={instrument}
+                  label={INSTRUMENT_DETAILS[instrument].displayName}
+                  control={
+                    <Checkbox
+                      name="instruments"
+                      checked={state.instruments[instrument]}
+                      onChange={() => {
+                        onChange({
+                          instruments: {
+                            [instrument]: !state.instruments[instrument]
+                          }
+                        });
+                      }}
+                    />
+                  }
+                />
+              ))}
             </FormGroup>
           </FormControl>
         </Grid>
@@ -69,7 +54,7 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
           <TextField
             fullWidth
             name="lots"
-            value={twelveThirtyState.lots}
+            value={state.lots}
             onChange={(e) => onChange({ lots: e.target.value || '' })}
             label="Lots per instrument"
           />
@@ -78,7 +63,7 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
           <TextField
             fullWidth
             name="maxSkewPercent"
-            value={twelveThirtyState.maxSkewPercent}
+            value={state.maxSkewPercent}
             onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
             label="Acceptable skew %"
           />
@@ -87,7 +72,7 @@ const TwelveThirtyForm = ({ twelveThirtyState, onChange, onSubmit }) => (
           <TextField
             fullWidth
             name="slmPercent"
-            value={twelveThirtyState.slmPercent}
+            value={state.slmPercent}
             onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
             label="SLM %"
           />
