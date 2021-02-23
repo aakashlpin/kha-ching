@@ -84,7 +84,7 @@ const Dashboard = () => {
       maxSkewPercent: twelveThirtyState.maxSkewPercent,
       slmPercent: twelveThirtyState.slmPercent,
       runAt: !isProduction
-        ? dayjs().add(1, 'minutes').format()
+        ? dayjs()
         : dayjs().set('hour', 12).set('minutes', 25).set('seconds', 0).format(),
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30
     };
