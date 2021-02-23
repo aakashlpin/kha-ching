@@ -1,6 +1,10 @@
 # Kha-ching
 
-This code repo is built for the CapitalMind Slack members. It helps you to easy take the daily 12.30 trades and Prof Rao's Wednesday/Thursday trades.
+Kha-ching helps you easily take the daily 12.30 trades and Prof Rao's Wednesday/Thursday trades.
+
+## 1-click setup
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master)
 ## Getting Started
 
 First, run the development server:
