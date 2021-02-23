@@ -23,6 +23,7 @@ export default withSession(async (req, res) => {
         ...user
       });
     } catch (e) {
+      req.session.destroy();
       res.json({
         isLoggedIn: false
       });
