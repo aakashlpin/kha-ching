@@ -13,8 +13,8 @@ const Header = () => {
       <nav>
         <ul>
           <li>
-            <Link href="/">
-              <a>Home</a>
+            <Link href="/dashboard">
+              <a>Trading</a>
             </Link>
           </li>
           {!user?.isLoggedIn && (

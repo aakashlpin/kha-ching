@@ -37,9 +37,9 @@ const TradeSetup = ({ heading, strategy, LOCALSTORAGE_KEY, enabledInstruments, d
       }),
       {}
     ),
-    lots: 3,
-    maxSkewPercent: 5,
-    slmPercent: 50
+    lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
+    maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
+    slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
   });
 
   useEffect(() => {
