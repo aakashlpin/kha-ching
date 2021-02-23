@@ -85,7 +85,7 @@ const Dashboard = () => {
       slmPercent: twelveThirtyState.slmPercent,
       runAt: !isProduction
         ? dayjs()
-        : dayjs().set('hour', 12).set('minutes', 25).set('seconds', 0).format(),
+        : dayjs().set('hour', 12).set('minutes', 30).set('seconds', 0).format(),
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30
     };
 
