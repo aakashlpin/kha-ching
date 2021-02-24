@@ -13,6 +13,8 @@ const TradeSetup = ({
   detailsProps,
   runAt
 }) => {
+  const isStillScheduleable = dayjs().isBefore(dayjs(runAt));
+
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -80,7 +82,7 @@ const TradeSetup = ({
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      runAt: !isProduction ? dayjs() : runAt,
+      runAt: !isProduction || !isStillScheduleable ? dayjs() : runAt,
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
       strategy
     };
@@ -117,6 +119,8 @@ const TradeSetup = ({
     setDb({});
   };
 
+  const humanTime = dayjs(runAt).format('h.mma');
+
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
@@ -128,6 +132,12 @@ const TradeSetup = ({
           onChange={onChange}
           onSubmit={onSubmit}
           enabledInstruments={enabledInstruments}
+          buttonText={isStillScheduleable ? `Schedule for ${humanTime}` : 'Execute now'}
+          helperText={
+            isStillScheduleable
+              ? `Once scheduled, you can safely delete the task until ${humanTime} on the next step.`
+              : `Ideal time to take this trade (${humanTime}) has elapsed. You can now execute this trade immediately.`
+          }
         />
       )}
     </div>

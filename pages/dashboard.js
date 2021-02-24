@@ -1,9 +1,10 @@
 import { Link, Typography } from '@material-ui/core';
+import Box from '@material-ui/core/Box';
 import dayjs from 'dayjs';
 
 import Layout from '../components/Layout';
 import TradeSetup from '../components/trades/TradeSetup';
-import { INSTRUMENTS, STRATEGIES } from '../lib/constants';
+import { INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import useUser from '../lib/useUser';
 
 const TWELVE_THIRTY_TRADE_LS_KEY = 'khaching/trades/1230';
@@ -21,34 +22,51 @@ const Dashboard = () => {
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
 
       <div>
-        <TradeSetup
-          strategy={STRATEGIES.CM_WED_THURS}
-          LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
-          enabledInstruments={[INSTRUMENTS.NIFTY]}
-          heading={`Wed & Thurs trade`}
-          runAt={dayjs().set('hour', 9).set('minutes', 25).set('seconds', 0).format()}
-          detailsProps={{
-            heading: `1x ATM straddle, and 2x +-50 strangle will be executed at 9.25am`,
-            deleteDisclaimer: `You can safely delete this task until 9.20AM, after which it'll start processing.`
-          }}
-        />
+        {['Wednesday', 'Thursday'].includes(dayjs().format('dddd')) ? (
+          <TradeSetup
+            strategy={STRATEGIES.CM_WED_THURS}
+            LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
+            enabledInstruments={[INSTRUMENTS.NIFTY]}
+            heading={STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].heading}
+            runAt={STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].runAt}
+            detailsProps={
+              dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].runAt))
+                ? {
+                    heading: `1x ATM straddle, and 2x +-50 strangle to be executed immediately`,
+                    deleteDisclaimer: ''
+                  }
+                : {
+                    heading: `1x ATM straddle, and 2x +-50 strangle will be executed at 9.20am`,
+                    deleteDisclaimer: `You can safely delete this task until 9.20AM, after which it'll start processing.`
+                  }
+            }
+          />
+        ) : null}
         <TradeSetup
           strategy={STRATEGIES.ATM_STRADDLE}
           LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
-          heading={`12:30pm trade`}
-          runAt={dayjs().set('hour', 12).set('minutes', 30).set('seconds', 0).format()}
-          detailsProps={{
-            heading: `1x short ATM straddle will be executed at 12.30pm`,
-            deleteDisclaimer: `You can safely delete this task until 12.25pm, after which it'll start processing.`
-          }}
+          heading={STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].heading}
+          runAt={STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].runAt}
+          detailsProps={
+            dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].runAt))
+              ? {
+                  heading: `1x short ATM straddle will be executed immediately`,
+                  deleteDisclaimer: ''
+                }
+              : {
+                  heading: `1x short ATM straddle will be executed at 12.30pm`,
+                  deleteDisclaimer: `You can safely delete this task until 12.30pm, after which it'll start processing.`
+                }
+          }
         />
-
         <Typography>
-          Something not working or task failed? Goto{' '}
-          <Link href="https://cloud.digitalocean.com/apps">DigitalOcean apps</Link>, select your
-          app, goto the "logs" section, copy paste all you see into a file and{' '}
-          <Link href="mailto:me@aakashgoel.com">email me</Link>.
+          <Box fontStyle="italic" fontSize={14}>
+            Something not working or task failed? Goto{' '}
+            <Link href="https://cloud.digitalocean.com/apps">DigitalOcean apps</Link>, select your
+            app, goto the "Logs" section, copy paste all you see into a file and{' '}
+            <Link href="mailto:me@aakashgoel.com">email me</Link>.
+          </Box>
         </Typography>
       </div>
     </Layout>

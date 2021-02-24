@@ -16,11 +16,19 @@ import {
   TextField,
   Typography
 } from '@material-ui/core';
+import Box from '@material-ui/core/Box';
 import React from 'react';
 
 import { INSTRUMENT_DETAILS } from '../../lib/constants';
 
-const TwelveThirtyForm = ({ enabledInstruments, state, onChange, onSubmit }) => (
+const TwelveThirtyForm = ({
+  enabledInstruments,
+  state,
+  onChange,
+  onSubmit,
+  buttonText = 'Submit',
+  helperText
+}) => (
   <form onSubmit={onSubmit} noValidate>
     <Paper style={{ padding: 16 }}>
       <Grid container alignItems="flex-start" spacing={2}>
@@ -79,8 +87,15 @@ const TwelveThirtyForm = ({ enabledInstruments, state, onChange, onSubmit }) => 
         </Grid>
         <Grid item style={{ marginTop: 16 }}>
           <Button variant="contained" color="primary" type="submit">
-            Submit
+            {buttonText}
           </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>
+            <Box fontStyle="italic" fontSize={14}>
+              {helperText}
+            </Box>
+          </Typography>
         </Grid>
       </Grid>
     </Paper>
