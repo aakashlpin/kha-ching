@@ -10,16 +10,12 @@ spec:
     envs:
     - key: KITE_API_KEY
       value: "Your Kite API key"
-      type: SECRET
     - key: KITE_API_SECRET
       value: "Your Kite Secret key"
-      type: SECRET
     - key: SECRET_COOKIE_PASSWORD
       value: "A long 32 digit password"
-      type: SECRET
     - key: REDIS_URL
-      value: "Enter Redis connection string"
-      type: SECRET
+      value: "Your Redis connection string"
     - key: NEXT_PUBLIC_DEFAULT_LOTS
       value: "4"
     - key: NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
