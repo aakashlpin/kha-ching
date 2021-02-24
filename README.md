@@ -69,9 +69,23 @@ Default percent of SLM BUY orders to be placed after initial order goes through.
 - Go back to the [kite app](https://kite.trade/), and now enter Redirect URL as follows: `{url_from_digitalocean}/api/redirect_url_kite`. It should look something like this https://qwe-qwerty-gex5y.ondigitalocean.app/api/redirect_url_kite (only an example - yours will differ). Press `Save`!
 
 
-## ...and, we're done!
+## Using the application
 
-Congratulations. You made it! Now visit your brand new URL created on DigitalOcean and enjoy it free for 5 months, thanks to DigitalOcean! Happy trading!
+- Bookmark the URL, or save it to your homescreen. You'd need it every trading day!
+- Zerodha automatically expires the authentication token required to access their APIs at around 7.35am. So you'd need to login on this app every day after 7.45am for the system to save your new access token.
+- Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. *Trades setup after market hours will fail the next day as the API access token would have expired.*
+
+### 12.30 trades
+
+These can be scheduled to run at 12.30pm or run instantly anytime after 12.30pm. System doesn't allow running them before 12.30pm as of now.
+### Wed-Thurs trades
+
+The panel to setup this trade will show up only on Wednesday and Thursday. You can schedule them anytime before 9.20am or run instantly anytime after 9.20am.
+
+## Data and Security
+
+- All access tokens are saved via a first-party cookie in your browser and are encrypted via the `SECRET_COOKIE_PASSWORD` environment variable. Whatever you do, **DO NOT** share this with anyone!
+- Redis is used for scheduling the tasks or running them on spot. **DO NOT** share your redis URL with anyone as it contains your Zerodha profile details alongwith API access tokens.
 ## Develop locally
 
 In case you'd like to contribute, you can run the development server like so
