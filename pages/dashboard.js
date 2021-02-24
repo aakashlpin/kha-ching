@@ -1,3 +1,4 @@
+import { Link, Typography } from '@material-ui/core';
 import dayjs from 'dayjs';
 
 import Layout from '../components/Layout';
@@ -42,6 +43,13 @@ const Dashboard = () => {
             deleteDisclaimer: `You can safely delete this task until 12.25pm, after which it'll start processing.`
           }}
         />
+
+        <Typography>
+          Something not working or task failed? Goto{' '}
+          <Link href="https://cloud.digitalocean.com/apps">DigitalOcean apps</Link>, select your
+          app, goto the "logs" section, copy paste all you see into a file and{' '}
+          <Link href="mailto:me@aakashgoel.com">email me</Link>.
+        </Typography>
       </div>
     </Layout>
   );

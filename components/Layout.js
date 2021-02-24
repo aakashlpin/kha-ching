@@ -7,7 +7,7 @@ const Layout = ({ children }) => (
   <>
     <Header />
 
-    <main>
+    <main style={{ paddingBottom: '60px' }}>
       <Container maxWidth="sm">{children}</Container>
     </main>
   </>
