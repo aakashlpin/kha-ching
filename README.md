@@ -9,7 +9,7 @@ Kha-ching helps you easily take the daily 12.30 trades and Prof Rao's Wednesday/
     - Ignore the `Redirect URL` and `Postback URL` fields for now.
     - Copy `API Key` and `API Secret` fields and keep them handy somewhere.
 
-2. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://dl.dropbox.com/s/9dn1hduytlvr2n3/image.webp)
+2. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://i.imgur.com/k9sZScs.jpg)
 
     - Copy the `Endpoint` and `Default User Password` fields to construct the following Redis URL - `redis://:{Default User Password}@{Endpoint}`. Keep this handy.
 
