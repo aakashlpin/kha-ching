@@ -61,11 +61,17 @@ const Dashboard = () => {
           }
         />
         <Typography>
-          <Box fontStyle="italic" fontSize={14}>
+          <Box fontStyle="italic" fontSize={14} css={{ marginBottom: '16px' }}>
             Something not working or task failed? Goto{' '}
             <Link href="https://cloud.digitalocean.com/apps">DigitalOcean apps</Link>, select your
             app, goto the "Logs" section, copy paste all you see into a file and{' '}
             <Link href="mailto:me@aakashgoel.com">email me</Link>.
+          </Box>
+          <Box fontStyle="bold" fontSize={14}>
+            <Link target="_blank" href="https://www.buymeacoffee.com/aakashgoel">
+              Buy me a coffee
+            </Link>{' '}
+            to support my work!
           </Box>
         </Typography>
       </div>

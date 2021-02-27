@@ -4,20 +4,22 @@ Kha-ching helps you easily take the daily 12.30 trades and Prof Rao's Wednesday/
 
 ## Prerequisites:
 
-1. Goto https://kite.trade and sign up for Kite Connect. Create an app and pay Zerodha the ₹2000/month fee.
+1. [Sign up on DigitalOcean using this link](https://m.do.co/c/d9db955b428e). You'd receive $100 in new signup credits valid for 2 months. Running this app costs $5/month. So you'd be able to run it FREE for first 2 months.
+
+
+2. Goto https://kite.trade and sign up for Kite Connect. Create an app and pay Zerodha the ₹2000/month fee.
 
     - Ignore the `Redirect URL` and `Postback URL` fields for now.
     - Copy `API Key` and `API Secret` fields and keep them handy somewhere.
 
-2. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://i.imgur.com/k9sZScs.jpg)
+3. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://i.imgur.com/k9sZScs.jpg)
 
     - Copy the `Endpoint` and `Default User Password` fields to construct the following Redis URL - `redis://:{Default User Password}@{Endpoint}`. Keep this handy.
 
 ## 1-click Installation
 
-Click the button to deploy the application on DigitalOcean's (DO) apps platform.
+Now, click the button to deploy the application on DigitalOcean's (DO) apps platform.
 
-- *Ensure you sign up via this button to receive $25 in new signup credits. This will run this application FREE for 5 months @ $5/month.*
 - You'd be prompted to enter environment variables. Refer below for details 👇.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master&refcode=d9db955b428e)
