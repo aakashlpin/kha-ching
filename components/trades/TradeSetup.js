@@ -77,12 +77,20 @@ const TradeSetup = ({
   const onSubmit = async (e) => {
     e.preventDefault();
     const isProduction = !location.host.includes('localhost:');
+    const willRunInstantly = !isProduction || !isStillScheduleable;
+
+    if (willRunInstantly) {
+      const yes = await window.confirm('This will run this task immediately. Are you sure?');
+      if (!yes) {
+        return;
+      }
+    }
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      runAt: !isProduction || !isStillScheduleable ? dayjs() : runAt,
+      runAt: willRunInstantly ? dayjs() : runAt,
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
       strategy
     };

@@ -15,6 +15,7 @@ export default withSession(async (req, res) => {
       await queue.tradingQueue.removeRepeatableByKey(id);
     } else {
       const job = await queue.tradingQueue.getJob(id);
+      console.log(job);
       await job.remove();
     }
     res.json({ status: 'ok' });
