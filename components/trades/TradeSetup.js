@@ -30,7 +30,7 @@ const TradeSetup = ({
       return {};
     }
     // if seeing it next day
-    if (dayjs().isAfter(dayjs(validity), 'day')) {
+    if (dayjs().isAfter(dayjs(validity), 'date')) {
       // clean up trade from UI
       return {};
     }
@@ -98,7 +98,7 @@ const TradeSetup = ({
     try {
       const createJobRes = await axios.post('/api/create_job', jobProps);
       setDb({
-        validity: dayjs().format('DD/MM/YYYY'),
+        validity: dayjs().format(),
         queue: createJobRes.data
       });
     } catch (e) {
