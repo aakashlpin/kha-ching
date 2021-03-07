@@ -61,6 +61,9 @@ Default skew that you're okay with when selling straddles. CapitalMind recommend
 
 Default percent of SLM BUY orders to be placed after initial order goes through. CapitalMind recommends setting this value `50`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
 
+#### `NEXT_PUBLIC_GIT_HASH`
+
+Leave the value in this field as it-is. This'll inform if there's an app update available in the app UI. If there's an update available, you can hit the "Deploy" button in your DigitalOcean app to install the new build for yourself.
 ## Next Steps
 
 - DigitalOcean Step 2: After entering all environment variables in setup Step 1, proceed to the next step and select `Bangalore` as region.

@@ -83,6 +83,15 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, helperT
             />
           </Grid>
           <Grid item xs={12}>
+            <TextField
+              fullWidth
+              name="expireIfUnsuccessfulInMins"
+              value={state.expireIfUnsuccessfulInMins}
+              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
+              label="Skew check expiry (in minutes)"
+            />
+          </Grid>
+          <Grid item xs={12}>
             <Button
               variant="contained"
               color="secondary"
@@ -119,7 +128,14 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, helperT
           <Grid item xs={12}>
             <Typography>
               <Box fontStyle="italic" fontSize={14}>
-                {helperText}
+                <p>Note —</p>
+                <ol>
+                  <li>You can delete the task until scheduled time on the next step.</li>
+                  <li>
+                    Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
+                    within &quot;Skew check expiry minutes&quot;, the task will fail.`
+                  </li>
+                </ol>
               </Box>
             </Typography>
           </Grid>

@@ -7,6 +7,7 @@ import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
 const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
+  const isProduction = !location.host.includes('localhost:');
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
   function getScheduleableTradeTime() {
     const defaultDate = dayjs(defaultRunAt).format();
@@ -54,7 +55,8 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
       slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       runNow: false,
-      runAt: getScheduleableTradeTime()
+      runAt: getScheduleableTradeTime(),
+      expireIfUnsuccessfulInMins: 15
     };
   }
 
@@ -85,7 +87,6 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
 
   const onSubmit = async (e) => {
     e && e.preventDefault();
-    const isProduction = !location.host.includes('localhost:');
 
     if (state.runNow) {
       const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
@@ -103,7 +104,7 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
       runAt: state.runNow ? dayjs() : state.runAt,
-      expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
+      expireIfUnsuccessfulInMins: state.expireIfUnsuccessfulInMins,
       strategy
     };
 
@@ -157,7 +158,6 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
           onChange={onChange}
           onSubmit={onSubmit}
           enabledInstruments={enabledInstruments}
-          helperText={`💡 If scheduled, you can safely delete the job until selected time on the next step!`}
         />
       )}
     </div>
