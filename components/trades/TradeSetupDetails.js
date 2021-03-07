@@ -56,7 +56,7 @@ const Details = ({ db, state, strategy, onDeleteJob }) => {
       </p>
 
       <div>
-        <h2>Status: {jobDetails?.current_state}</h2>
+        <h2>Status: {jobDetails?.current_state?.toUpperCase()}</h2>
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
