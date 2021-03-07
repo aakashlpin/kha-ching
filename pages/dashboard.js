@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import { Link, Typography } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import dayjs from 'dayjs';
@@ -28,9 +29,9 @@ const Dashboard = () => {
             LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
             enabledInstruments={[INSTRUMENTS.NIFTY]}
             heading={STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].heading}
-            runAt={STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].runAt}
+            defaultRunAt={STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].defaultRunAt}
             detailsProps={
-              dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].runAt))
+              dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].defaultRunAt))
                 ? {
                     heading: `1x ATM straddle, and 2x +-50 strangle to be executed immediately`,
                     deleteDisclaimer: ''
@@ -47,9 +48,9 @@ const Dashboard = () => {
           LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
           heading={STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].heading}
-          runAt={STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].runAt}
+          defaultRunAt={STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].defaultRunAt}
           detailsProps={
-            dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].runAt))
+            dayjs().isAfter(dayjs(STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].defaultRunAt))
               ? {
                   heading: `1x short ATM straddle will be executed immediately`,
                   deleteDisclaimer: ''
@@ -69,9 +70,9 @@ const Dashboard = () => {
           </Box>
           <Box fontStyle="bold" fontSize={14}>
             <Link target="_blank" href="https://www.buymeacoffee.com/aakashgoel">
-              Buy me a coffee
+              Buy me a coffee ☕️
             </Link>{' '}
-            to support my work!
+            to support this work.
           </Box>
         </Typography>
       </div>

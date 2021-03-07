@@ -11,9 +11,9 @@ const TradeSetup = ({
   LOCALSTORAGE_KEY,
   enabledInstruments,
   detailsProps,
-  runAt
+  defaultRunAt
 }) => {
-  const isStillScheduleable = dayjs().isBefore(dayjs(runAt));
+  const isStillScheduleable = dayjs().isBefore(dayjs(defaultRunAt));
 
   const [db, setDb] = useState(() => {
     const existingDb =
@@ -74,13 +74,12 @@ const TradeSetup = ({
     fn();
   }, [db]);
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async ({ runAt } = {}) => {
     const isProduction = !location.host.includes('localhost:');
-    const willRunInstantly = !isProduction || !isStillScheduleable;
+    const willRunInstantly = !runAt;
 
     if (willRunInstantly) {
-      const yes = await window.confirm('This will run this task immediately. Are you sure?');
+      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
       if (!yes) {
         return;
       }
@@ -90,7 +89,7 @@ const TradeSetup = ({
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      runAt: willRunInstantly ? dayjs() : runAt,
+      defaultRunAt: willRunInstantly ? dayjs() : defaultRunAt,
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
       strategy
     };
@@ -127,7 +126,7 @@ const TradeSetup = ({
     setDb({});
   };
 
-  const humanTime = dayjs(runAt).format('h.mma');
+  const humanTime = dayjs(defaultRunAt).format('h.mma');
 
   return (
     <div style={{ marginBottom: '60px' }}>
@@ -140,12 +139,8 @@ const TradeSetup = ({
           onChange={onChange}
           onSubmit={onSubmit}
           enabledInstruments={enabledInstruments}
-          buttonText={isStillScheduleable ? `Schedule for ${humanTime}` : 'Execute now'}
-          helperText={
-            isStillScheduleable
-              ? `Once scheduled, you can safely delete the task until ${humanTime} on the next step.`
-              : `Ideal time to take this trade (${humanTime}) has elapsed. You can now execute this trade immediately.`
-          }
+          defaultRunAt={defaultRunAt}
+          helperText={`💡 If scheduled, you can safely delete the job until selected time on the next step!`}
         />
       )}
     </div>
