@@ -24,20 +24,7 @@ import React from 'react';
 
 import { INSTRUMENT_DETAILS } from '../../lib/constants';
 
-const TradeSetupForm = ({
-  enabledInstruments,
-  state,
-  onChange,
-  onSubmit,
-  helperText,
-  defaultRunAt
-}) => {
-  const [selectedDate, setSelectedDate] = React.useState(dayjs(defaultRunAt).toDate());
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-
+const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, helperText }) => {
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
@@ -83,7 +70,7 @@ const TradeSetupForm = ({
               name="maxSkewPercent"
               value={state.maxSkewPercent}
               onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
-              label="Acceptable skew %"
+              label="Acceptable premium skew %"
             />
           </Grid>
           <Grid item xs={12}>
@@ -92,17 +79,31 @@ const TradeSetupForm = ({
               name="slmPercent"
               value={state.slmPercent}
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
-              label="SLM %"
+              label="SLM buy orders %"
             />
           </Grid>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="secondary"
+              type="button"
+              onClick={(e) => {
+                onChange({ runNow: true });
+              }}>
+              Execute now
+            </Button>
+          </Grid>
+
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
               <KeyboardTimePicker
                 margin="normal"
                 id="time-picker"
-                label="Time"
-                value={selectedDate}
-                onChange={handleDateChange}
+                label="Schedule run"
+                value={state.runAt}
+                onChange={(selectedDate) => {
+                  onChange({ runAt: selectedDate });
+                }}
                 KeyboardButtonProps={{
                   'aria-label': 'change time'
                 }}
@@ -111,25 +112,8 @@ const TradeSetupForm = ({
           </Grid>
 
           <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="button"
-              style={{ marginRight: 16, marginBottom: 16 }}
-              onClick={() => onSubmit()}>
-              Schedule now
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              type="button"
-              style={{ marginBottom: 16 }}
-              onClick={() =>
-                onSubmit({
-                  runAt: selectedDate
-                })
-              }>
-              Schedule for {dayjs(selectedDate).format('h.mma')}
+            <Button variant="contained" color="primary" type="button" onClick={() => onSubmit()}>
+              Schedule for {dayjs(state.runAt).format('hh:mma')}
             </Button>
           </Grid>
           <Grid item xs={12}>

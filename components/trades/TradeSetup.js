@@ -2,18 +2,21 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
+import { STRATEGIES_DETAILS } from '../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
-const TradeSetup = ({
-  heading,
-  strategy,
-  LOCALSTORAGE_KEY,
-  enabledInstruments,
-  detailsProps,
-  defaultRunAt
-}) => {
-  const isStillScheduleable = dayjs().isBefore(dayjs(defaultRunAt));
+const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
+  const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
+  function getScheduleableTradeTime() {
+    const defaultDate = dayjs(defaultRunAt).format();
+
+    if (dayjs().isAfter(dayjs(defaultDate))) {
+      return dayjs().add(10, 'minutes').format();
+    }
+
+    return defaultDate;
+  }
 
   const [db, setDb] = useState(() => {
     const existingDb =
@@ -38,18 +41,24 @@ const TradeSetup = ({
     return existingDb;
   });
 
-  const [state, setState] = useState({
-    instruments: enabledInstruments.reduce(
-      (accum, item) => ({
-        ...accum,
-        [item]: true
-      }),
-      {}
-    ),
-    lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
-    maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
-    slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
-  });
+  function getDefaultState() {
+    return {
+      instruments: enabledInstruments.reduce(
+        (accum, item) => ({
+          ...accum,
+          [item]: true
+        }),
+        {}
+      ),
+      lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
+      maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
+      slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      runNow: false,
+      runAt: getScheduleableTradeTime()
+    };
+  }
+
+  const [state, setState] = useState(getDefaultState());
 
   useEffect(() => {
     async function fn() {
@@ -74,13 +83,17 @@ const TradeSetup = ({
     fn();
   }, [db]);
 
-  const onSubmit = async ({ runAt } = {}) => {
+  const onSubmit = async (e) => {
+    e && e.preventDefault();
     const isProduction = !location.host.includes('localhost:');
-    const willRunInstantly = !runAt;
 
-    if (willRunInstantly) {
+    if (state.runNow) {
       const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
       if (!yes) {
+        setState({
+          ...state,
+          runNow: false
+        });
         return;
       }
     }
@@ -89,7 +102,7 @@ const TradeSetup = ({
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      defaultRunAt: willRunInstantly ? dayjs() : defaultRunAt,
+      runAt: state.runNow ? dayjs() : state.runAt,
       expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
       strategy
     };
@@ -124,22 +137,26 @@ const TradeSetup = ({
 
   const onDeleteJob = () => {
     setDb({});
+    setState(getDefaultState());
   };
 
-  const humanTime = dayjs(defaultRunAt).format('h.mma');
+  useEffect(() => {
+    if (state.runNow) {
+      onSubmit();
+    }
+  }, [state.runNow]);
 
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
       {db.queue?.id ? (
-        <Details db={db} onDeleteJob={onDeleteJob} {...detailsProps} />
+        <Details db={db} state={state} strategy={strategy} onDeleteJob={onDeleteJob} />
       ) : (
         <Form
           state={state}
           onChange={onChange}
           onSubmit={onSubmit}
           enabledInstruments={enabledInstruments}
-          defaultRunAt={defaultRunAt}
           helperText={`💡 If scheduled, you can safely delete the job until selected time on the next step!`}
         />
       )}
