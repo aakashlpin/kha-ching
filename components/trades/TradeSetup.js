@@ -98,13 +98,16 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
         return;
       }
     }
+
+    const { lots, maxSkewPercent, slmPercent, runNow, runAt, expireIfUnsuccessfulInMins } = state;
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
-      lots: state.lots,
-      maxSkewPercent: state.maxSkewPercent,
-      slmPercent: state.slmPercent,
-      runAt: state.runNow ? dayjs() : state.runAt,
-      expireIfUnsuccessfulInMins: state.expireIfUnsuccessfulInMins,
+      lots,
+      maxSkewPercent,
+      slmPercent,
+      runNow,
+      runAt: runNow ? dayjs().format() : runAt,
+      expireIfUnsuccessfulInMins,
       strategy
     };
 

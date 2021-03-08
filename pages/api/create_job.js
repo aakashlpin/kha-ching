@@ -18,6 +18,7 @@ export default withSession(async (req, res) => {
     maxSkewPercent,
     slmPercent,
     runAt,
+    runNow,
     expireIfUnsuccessfulInMins,
     strategy
   } = req.body;
@@ -32,6 +33,8 @@ export default withSession(async (req, res) => {
       maxSkewPercent,
       slmPercent,
       user,
+      runAt,
+      runNow,
       expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
     },
     {
