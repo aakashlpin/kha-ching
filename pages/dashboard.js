@@ -23,17 +23,15 @@ const Dashboard = () => {
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
 
       <div>
-        {['Wednesday', 'Thursday'].includes(dayjs().format('dddd')) ? (
-          <TradeSetup
-            LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
-            strategy={STRATEGIES.CM_WED_THURS}
-            enabledInstruments={[INSTRUMENTS.NIFTY]}
-          />
-        ) : null}
         <TradeSetup
           LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
           strategy={STRATEGIES.ATM_STRADDLE}
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
+        />
+        <TradeSetup
+          LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
+          strategy={STRATEGIES.CM_WED_THURS}
+          enabledInstruments={[INSTRUMENTS.NIFTY]}
         />
         <Typography>
           <Box fontStyle="italic" fontSize={14} css={{ marginBottom: '16px' }}>
