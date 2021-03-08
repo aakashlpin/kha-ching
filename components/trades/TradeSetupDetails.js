@@ -26,13 +26,14 @@ const Details = ({ db, strategy, onDeleteJob }) => {
   }
 
   const strategyDetails = STRATEGIES_DETAILS[strategy];
-  const humanTime = dayjs(db.runAt).format('h.mma');
+  const { runAt, runNow, lots, maxSkewPercent, slmPercent, instruments } = db.queue.data;
+  const humanTime = dayjs(runAt).format('h.mma');
   const heading = [
     strategyDetails.heading,
-    db.runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
+    runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
   ].join(' ');
 
-  const deleteDisclaimer = !db.runNow
+  const deleteDisclaimer = !runNow
     ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
     : null;
 
@@ -43,16 +44,16 @@ const Details = ({ db, strategy, onDeleteJob }) => {
       <h4>On the following instruments:</h4>
       <div>
         <ul>
-          {db.queue.data.instruments.map((instrument) => (
+          {instruments.map((instrument) => (
             <li key={instrument}>{INSTRUMENT_DETAILS[instrument].displayName}</li>
           ))}
         </ul>
       </div>
 
       <p>
-        with the lot size of <strong>{db.queue.data.lots}</strong>, max acceptable skew of{' '}
-        <strong>{db.queue.data.maxSkewPercent}%</strong>, and SLM buy orders to be placed at{' '}
-        <strong>{db.queue.data.slmPercent}%</strong> of avg sell prices
+        with the lot size of <strong>{lots}</strong>, max acceptable skew of{' '}
+        <strong>{maxSkewPercent}%</strong>, and SLM buy orders to be placed at{' '}
+        <strong>{slmPercent}%</strong> of avg sell prices
       </p>
 
       <div>
