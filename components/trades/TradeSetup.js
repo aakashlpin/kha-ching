@@ -154,7 +154,7 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
       {db.queue?.id ? (
-        <Details db={db} state={state} strategy={strategy} onDeleteJob={onDeleteJob} />
+        <Details db={db} strategy={strategy} onDeleteJob={onDeleteJob} />
       ) : (
         <Form
           state={state}

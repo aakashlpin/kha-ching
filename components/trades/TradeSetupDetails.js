@@ -5,7 +5,7 @@ import useSWR from 'swr';
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../../lib/constants';
 
-const Details = ({ db, state, strategy, onDeleteJob }) => {
+const Details = ({ db, strategy, onDeleteJob }) => {
   const { data: jobDetails, error } = useSWR(`/api/get_job?id=${db.queue.id}`);
 
   if (error) {
@@ -26,13 +26,13 @@ const Details = ({ db, state, strategy, onDeleteJob }) => {
   }
 
   const strategyDetails = STRATEGIES_DETAILS[strategy];
-  const humanTime = dayjs(state.runAt).format('h.mma');
+  const humanTime = dayjs(db.runAt).format('h.mma');
   const heading = [
     strategyDetails.heading,
-    state.runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
+    db.runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
   ].join(' ');
 
-  const deleteDisclaimer = !state.runNow
+  const deleteDisclaimer = !db.runNow
     ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
     : null;
 
