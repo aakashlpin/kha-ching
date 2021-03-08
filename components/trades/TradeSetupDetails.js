@@ -65,7 +65,7 @@ const Details = ({ db, state, strategy, onDeleteJob }) => {
           type="button"
           onClick={handleDeleteJob}
           disabled={jobDetails?.current_state === 'active'}>
-          {['failed', 'completed'].includes(jobDetails?.current_state) ? 'Restart' : 'Delete'}
+          {['failed', 'completed'].includes(jobDetails?.current_state) ? 'Go back' : 'Delete'}
         </Button>
         {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer ? (
           <p>{deleteDisclaimer}</p>
