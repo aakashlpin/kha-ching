@@ -1,10 +1,11 @@
 import { Button, Grid, Paper } from '@material-ui/core';
+import dayjs from 'dayjs';
 import React from 'react';
 import useSWR from 'swr';
 
-import { INSTRUMENT_DETAILS } from '../../lib/constants';
+import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../../lib/constants';
 
-const Details = ({ db, onDeleteJob, heading, deleteDisclaimer }) => {
+const Details = ({ db, state, strategy, onDeleteJob }) => {
   const { data: jobDetails, error } = useSWR(`/api/get_job?id=${db.queue.id}`);
 
   if (error) {
@@ -13,11 +14,27 @@ const Details = ({ db, onDeleteJob, heading, deleteDisclaimer }) => {
   }
 
   function handleDeleteJob() {
-    const userResponse = window.confirm('Are you sure?');
-    if (userResponse) {
+    const currentState = jobDetails?.current_state;
+    if (currentState === 'delayed' || currentState === 'waiting') {
+      const userResponse = window.confirm('This will delete the scheduled task. Are you sure?');
+      if (userResponse) {
+        onDeleteJob();
+      }
+    } else {
       onDeleteJob();
     }
   }
+
+  const strategyDetails = STRATEGIES_DETAILS[strategy];
+  const humanTime = dayjs(state.runAt).format('h.mma');
+  const heading = [
+    strategyDetails.heading,
+    state.runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
+  ].join(' ');
+
+  const deleteDisclaimer = !state.runNow
+    ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
+    : null;
 
   return (
     <Paper style={{ padding: 16 }}>
@@ -39,7 +56,7 @@ const Details = ({ db, onDeleteJob, heading, deleteDisclaimer }) => {
       </p>
 
       <div>
-        <h2>Status: {jobDetails?.current_state}</h2>
+        <h2>Status: {jobDetails?.current_state?.toUpperCase()}</h2>
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
@@ -48,9 +65,11 @@ const Details = ({ db, onDeleteJob, heading, deleteDisclaimer }) => {
           type="button"
           onClick={handleDeleteJob}
           disabled={jobDetails?.current_state === 'active'}>
-          Delete
+          {['failed', 'completed'].includes(jobDetails?.current_state) ? 'Go back' : 'Delete'}
         </Button>
-        <p>{deleteDisclaimer}</p>
+        {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer ? (
+          <p>{deleteDisclaimer}</p>
+        ) : null}
       </Grid>
     </Paper>
   );

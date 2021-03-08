@@ -1,17 +1,56 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import fetchJson from '../lib/fetchJson';
 import useUser from '../lib/useUser';
 
+const APP_GIT_HASH = process.env.NEXT_PUBLIC_GIT_HASH;
+
 const Header = () => {
   const { user, mutateUser } = useUser();
+  const [recentGitHash, setRecentGitHash] = useState(null);
+  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    async function fn() {
+      const url = `https://api.github.com/repos/aakashlpin/kha-ching/commits?per_page=1`;
+      try {
+        const [commit] = await fetchJson(url);
+        const { sha } = commit;
+        setRecentGitHash(sha);
+      } catch (e) {
+        console.log(`fetchJson on ${url} failed`, e);
+      }
+    }
+
+    fn();
+  }, []);
+
+  useEffect(() => {
+    function fn() {
+      if (!recentGitHash) {
+        return;
+      }
+
+      setIsUpdateAvailable(recentGitHash !== APP_GIT_HASH);
+    }
+
+    fn();
+  }, [recentGitHash]);
+
   const router = useRouter();
   return (
     <header>
       <nav>
         <ul>
+          {isUpdateAvailable ? (
+            <li>
+              <a href="https://cloud.digitalocean.com/apps">🔥 App Update 🔥</a>
+            </li>
+          ) : null}
+
           <li>
             <Link href="/dashboard">
               <a>Trading</a>

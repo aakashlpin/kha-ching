@@ -2,18 +2,22 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
+import { STRATEGIES_DETAILS } from '../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
-const TradeSetup = ({
-  heading,
-  strategy,
-  LOCALSTORAGE_KEY,
-  enabledInstruments,
-  detailsProps,
-  runAt
-}) => {
-  const isStillScheduleable = dayjs().isBefore(dayjs(runAt));
+const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
+  const isProduction = !location.host.includes('localhost:');
+  const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
+  function getScheduleableTradeTime() {
+    const defaultDate = dayjs(defaultRunAt).format();
+
+    if (dayjs().isAfter(dayjs(defaultDate))) {
+      return dayjs().add(10, 'minutes').format();
+    }
+
+    return defaultDate;
+  }
 
   const [db, setDb] = useState(() => {
     const existingDb =
@@ -38,18 +42,25 @@ const TradeSetup = ({
     return existingDb;
   });
 
-  const [state, setState] = useState({
-    instruments: enabledInstruments.reduce(
-      (accum, item) => ({
-        ...accum,
-        [item]: true
-      }),
-      {}
-    ),
-    lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
-    maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
-    slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
-  });
+  function getDefaultState() {
+    return {
+      instruments: enabledInstruments.reduce(
+        (accum, item) => ({
+          ...accum,
+          [item]: true
+        }),
+        {}
+      ),
+      lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
+      maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
+      slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      runNow: false,
+      runAt: getScheduleableTradeTime(),
+      expireIfUnsuccessfulInMins: 15
+    };
+  }
+
+  const [state, setState] = useState(getDefaultState());
 
   useEffect(() => {
     async function fn() {
@@ -75,13 +86,15 @@ const TradeSetup = ({
   }, [db]);
 
   const onSubmit = async (e) => {
-    e.preventDefault();
-    const isProduction = !location.host.includes('localhost:');
-    const willRunInstantly = !isProduction || !isStillScheduleable;
+    e && e.preventDefault();
 
-    if (willRunInstantly) {
-      const yes = await window.confirm('This will run this task immediately. Are you sure?');
+    if (state.runNow) {
+      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
       if (!yes) {
+        setState({
+          ...state,
+          runNow: false
+        });
         return;
       }
     }
@@ -90,8 +103,8 @@ const TradeSetup = ({
       lots: state.lots,
       maxSkewPercent: state.maxSkewPercent,
       slmPercent: state.slmPercent,
-      runAt: willRunInstantly ? dayjs() : runAt,
-      expireIfUnsuccessfulInMins: !isProduction ? 1 : 30,
+      runAt: state.runNow ? dayjs() : state.runAt,
+      expireIfUnsuccessfulInMins: state.expireIfUnsuccessfulInMins,
       strategy
     };
 
@@ -125,27 +138,26 @@ const TradeSetup = ({
 
   const onDeleteJob = () => {
     setDb({});
+    setState(getDefaultState());
   };
 
-  const humanTime = dayjs(runAt).format('h.mma');
+  useEffect(() => {
+    if (state.runNow) {
+      onSubmit();
+    }
+  }, [state.runNow]);
 
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
       {db.queue?.id ? (
-        <Details db={db} onDeleteJob={onDeleteJob} {...detailsProps} />
+        <Details db={db} state={state} strategy={strategy} onDeleteJob={onDeleteJob} />
       ) : (
         <Form
           state={state}
           onChange={onChange}
           onSubmit={onSubmit}
           enabledInstruments={enabledInstruments}
-          buttonText={isStillScheduleable ? `Schedule for ${humanTime}` : 'Execute now'}
-          helperText={
-            isStillScheduleable
-              ? `Once scheduled, you can safely delete the task until ${humanTime} on the next step.`
-              : `Ideal time to take this trade (${humanTime}) has elapsed. You can now execute this trade immediately.`
-          }
         />
       )}
     </div>
