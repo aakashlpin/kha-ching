@@ -25,7 +25,14 @@ export default withSession(async (req, res) => {
 
   console.log('create job request', req.body);
 
+  const queueOptions = runNow
+    ? {}
+    : {
+        delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
+      };
+
   const queueRes = await queues.tradingQueue.add(
+    `${strategy}_${dayjs().format()}`,
     {
       strategy,
       instruments,
@@ -37,12 +44,10 @@ export default withSession(async (req, res) => {
       runNow,
       expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
     },
-    {
-      delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
-    }
+    queueOptions
   );
 
-  console.log('create job response', queueRes);
+  console.log('create job response', queueRes.name, queueRes.data);
 
   res.json(queueRes);
 });
