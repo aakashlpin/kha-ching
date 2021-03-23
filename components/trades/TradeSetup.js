@@ -2,12 +2,25 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
-import { STRATEGIES_DETAILS } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
-const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
-  const isProduction = !location.host.includes('localhost:');
+/**
+ *
+ * lets show the details popup per instrument
+ * set the actionable as "remove job" to clean up memory
+ *
+ * on the "days" section, show all jobs of the day only
+ * and automatically clean up any jobs that belong to days before today
+ */
+
+const TradeSetup = ({
+  LOCALSTORAGE_KEY,
+  strategy,
+  enabledInstruments,
+  exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
+}) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
   function getScheduleableTradeTime() {
     const defaultDate = dayjs(defaultRunAt).format();
@@ -29,16 +42,6 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       return {};
     }
 
-    const validity = existingDb?.validity;
-    if (!validity) {
-      return {};
-    }
-    // if seeing it next day
-    if (dayjs().isAfter(dayjs(validity), 'date')) {
-      // clean up trade from UI
-      return {};
-    }
-
     return existingDb;
   });
 
@@ -56,7 +59,8 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       runNow: false,
       runAt: getScheduleableTradeTime(),
-      expireIfUnsuccessfulInMins: 15
+      expireIfUnsuccessfulInMins: 15,
+      exitStrategy: exitStrategies[0]
     };
   }
 
@@ -66,17 +70,7 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
     async function fn() {
       try {
         if (!Object.isExtensible(db)) return;
-        const prevDb = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
         localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(db));
-        if (prevDb.queue?.id && !db.queue?.id) {
-          try {
-            await axios.post('/api/delete_job', {
-              id: prevDb.queue?.id
-            });
-          } catch (e) {
-            console.log('error deleting job', e);
-          }
-        }
       } catch (e) {
         console.log(e);
       }
@@ -99,7 +93,16 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       }
     }
 
-    const { lots, maxSkewPercent, slmPercent, runNow, runAt, expireIfUnsuccessfulInMins } = state;
+    const {
+      lots,
+      maxSkewPercent,
+      slmPercent,
+      runNow,
+      runAt,
+      expireIfUnsuccessfulInMins,
+      exitStrategy
+    } = state;
+
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
       lots,
@@ -108,15 +111,16 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
       runNow,
       runAt: runNow ? dayjs().format() : runAt,
       expireIfUnsuccessfulInMins,
-      strategy
+      strategy,
+      exitStrategy
     };
 
     try {
-      const createJobRes = await axios.post('/api/create_job', jobProps);
-      setDb({
-        validity: dayjs().format(),
-        queue: createJobRes.data
-      });
+      const { data } = await axios.post('/api/create_job', jobProps);
+      setDb((exDb) => ({
+        queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
+      }));
+      setState(getDefaultState());
     } catch (e) {
       console.error(e);
     }
@@ -139,9 +143,24 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
     }
   };
 
-  const onDeleteJob = () => {
-    setDb({});
-    setState(getDefaultState());
+  const onDeleteJob = async ({ jobId } = {}) => {
+    if (!jobId) {
+      throw new Error('onDeleteJob called without jobId');
+    }
+
+    const queueWithoutJobId = db.queue.filter((job) => job.id !== jobId);
+    setDb((exDb) => ({
+      ...exDb,
+      queue: queueWithoutJobId
+    }));
+
+    try {
+      await axios.post('/api/delete_job', {
+        id: jobId
+      });
+    } catch (e) {
+      console.log('error deleting job', e);
+    }
   };
 
   useEffect(() => {
@@ -153,16 +172,18 @@ const TradeSetup = ({ LOCALSTORAGE_KEY, strategy, enabledInstruments }) => {
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
-      {db.queue?.id ? (
-        <Details db={db} strategy={strategy} onDeleteJob={onDeleteJob} />
-      ) : (
-        <Form
-          state={state}
-          onChange={onChange}
-          onSubmit={onSubmit}
-          enabledInstruments={enabledInstruments}
-        />
-      )}
+      {db.queue?.length
+        ? db.queue.map((job) => (
+            <Details key={job.name} job={job} strategy={strategy} onDeleteJob={onDeleteJob} />
+          ))
+        : null}
+      <Form
+        state={state}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        enabledInstruments={enabledInstruments}
+        exitStrategies={exitStrategies}
+      />
     </div>
   );
 };

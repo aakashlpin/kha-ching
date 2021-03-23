@@ -22,12 +22,13 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { INSTRUMENT_DETAILS } from '../../lib/constants';
+import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
-const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, helperText }) => {
+const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
+        <h3>Setup new trade</h3>
         <Grid container alignItems="flex-start" spacing={2}>
           <Grid item xs={12}>
             <FormControl component="fieldset">
@@ -73,22 +74,45 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, helperT
               label="Acceptable premium skew %"
             />
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="slmPercent"
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
-              label="SLM buy orders %"
-            />
-          </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{ marginBottom: 16 }}>
             <TextField
               fullWidth
               name="expireIfUnsuccessfulInMins"
               value={state.expireIfUnsuccessfulInMins}
               onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
               label="Skew check expiry (in minutes)"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Exit Strategy</FormLabel>
+              <RadioGroup
+                aria-label="exitStrategy"
+                name="exitStrategy"
+                value={state.exitStrategy}
+                onChange={(e) => onChange({ exitStrategy: e.target.value })}>
+                {exitStrategies.map((exitStrategy) => (
+                  <FormControlLabel
+                    key={exitStrategy}
+                    value={exitStrategy}
+                    control={<Radio />}
+                    label={
+                      <Typography style={{ fontSize: '14px' }}>
+                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
+                      </Typography>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              name="slmPercent"
+              value={state.slmPercent}
+              onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
+              label="SLM %"
             />
           </Grid>
           <Grid item xs={12}>

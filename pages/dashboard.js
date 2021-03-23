@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 import Layout from '../components/Layout';
 import TradeSetup from '../components/trades/TradeSetup';
-import { INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
+import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES } from '../lib/constants';
 import useUser from '../lib/useUser';
 
 const TWELVE_THIRTY_TRADE_LS_KEY = 'khaching/trades/1230';
@@ -27,11 +27,17 @@ const Dashboard = () => {
           LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
           strategy={STRATEGIES.ATM_STRADDLE}
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
+          exitStrategies={[
+            EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+            EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_2X
+            // EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+          ]}
         />
         <TradeSetup
           LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
           strategy={STRATEGIES.CM_WED_THURS}
           enabledInstruments={[INSTRUMENTS.NIFTY]}
+          exitStrategies={[EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]}
         />
         <Typography>
           <Box fontStyle="italic" fontSize={14} css={{ marginBottom: '16px' }}>

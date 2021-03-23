@@ -1,8 +1,6 @@
-require('../../lib/queue-processor');
-
 import dayjs from 'dayjs';
 
-import queues from '../../lib/queue';
+import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
 export default withSession(async (req, res) => {
@@ -20,7 +18,9 @@ export default withSession(async (req, res) => {
     runAt,
     runNow,
     expireIfUnsuccessfulInMins,
-    strategy
+    strategy,
+    exitStrategy,
+    targetStrategy
   } = req.body;
 
   console.log('create job request', req.body);
@@ -31,23 +31,27 @@ export default withSession(async (req, res) => {
         delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
       };
 
-  const queueRes = await queues.tradingQueue.add(
-    `${strategy}_${dayjs().format()}`,
-    {
-      strategy,
-      instruments,
-      lots,
-      maxSkewPercent,
-      slmPercent,
-      user,
-      runAt,
-      runNow,
-      expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
-    },
-    queueOptions
+  const addToQueueResponses = await Promise.all(
+    instruments.map((instrument) =>
+      tradingQueue.add(
+        `${strategy}_${instrument}_${dayjs().format()}`,
+        {
+          strategy,
+          exitStrategy,
+          targetStrategy,
+          instrument,
+          lots,
+          maxSkewPercent,
+          slmPercent,
+          user,
+          runAt,
+          runNow,
+          expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
+        },
+        queueOptions
+      )
+    )
   );
 
-  console.log('create job response', queueRes.name, queueRes.data);
-
-  res.json(queueRes);
+  res.json(addToQueueResponses);
 });

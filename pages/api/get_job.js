@@ -1,4 +1,4 @@
-import queues from '../../lib/queue';
+import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
 export default withSession(async (req, res) => {
@@ -10,7 +10,7 @@ export default withSession(async (req, res) => {
 
   const { id: jobId } = req.query;
   try {
-    const jobRes = await queues.tradingQueue.getJob(jobId);
+    const jobRes = await tradingQueue.getJob(jobId);
     if (!jobRes) {
       return res.status(200).json({
         error: 'job not found'
