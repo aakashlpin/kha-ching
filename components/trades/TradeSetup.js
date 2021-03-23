@@ -121,6 +121,11 @@ const TradeSetup = ({
         queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
       }));
       setState(getDefaultState());
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     } catch (e) {
       console.error(e);
     }

@@ -29,8 +29,8 @@ const Dashboard = () => {
           enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
           exitStrategies={[
             EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-            EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_2X
-            // EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_2X,
+            EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
           ]}
         />
         <TradeSetup
