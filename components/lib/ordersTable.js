@@ -14,29 +14,29 @@ const useStyles = makeStyles({
   }
 });
 
-export default function OrdersTable({ rows }) {
+export default function OrdersTable({ headerItems, rows }) {
   const classes = useStyles();
 
   return (
     <TableContainer component={Paper}>
-      <Table className={classes.table} size="small" aria-label="a dense table">
+      <Table className={classes.table} size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Product</TableCell>
-            <TableCell>Instrument</TableCell>
-            <TableCell align="right">Qty.</TableCell>
-            <TableCell align="right">Avg.</TableCell>
+            {headerItems.map((headerItem) => (
+              <TableCell key={headerItem.title} align={headerItem.align || 'left'}>
+                {headerItem.title}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.instrument}>
-              <TableCell component="th" scope="row">
-                {row.product}
-              </TableCell>
-              <TableCell>{row.instrument}</TableCell>
-              <TableCell align="right">{row.qty}</TableCell>
-              <TableCell align="right">{row.avg}</TableCell>
+          {rows.map((row, idx) => (
+            <TableRow key={idx}>
+              {row.map((cell) => (
+                <TableCell key={cell.value} align={cell.align || 'left'}>
+                  {cell.value}
+                </TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>

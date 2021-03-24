@@ -4,8 +4,13 @@ import React from 'react';
 import TimeAgo from 'react-timeago';
 import useSWR from 'swr';
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../../lib/constants';
+import {
+  EXIT_STRATEGIES_DETAILS,
+  INSTRUMENT_DETAILS,
+  STRATEGIES_DETAILS
+} from '../../lib/constants';
 import OrdersTable from '../lib/ordersTable';
+// import OrdersTable from '../lib/ordersTable';
 
 const Details = ({ job, strategy, onDeleteJob }) => {
   const { data: jobDetails, error } = useSWR(`/api/get_job?id=${job.id}`);
@@ -28,7 +33,7 @@ const Details = ({ job, strategy, onDeleteJob }) => {
   }
 
   const strategyDetails = STRATEGIES_DETAILS[strategy];
-  const { runAt, runNow, lots, maxSkewPercent, slmPercent, instrument } = job.data;
+  const { runAt, runNow, lots, maxSkewPercent, slmPercent, instrument, exitStrategy } = job.data;
   const humanTime = dayjs(runAt).format('h.mma');
   const Heading = () => (
     <>
@@ -55,18 +60,29 @@ const Details = ({ job, strategy, onDeleteJob }) => {
 
       <h2>{INSTRUMENT_DETAILS[instrument].displayName}</h2>
 
-      <p>
-        with the lot size of <strong>{lots}</strong>, max acceptable skew of{' '}
-        <strong>{maxSkewPercent}%</strong>, and SLM buy orders to be placed at{' '}
-        <strong>{slmPercent}%</strong> of avg sell prices
-      </p>
+      <OrdersTable
+        headerItems={[
+          { title: 'Qty.', align: 'right' },
+          { title: 'Skew %', align: 'right' },
+          { title: 'Exit Strat' },
+          { title: 'SLM %', align: 'right' }
+        ]}
+        rows={[
+          [
+            { value: lots * INSTRUMENT_DETAILS[instrument].lotSize, align: 'right' },
+            { value: maxSkewPercent, align: 'right' },
+            { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label },
+            { value: slmPercent, align: 'right' }
+          ]
+        ]}
+      />
 
       <div>
         <h3>Status: {jobDetails?.current_state?.toUpperCase() || 'Loading...'}</h3>
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
-        <div style={{ marginBottom: 16 }}>
+        {/* <div style={{ marginBottom: 16 }}>
           {jobDetails?.current_state === 'completed' ? (
             <OrdersTable
               rows={jobDetails.job.returnvalue.rawKiteOrdersResponse.map((row) => {
@@ -80,7 +96,7 @@ const Details = ({ job, strategy, onDeleteJob }) => {
               })}
             />
           ) : null}
-        </div>
+        </div> */}
         <Button
           variant="contained"
           type="button"
