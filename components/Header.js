@@ -53,7 +53,7 @@ const Header = () => {
 
           <li>
             <Link href="/dashboard">
-              <a>Trading</a>
+              <a>Dashboard</a>
             </Link>
           </li>
           {!user?.isLoggedIn && (

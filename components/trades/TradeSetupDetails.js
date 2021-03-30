@@ -1,72 +1,108 @@
 import { Button, Grid, Paper } from '@material-ui/core';
 import dayjs from 'dayjs';
 import React from 'react';
+import TimeAgo from 'react-timeago';
 import useSWR from 'swr';
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../../lib/constants';
+import {
+  EXIT_STRATEGIES_DETAILS,
+  INSTRUMENT_DETAILS,
+  STRATEGIES_DETAILS
+} from '../../lib/constants';
+import OrdersTable from '../lib/ordersTable';
+// import OrdersTable from '../lib/ordersTable';
 
-const Details = ({ db, strategy, onDeleteJob }) => {
-  const { data: jobDetails, error } = useSWR(`/api/get_job?id=${db.queue.id}`);
+const Details = ({ job, strategy, onDeleteJob }) => {
+  const { data: jobDetails, error } = useSWR(`/api/get_job?id=${job.id}`);
 
   if (error) {
-    onDeleteJob();
+    onDeleteJob({ jobId: job.id });
     return null;
   }
 
-  function handleDeleteJob() {
+  function handleDeleteJob({ jobId }) {
     const currentState = jobDetails?.current_state;
     if (currentState === 'delayed' || currentState === 'waiting') {
       const userResponse = window.confirm('This will delete the scheduled task. Are you sure?');
       if (userResponse) {
-        onDeleteJob();
+        onDeleteJob({ jobId });
       }
     } else {
-      onDeleteJob();
+      onDeleteJob({ jobId });
     }
   }
 
   const strategyDetails = STRATEGIES_DETAILS[strategy];
-  const { runAt, runNow, lots, maxSkewPercent, slmPercent, instruments } = db.queue.data;
+  const { runAt, runNow, lots, maxSkewPercent, slmPercent, instrument, exitStrategy } = job.data;
   const humanTime = dayjs(runAt).format('h.mma');
-  const heading = [
-    strategyDetails.heading,
-    runNow ? 'will be executed immediately!' : `is scheduled to run at ${humanTime}.`
-  ].join(' ');
+  const Heading = () => (
+    <>
+      #{job.id} · {strategyDetails.heading}{' '}
+      {runNow ? (
+        <>
+          was run <TimeAgo date={new Date(job.timestamp)} />.
+        </>
+      ) : (
+        <>is scheduled to run at {humanTime}.</>
+      )}
+    </>
+  );
 
   const deleteDisclaimer = !runNow
     ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
     : null;
 
   return (
-    <Paper style={{ padding: 16 }}>
-      <h3>{heading}</h3>
+    <Paper style={{ padding: 16, marginBottom: 32 }}>
+      <h4>
+        <Heading />
+      </h4>
 
-      <h4>On the following instruments:</h4>
+      <h2>{INSTRUMENT_DETAILS[instrument].displayName}</h2>
+
+      <OrdersTable
+        headerItems={[
+          { title: 'Qty.', align: 'right' },
+          { title: 'Skew %', align: 'right' },
+          { title: 'Exit Strat' },
+          { title: 'SLM %', align: 'right' }
+        ]}
+        rows={[
+          [
+            { value: lots * INSTRUMENT_DETAILS[instrument].lotSize, align: 'right' },
+            { value: maxSkewPercent, align: 'right' },
+            { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label },
+            { value: slmPercent, align: 'right' }
+          ]
+        ]}
+      />
+
       <div>
-        <ul>
-          {instruments.map((instrument) => (
-            <li key={instrument}>{INSTRUMENT_DETAILS[instrument].displayName}</li>
-          ))}
-        </ul>
-      </div>
-
-      <p>
-        with the lot size of <strong>{lots}</strong>, max acceptable skew of{' '}
-        <strong>{maxSkewPercent}%</strong>, and SLM buy orders to be placed at{' '}
-        <strong>{slmPercent}%</strong> of avg sell prices
-      </p>
-
-      <div>
-        <h2>Status: {jobDetails?.current_state?.toUpperCase()}</h2>
+        <h3>Status: {jobDetails?.current_state?.toUpperCase() || 'Loading...'}</h3>
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
+        {/* <div style={{ marginBottom: 16 }}>
+          {jobDetails?.current_state === 'completed' ? (
+            <OrdersTable
+              rows={jobDetails.job.returnvalue.rawKiteOrdersResponse.map((row) => {
+                const [item] = row;
+                return {
+                  product: item.product,
+                  instrument: item.tradingsymbol,
+                  qty: item.quantity * (item.transaction_type === 'SELL' ? -1 : 1),
+                  avg: item.average_price
+                };
+              })}
+            />
+          ) : null}
+        </div> */}
         <Button
           variant="contained"
           type="button"
-          onClick={handleDeleteJob}
+          onClick={() => handleDeleteJob({ jobId: job.id })}
           disabled={jobDetails?.current_state === 'active'}>
-          {['failed', 'completed'].includes(jobDetails?.current_state) ? 'Go back' : 'Delete'}
+          Cleanup Job
         </Button>
         {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer ? (
           <p>{deleteDisclaimer}</p>

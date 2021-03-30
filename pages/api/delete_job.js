@@ -1,4 +1,4 @@
-import queue from '../../lib/queue';
+import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
 export default withSession(async (req, res) => {
@@ -12,9 +12,9 @@ export default withSession(async (req, res) => {
 
   try {
     if (id.includes('repeat')) {
-      await queue.tradingQueue.removeRepeatableByKey(id);
+      await tradingQueue.removeRepeatableByKey(id);
     } else {
-      const job = await queue.tradingQueue.getJob(id);
+      const job = await tradingQueue.getJob(id);
       console.log('Job deleted from API', job.name, job.data);
       await job.remove();
     }
