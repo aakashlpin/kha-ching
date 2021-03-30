@@ -43,7 +43,7 @@ const Details = ({ job, strategy, onDeleteJob }) => {
           was run <TimeAgo date={new Date(job.timestamp)} />.
         </>
       ) : (
-        <>is scheduled to run at ${humanTime}.</>
+        <>is scheduled to run at {humanTime}.</>
       )}
     </>
   );
