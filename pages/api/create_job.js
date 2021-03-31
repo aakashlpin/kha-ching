@@ -20,6 +20,7 @@ export default withSession(async (req, res) => {
     expireIfUnsuccessfulInMins,
     strategy,
     exitStrategy,
+    autoSquareOffAt,
     targetStrategy
   } = req.body;
 
@@ -46,6 +47,7 @@ export default withSession(async (req, res) => {
           user,
           runAt,
           runNow,
+          autoSquareOffAt,
           expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
         },
         queueOptions
