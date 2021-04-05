@@ -89,11 +89,6 @@ const delay = (ms) =>
     }, ms)
   );
 
-const getOrders = async () => {
-  const orders = await kite.getOrders();
-  return orders;
-};
-
 export default withSession(async (req, res) => {
   const user = req.session.get('user');
   const accessToken = user?.session?.access_token;

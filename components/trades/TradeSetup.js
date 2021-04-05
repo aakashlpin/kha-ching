@@ -15,6 +15,17 @@ import Form from './TradeSetupForm';
  * and automatically clean up any jobs that belong to days before today
  */
 
+function getDefaultSquareOffTime() {
+  try {
+    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
+      ':'
+    );
+    return dayjs().set('hours', hours).set('minutes', minutes).format();
+  } catch (e) {
+    return null;
+  }
+}
+
 const TradeSetup = ({
   LOCALSTORAGE_KEY,
   strategy,
@@ -60,7 +71,9 @@ const TradeSetup = ({
       runNow: false,
       runAt: getScheduleableTradeTime(),
       expireIfUnsuccessfulInMins: 15,
-      exitStrategy: exitStrategies[0]
+      exitStrategy: exitStrategies[0],
+      isAutoSquareOffEnabled: true,
+      squareOffTime: getDefaultSquareOffTime()
     };
   }
 
@@ -100,7 +113,9 @@ const TradeSetup = ({
       runNow,
       runAt,
       expireIfUnsuccessfulInMins,
-      exitStrategy
+      exitStrategy,
+      isAutoSquareOffEnabled,
+      squareOffTime
     } = state;
 
     const jobProps = {
@@ -112,7 +127,9 @@ const TradeSetup = ({
       runAt: runNow ? dayjs().format() : runAt,
       expireIfUnsuccessfulInMins,
       strategy,
-      exitStrategy
+      exitStrategy,
+      isAutoSquareOffEnabled,
+      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
     };
 
     try {

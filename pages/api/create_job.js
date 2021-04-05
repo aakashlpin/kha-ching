@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 
+import { EXIT_STRATEGIES } from '../../lib/constants';
 import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
@@ -20,8 +21,8 @@ export default withSession(async (req, res) => {
     expireIfUnsuccessfulInMins,
     strategy,
     exitStrategy,
-    autoSquareOffAt,
-    targetStrategy
+    isAutoSquareOffEnabled,
+    squareOffTime
   } = req.body;
 
   console.log('create job request', req.body);
@@ -39,7 +40,6 @@ export default withSession(async (req, res) => {
         {
           strategy,
           exitStrategy,
-          targetStrategy,
           instrument,
           lots,
           maxSkewPercent,
@@ -47,7 +47,11 @@ export default withSession(async (req, res) => {
           user,
           runAt,
           runNow,
-          autoSquareOffAt,
+          isAutoSquareOffEnabled,
+          autoSquareOffProps: {
+            time: squareOffTime,
+            deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLDs
+          },
           expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
         },
         queueOptions
