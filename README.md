@@ -57,6 +57,10 @@ for e.g. If you regularly trade `150` quantity of Nifty Options, you'd enter `2`
 
 Default skew that you're okay with when selling straddles. CapitalMind recommends setting this value at `10`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
 
+#### `NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME`
+
+Default square off time of the strategy. The value here only serves as a default and can be changed per strategy during the strategy setup when taking daily trades.
+
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
 Default percent of SLM BUY orders to be placed after initial order goes through. CapitalMind recommends setting this value `50`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
