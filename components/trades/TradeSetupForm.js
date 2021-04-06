@@ -25,6 +25,9 @@ import React from 'react';
 import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
+  const isSchedulingDisabled =
+    dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
@@ -106,7 +109,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{ marginBottom: 16 }}>
             <TextField
               fullWidth
               name="slmPercent"
@@ -114,6 +117,42 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
               label="SLM %"
             />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormGroup column>
+                <FormControlLabel
+                  key={'autoSquareOff'}
+                  label={'Auto Square off'}
+                  control={
+                    <Checkbox
+                      checked={state.isAutoSquareOffEnabled}
+                      onChange={() =>
+                        onChange({
+                          isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
+                        })
+                      }
+                    />
+                  }
+                />
+                {state.isAutoSquareOffEnabled ? (
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <KeyboardTimePicker
+                      margin="normal"
+                      id="time-picker"
+                      label="Square off time"
+                      value={state.squareOffTime}
+                      onChange={(selectedDate) => {
+                        onChange({ squareOffTime: selectedDate });
+                      }}
+                      KeyboardButtonProps={{
+                        'aria-label': 'change square off time'
+                      }}
+                    />
+                  </MuiPickersUtilsProvider>
+                ) : null}
+              </FormGroup>
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
             <Button
@@ -133,7 +172,8 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                 margin="normal"
                 id="time-picker"
                 label="Schedule run"
-                value={state.runAt}
+                value={isSchedulingDisabled ? null : state.runAt}
+                disabled={isSchedulingDisabled}
                 onChange={(selectedDate) => {
                   onChange({ runAt: selectedDate });
                 }}
@@ -145,8 +185,15 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
           </Grid>
 
           <Grid item xs={12}>
-            <Button variant="contained" color="primary" type="button" onClick={() => onSubmit()}>
-              Schedule for {dayjs(state.runAt).format('hh:mma')}
+            <Button
+              variant="contained"
+              color="primary"
+              type="button"
+              onClick={() => onSubmit()}
+              disabled={isSchedulingDisabled}>
+              {isSchedulingDisabled
+                ? `Schedule run`
+                : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
           </Grid>
           <Grid item xs={12}>

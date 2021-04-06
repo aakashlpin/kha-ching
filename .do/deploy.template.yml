@@ -22,6 +22,8 @@ spec:
       value: "10"
     - key: NEXT_PUBLIC_DEFAULT_SLM_PERCENT
       value: "50"
+    - key: NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME
+      value: "3:20"
     - key: NEXT_PUBLIC_GIT_HASH
       value: ${_self.COMMIT_HASH}
     - key: MOCK_ORDERS
