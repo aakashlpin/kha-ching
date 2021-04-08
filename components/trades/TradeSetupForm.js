@@ -22,6 +22,7 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
+import { ensureIST } from '../../lib/browserUtils';
 import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
@@ -143,7 +144,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                       label="Square off time"
                       value={state.squareOffTime}
                       onChange={(selectedDate) => {
-                        onChange({ squareOffTime: selectedDate });
+                        onChange({ squareOffTime: ensureIST(selectedDate) });
                       }}
                       KeyboardButtonProps={{
                         'aria-label': 'change square off time'
@@ -175,7 +176,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                 value={isSchedulingDisabled ? null : state.runAt}
                 disabled={isSchedulingDisabled}
                 onChange={(selectedDate) => {
-                  onChange({ runAt: selectedDate });
+                  onChange({ runAt: ensureIST(selectedDate) });
                 }}
                 KeyboardButtonProps={{
                   'aria-label': 'change time'
