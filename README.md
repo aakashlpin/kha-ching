@@ -59,7 +59,7 @@ Default skew that you're okay with when selling straddles. CapitalMind recommend
 
 #### `NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME`
 
-Default square off time of the strategy. The value here only serves as a default and can be changed per strategy during the strategy setup when taking daily trades.
+Default square off time of the strategy. The value here only serves as a default and can be changed per strategy during the strategy setup when taking daily trades. Format is 24 hours hh:mm. i.e. enter `15:20` as value if you mean 3.20pm.
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
