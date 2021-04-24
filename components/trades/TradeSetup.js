@@ -30,6 +30,7 @@ const TradeSetup = ({
   LOCALSTORAGE_KEY,
   strategy,
   enabledInstruments,
+  hideStraddleFormFields,
   exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 }) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
@@ -205,6 +206,7 @@ const TradeSetup = ({
         onSubmit={onSubmit}
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
+        hideStraddleFormFields={hideStraddleFormFields}
       />
     </div>
   );

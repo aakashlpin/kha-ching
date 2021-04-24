@@ -17,10 +17,13 @@ const Dashboard = () => {
 
       <List>
         <ListItem>
-          <Link href="/strat/straddle">ATM straddle</Link>
+          <Link href="/strat/straddle">Daily 12:30</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/cm-wed-thurs">Capitalmind Wed &amp; Thurs</Link>
+          <Link href="/strat/cm-wed-thurs">CapitalMind 9:20</Link>
+        </ListItem>
+        <ListItem>
+          <Link href="/strat/supertrend-bnf">Supertrend BNF</Link>
         </ListItem>
       </List>
     </Layout>

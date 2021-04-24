@@ -25,7 +25,14 @@ import React from 'react';
 import { ensureIST } from '../../lib/browserUtils';
 import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
-const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
+const TradeSetupForm = ({
+  enabledInstruments,
+  state,
+  onChange,
+  onSubmit,
+  exitStrategies,
+  hideStraddleFormFields = false
+}) => {
   const isSchedulingDisabled =
     dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
 
@@ -60,33 +67,37 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </FormGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="lots"
-              value={state.lots}
-              onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Lots per instrument"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              name="maxSkewPercent"
-              value={state.maxSkewPercent}
-              onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
-              label="Acceptable premium skew %"
-            />
-          </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
-            <TextField
-              fullWidth
-              name="expireIfUnsuccessfulInMins"
-              value={state.expireIfUnsuccessfulInMins}
-              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
-              label="Skew check expiry (in minutes)"
-            />
-          </Grid>
+          {!hideStraddleFormFields ? (
+            <>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="lots"
+                  value={state.lots}
+                  onChange={(e) => onChange({ lots: e.target.value || '' })}
+                  label="Lots per instrument"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="maxSkewPercent"
+                  value={state.maxSkewPercent}
+                  onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
+                  label="Acceptable premium skew %"
+                />
+              </Grid>
+              <Grid item xs={12} style={{ marginBottom: 16 }}>
+                <TextField
+                  fullWidth
+                  name="expireIfUnsuccessfulInMins"
+                  value={state.expireIfUnsuccessfulInMins}
+                  onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
+                  label="Skew check expiry (in minutes)"
+                />
+              </Grid>
+            </>
+          ) : null}
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">Exit Strategy</FormLabel>
