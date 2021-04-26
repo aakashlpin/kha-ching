@@ -22,7 +22,8 @@ export default withSession(async (req, res) => {
     strategy,
     exitStrategy,
     isAutoSquareOffEnabled,
-    squareOffTime
+    squareOffTime,
+    remainingAttempts = 2
   } = req.body;
 
   console.log('create job request', req.body);
@@ -30,7 +31,7 @@ export default withSession(async (req, res) => {
   const queueOptions = runNow
     ? {}
     : {
-        delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
+        delay: dayjs(runAt).diff(dayjs())
       };
 
   const addToQueueResponses = await Promise.all(
@@ -38,6 +39,7 @@ export default withSession(async (req, res) => {
       tradingQueue.add(
         `${strategy}_${instrument}_${dayjs().format()}`,
         {
+          reqCookies: req.cookies,
           strategy,
           exitStrategy,
           instrument,
@@ -52,7 +54,10 @@ export default withSession(async (req, res) => {
             time: squareOffTime,
             deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLDs
           },
-          expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
+          expiresAt: dayjs(runNow ? new Date() : runAt)
+            .add(expireIfUnsuccessfulInMins, 'minutes')
+            .format(),
+          remainingAttempts
         },
         queueOptions
       )

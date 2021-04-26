@@ -48,6 +48,7 @@ const Strategy = () => {
         <StratLayout>
           <TradeSetup
             hideStraddleFormFields={true}
+            defaultLots={1}
             LOCALSTORAGE_KEY={SUPERTREND_BNF}
             strategy={STRATEGIES.SUPERTREND_BNF}
             enabledInstruments={[INSTRUMENTS.BANKNIFTY]}

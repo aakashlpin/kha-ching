@@ -2,7 +2,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -31,6 +31,7 @@ const TradeSetup = ({
   strategy,
   enabledInstruments,
   hideStraddleFormFields,
+  defaultLots = process.env.NEXT_PUBLIC_DEFAULT_LOTS,
   exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 }) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
@@ -66,7 +67,7 @@ const TradeSetup = ({
         }),
         {}
       ),
-      lots: process.env.NEXT_PUBLIC_DEFAULT_LOTS,
+      lots: defaultLots,
       maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
       slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       runNow: false,
