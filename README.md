@@ -84,13 +84,16 @@ Leave the value in this field as it-is. This'll inform if there's an app update 
 - Zerodha automatically expires the authentication token required to access their APIs at around 7.35am. So you'd need to login on this app every day after 7.45am for the system to save your new access token.
 - Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. *Trades setup after market hours will fail the next day as the API access token would have expired.*
 
-### 12.30 trades
+### Daily 12.30 trade
 
-These can be scheduled to run at 12.30pm or run instantly anytime after 12.30pm. System doesn't allow running them before 12.30pm as of now.
-### Wed-Thurs trades
+Run your daily NF and BNF ATM straddles at any time of the day. Best run daily at 12.30pm.
+### Expiry and pre-expiry day trade
 
-The panel to setup this trade will show up only on Wednesday and Thursday. You can schedule them anytime before 9.20am or run instantly anytime after 9.20am.
+Sell an ATM straddle and an OTM strangle on NF in 1:2 ratio. Ideally run on Wednesdays and Thursdays at anytime between 9.20-9.30am.
 
+### Directional Option selling trade
+
+Sell directional BNF option based on BNF futures supertrend direction. Then trail the SL basis supertrend value on the option strike. Strategy built and popularised by [Vishal Mehta on Youtube](https://www.youtube.com/watch?v=bj6hVKjweZ8).
 ## Data and Security
 
 - All access tokens are saved via a first-party cookie in your browser and are encrypted via the `SECRET_COOKIE_PASSWORD` environment variable. Whatever you do, **DO NOT** share this with anyone!
