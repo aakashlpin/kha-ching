@@ -61,6 +61,18 @@ Default skew that you're okay with when selling straddles. CapitalMind recommend
 
 Default square off time of the strategy. The value here only serves as a default and can be changed per strategy during the strategy setup when taking daily trades. Format is 24 hours hh:mm. i.e. enter `15:20` as value if you mean 3.20pm.
 
+#### `NEXT_PUBLIC_APP_URL`
+
+Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup.
+
+#### `SIGNALX_URL`
+
+Enter `https://indicator.signalx.trade` here or leave this value as it is if you're doing a fresh setup.
+
+#### `SIGNALX_API_KEY`
+
+Enter your SignalX API key for access to premium bots. [Become a member here](https://www.buymeacoffee.com/aakashgoel/) to receive your API key.
+
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
 Default percent of SLM BUY orders to be placed after initial order goes through. CapitalMind recommends setting this value `50`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
