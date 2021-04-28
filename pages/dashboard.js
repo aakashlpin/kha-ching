@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import { Link, List, ListItem } from '@material-ui/core';
 import dayjs from 'dayjs';
 
@@ -17,13 +18,13 @@ const Dashboard = () => {
 
       <List>
         <ListItem>
-          <Link href="/strat/straddle">Daily 12:30</Link>
+          <Link href="/strat/straddle">Daily straddle trade</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/cm-wed-thurs">CapitalMind 9:20</Link>
+          <Link href="/strat/cm-wed-thurs">Wed Thurs 1:2 trade</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/supertrend-bnf">Supertrend BNF</Link>
+          <Link href="/strat/supertrend-bnf">⭐️ BNF Directional Option Selling (Premium)</Link>
         </ListItem>
       </List>
     </Layout>

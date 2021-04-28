@@ -214,10 +214,12 @@ const TradeSetupForm = ({
                 <p>Note —</p>
                 <ol>
                   <li>You can delete the task until scheduled time on the next step.</li>
-                  <li>
-                    Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
-                    within &quot;Skew check expiry minutes&quot;, the task will fail.`
-                  </li>
+                  {!hideStraddleFormFields ? (
+                    <li>
+                      Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
+                      within &quot;Skew check expiry minutes&quot;, the task will fail.`
+                    </li>
+                  ) : null}
                 </ol>
               </Box>
             </Typography>
