@@ -2,7 +2,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
-import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -62,7 +62,7 @@ const TradeSetup = ({
       instruments: enabledInstruments.reduce(
         (accum, item) => ({
           ...accum,
-          [item]: false
+          [item]: true
         }),
         {}
       ),

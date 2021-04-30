@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { EXIT_STRATEGIES } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
 import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
@@ -20,6 +20,12 @@ export default withSession(async (req, res) => {
     squareOffTime,
     expireIfUnsuccessfulInMins
   } = req.body;
+
+  if (strategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING) {
+    if (!process.env.SIGNALX_API_KEY?.length) {
+      return res.status(401).send('Reserved for Khaching Premium users!');
+    }
+  }
 
   console.log('create job request', req.body);
 

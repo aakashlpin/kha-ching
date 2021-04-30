@@ -1,6 +1,9 @@
+import 'react-toastify/dist/ReactToastify.css';
+
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
 import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
@@ -25,6 +28,17 @@ function getDefaultSquareOffTime() {
     return null;
   }
 }
+
+const notify = (message) =>
+  toast.error(message, {
+    position: 'bottom-center',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined
+  });
 
 const DirectionTradeSetup = ({
   LOCALSTORAGE_KEY,
@@ -61,7 +75,7 @@ const DirectionTradeSetup = ({
       instruments: enabledInstruments.reduce(
         (accum, item) => ({
           ...accum,
-          [item]: false
+          [item]: true
         }),
         {}
       ),
@@ -146,6 +160,9 @@ const DirectionTradeSetup = ({
         behavior: 'smooth'
       });
     } catch (e) {
+      if (e.response) {
+        notify(e.response.data);
+      }
       console.error(e);
     }
   };
@@ -207,6 +224,17 @@ const DirectionTradeSetup = ({
         onSubmit={onSubmit}
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
+      />
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
       />
     </div>
   );
