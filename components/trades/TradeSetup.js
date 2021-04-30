@@ -30,7 +30,6 @@ const TradeSetup = ({
   LOCALSTORAGE_KEY,
   strategy,
   enabledInstruments,
-  hideStraddleFormFields,
   defaultLots = process.env.NEXT_PUBLIC_DEFAULT_LOTS,
   exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 }) => {
@@ -63,7 +62,7 @@ const TradeSetup = ({
       instruments: enabledInstruments.reduce(
         (accum, item) => ({
           ...accum,
-          [item]: true
+          [item]: false
         }),
         {}
       ),
@@ -207,7 +206,6 @@ const TradeSetup = ({
         onSubmit={onSubmit}
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
-        hideStraddleFormFields={hideStraddleFormFields}
       />
     </div>
   );

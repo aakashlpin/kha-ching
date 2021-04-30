@@ -61,7 +61,7 @@ const DirectionTradeSetup = ({
       instruments: enabledInstruments.reduce(
         (accum, item) => ({
           ...accum,
-          [item]: true
+          [item]: false
         }),
         {}
       ),
