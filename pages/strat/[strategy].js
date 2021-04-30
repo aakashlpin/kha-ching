@@ -38,7 +38,7 @@ const Strategy = () => {
           <TradeSetup
             LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
             strategy={STRATEGIES.CM_WED_THURS}
-            enabledInstruments={[INSTRUMENTS.NIFTY]}
+            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]}
           />
         </StratLayout>
@@ -50,7 +50,7 @@ const Strategy = () => {
           <DirectionalOptionSellingTradeSetup
             LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING}
             strategy={STRATEGIES.DIRECTIONAL_OPTION_SELLING}
-            enabledInstruments={[INSTRUMENTS.BANKNIFTY, INSTRUMENTS.NIFTY]}
+            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]}
           />
         </StratLayout>
