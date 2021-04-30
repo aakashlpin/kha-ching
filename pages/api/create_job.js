@@ -13,17 +13,12 @@ export default withSession(async (req, res) => {
 
   const {
     instruments,
-    lots,
-    maxSkewPercent,
-    slmPercent,
     runAt,
     runNow,
-    expireIfUnsuccessfulInMins,
     strategy,
     exitStrategy,
-    isAutoSquareOffEnabled,
     squareOffTime,
-    remainingAttempts = 2
+    expireIfUnsuccessfulInMins
   } = req.body;
 
   console.log('create job request', req.body);
@@ -39,25 +34,19 @@ export default withSession(async (req, res) => {
       tradingQueue.add(
         `${strategy}_${instrument}_${dayjs().format()}`,
         {
+          ...req.body,
           reqCookies: req.cookies,
-          strategy,
-          exitStrategy,
           instrument,
-          lots,
-          maxSkewPercent,
-          slmPercent,
           user,
-          runAt,
-          runNow,
-          isAutoSquareOffEnabled,
           autoSquareOffProps: {
             time: squareOffTime,
             deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLDs
           },
-          expiresAt: dayjs(runNow ? new Date() : runAt)
-            .add(expireIfUnsuccessfulInMins, 'minutes')
-            .format(),
-          remainingAttempts
+          expiresAt: expireIfUnsuccessfulInMins
+            ? dayjs(runNow ? new Date() : runAt)
+                .add(expireIfUnsuccessfulInMins, 'minutes')
+                .format()
+            : null
         },
         queueOptions
       )

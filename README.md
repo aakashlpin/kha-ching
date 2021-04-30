@@ -55,7 +55,7 @@ Default lots that you trade on a regular basis. This is only the default initial
 for e.g. If you regularly trade `150` quantity of Nifty Options, you'd enter `2` lots here.
 #### `NEXT_PUBLIC_DEFAULT_SKEW_PERCENT`
 
-Default skew that you're okay with when selling straddles. CapitalMind recommends setting this value at `10`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
+Default skew that you're okay with when selling straddles. Anywhere between 5-15 is a good value. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
 
 #### `NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME`
 
@@ -63,19 +63,19 @@ Default square off time of the strategy. The value here only serves as a default
 
 #### `NEXT_PUBLIC_APP_URL`
 
-Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup.
+Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
 
 #### `SIGNALX_URL`
 
-Enter `https://indicator.signalx.trade` here or leave this value as it is if you're doing a fresh setup.
+Enter `https://indicator.signalx.trade` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
 
 #### `SIGNALX_API_KEY`
 
-Enter your SignalX API key for access to premium bots. [Become a member here](https://www.buymeacoffee.com/aakashgoel/) to receive your API key.
+Enter your SignalX API key for access to premium bots. [Become a member here](https://www.buymeacoffee.com/aakashgoel/) to receive your API key. SignalX is Khaching's private API for technical indicators.
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
-Default percent of SLM BUY orders to be placed after initial order goes through. CapitalMind recommends setting this value `50`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
+Default percent of SLM BUY orders to be placed after initial order goes through. The value here only serves as a default and can be changed before setting up daily trades. Backtests recommend setting this to 30 on Friday, Monday, and Tuesday, and setting it to 50 on Wednesday and Thursday.
 
 #### `NEXT_PUBLIC_GIT_HASH`
 

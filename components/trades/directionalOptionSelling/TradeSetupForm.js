@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import DateFnsUtils from '@date-io/date-fns';
 import {
   Button,
@@ -22,8 +23,8 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../lib/browserUtils';
-import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
+import { ensureIST } from '../../../lib/browserUtils';
+import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
   const isSchedulingDisabled =
@@ -66,28 +67,27 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               name="lots"
               value={state.lots}
               onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Lots per instrument"
+              label="Initial lots"
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
-              name="maxSkewPercent"
-              value={state.maxSkewPercent}
-              onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
-              label="Acceptable premium skew %"
+              name="martingaleIncrementSize"
+              value={state.martingaleIncrementSize}
+              onChange={(e) => onChange({ martingaleIncrementSize: e.target.value || '' })}
+              label="⚡️ Martingale additional lots"
             />
           </Grid>
           <Grid item xs={12} style={{ marginBottom: 16 }}>
             <TextField
               fullWidth
-              name="expireIfUnsuccessfulInMins"
-              value={state.expireIfUnsuccessfulInMins}
-              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
-              label="Skew check expiry (in minutes)"
+              name="maxTrades"
+              value={state.maxTrades}
+              onChange={(e) => onChange({ maxTrades: e.target.value || '' })}
+              label="⚡️ Maximum trades to take"
             />
           </Grid>
-
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">Exit Strategy</FormLabel>
@@ -203,11 +203,16 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               <Box fontStyle="italic" fontSize={14}>
                 <p>Note —</p>
                 <ol>
-                  <li>You can delete the task until scheduled time on the next step.</li>
                   <li>
-                    Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
-                    within &quot;Skew check expiry minutes&quot;, the task will fail.`
+                    ⚡️ Martingale additional lots — if SL gets hit, the next trade gets taken with
+                    new lot size = last lot size + martingale additional lots. Set it to 0 if you
+                    wish to deactivate the martingale method.
                   </li>
+                  <li>
+                    ⚡️ Maximum trades to take — it's recommended to not take more than 3 trades a
+                    day. Set it to 0 if you wish to take only 1 trade a day.
+                  </li>
+                  <li>You can delete the task until scheduled time on the next step.</li>
                 </ol>
               </Box>
             </Typography>

@@ -3,12 +3,13 @@ import { useRouter } from 'next/router';
 
 import Layout from '../../components/Layout';
 import StratLayout from '../../components/StratLayout';
+import DirectionalOptionSellingTradeSetup from '../../components/trades/DirectionalOptionSellingTradeSetup';
 import TradeSetup from '../../components/trades/TradeSetup';
 import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES } from '../../lib/constants';
 
 const TWELVE_THIRTY_TRADE_LS_KEY = 'khaching/trades/1230';
 const WED_THURS_TRADE_LS_KEY = 'khaching/trades/wed_thurs';
-const SUPERTREND_BNF = 'khaching/trades/supertrend_bnf';
+const DIRECTIONAL_OPTION_SELLING = 'khaching/trades/dos';
 
 const Strategy = () => {
   const router = useRouter();
@@ -43,15 +44,13 @@ const Strategy = () => {
         </StratLayout>
       );
     }
-    case 'supertrend-bnf': {
+    case 'dos': {
       return (
         <StratLayout>
-          <TradeSetup
-            hideStraddleFormFields={true}
-            defaultLots={1}
-            LOCALSTORAGE_KEY={SUPERTREND_BNF}
-            strategy={STRATEGIES.SUPERTREND_BNF}
-            enabledInstruments={[INSTRUMENTS.BANKNIFTY]}
+          <DirectionalOptionSellingTradeSetup
+            LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING}
+            strategy={STRATEGIES.DIRECTIONAL_OPTION_SELLING}
+            enabledInstruments={[INSTRUMENTS.BANKNIFTY, INSTRUMENTS.NIFTY]}
             exitStrategies={[EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]}
           />
         </StratLayout>

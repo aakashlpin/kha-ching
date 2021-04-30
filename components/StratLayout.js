@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import { Link, List, ListItem, Typography } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import React from 'react';

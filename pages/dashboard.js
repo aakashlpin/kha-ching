@@ -24,7 +24,7 @@ const Dashboard = () => {
           <Link href="/strat/cm-wed-thurs">Wed Thurs 1:2 trade</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/supertrend-bnf">⭐️ BNF Directional Option Selling (Premium)</Link>
+          <Link href="/strat/dos">⭐️ BNF Directional Option Selling (Premium)</Link>
         </ListItem>
       </List>
     </Layout>

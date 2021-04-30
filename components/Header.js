@@ -58,7 +58,7 @@ const Header = () => {
           </li>
           {!user?.isLoggedIn && (
             <li>
-              <Link href="/login">
+              <Link href="/">
                 <a>Login</a>
               </Link>
             </li>
@@ -84,7 +84,7 @@ const Header = () => {
                   onClick={async (e) => {
                     e.preventDefault();
                     await mutateUser(fetchJson('/api/logout'));
-                    router.push('/login');
+                    router.push('/');
                   }}>
                   Logout
                 </a>
