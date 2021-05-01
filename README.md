@@ -55,15 +55,27 @@ Default lots that you trade on a regular basis. This is only the default initial
 for e.g. If you regularly trade `150` quantity of Nifty Options, you'd enter `2` lots here.
 #### `NEXT_PUBLIC_DEFAULT_SKEW_PERCENT`
 
-Default skew that you're okay with when selling straddles. CapitalMind recommends setting this value at `10`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
+Default skew that you're okay with when selling straddles. Anywhere between 5-15 is a good value. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
 
 #### `NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME`
 
 Default square off time of the strategy. The value here only serves as a default and can be changed per strategy during the strategy setup when taking daily trades. Format is 24 hours hh:mm. i.e. enter `15:20` as value if you mean 3.20pm.
 
+#### `NEXT_PUBLIC_APP_URL`
+
+Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
+
+#### `SIGNALX_URL`
+
+Enter `https://indicator.signalx.trade` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
+
+#### `SIGNALX_API_KEY`
+
+Enter your SignalX API key for access to premium bots. Upgrade to [Khaching Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX is Khaching's private API for technical indicators.
+
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
-Default percent of SLM BUY orders to be placed after initial order goes through. CapitalMind recommends setting this value `50`. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
+Default percent of SLM BUY orders to be placed after initial order goes through. The value here only serves as a default and can be changed before setting up daily trades. Backtests recommend setting this to 30 on Friday, Monday, and Tuesday, and setting it to 50 on Wednesday and Thursday.
 
 #### `NEXT_PUBLIC_GIT_HASH`
 
@@ -84,13 +96,16 @@ Leave the value in this field as it-is. This'll inform if there's an app update 
 - Zerodha automatically expires the authentication token required to access their APIs at around 7.35am. So you'd need to login on this app every day after 7.45am for the system to save your new access token.
 - Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. *Trades setup after market hours will fail the next day as the API access token would have expired.*
 
-### 12.30 trades
+### Daily 12.30 trade
 
-These can be scheduled to run at 12.30pm or run instantly anytime after 12.30pm. System doesn't allow running them before 12.30pm as of now.
-### Wed-Thurs trades
+Run your daily NF and BNF ATM straddles at any time of the day. Best run daily at 12.30pm.
+### Expiry and pre-expiry day trade
 
-The panel to setup this trade will show up only on Wednesday and Thursday. You can schedule them anytime before 9.20am or run instantly anytime after 9.20am.
+Sell an ATM straddle and an OTM strangle on NF in 1:2 ratio. Ideally run on Wednesdays and Thursdays at anytime between 9.20-9.30am.
 
+### Directional Option selling trade
+
+Sell directional BNF option based on BNF futures supertrend direction. Then trail the SL basis supertrend value on the option strike. Strategy built and popularised by [Vishal Mehta on Youtube](https://www.youtube.com/watch?v=bj6hVKjweZ8).
 ## Data and Security
 
 - All access tokens are saved via a first-party cookie in your browser and are encrypted via the `SECRET_COOKIE_PASSWORD` environment variable. Whatever you do, **DO NOT** share this with anyone!

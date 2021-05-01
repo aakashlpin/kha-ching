@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { EXIT_STRATEGIES } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
 import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
@@ -13,24 +13,26 @@ export default withSession(async (req, res) => {
 
   const {
     instruments,
-    lots,
-    maxSkewPercent,
-    slmPercent,
     runAt,
     runNow,
-    expireIfUnsuccessfulInMins,
     strategy,
     exitStrategy,
-    isAutoSquareOffEnabled,
-    squareOffTime
+    squareOffTime,
+    expireIfUnsuccessfulInMins
   } = req.body;
+
+  if (strategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING) {
+    if (!process.env.SIGNALX_API_KEY?.length) {
+      return res.status(401).send('Reserved for Khaching Premium users!');
+    }
+  }
 
   console.log('create job request', req.body);
 
   const queueOptions = runNow
     ? {}
     : {
-        delay: dayjs(runAt).diff(dayjs(), 'milliseconds')
+        delay: dayjs(runAt).diff(dayjs())
       };
 
   const addToQueueResponses = await Promise.all(
@@ -38,21 +40,19 @@ export default withSession(async (req, res) => {
       tradingQueue.add(
         `${strategy}_${instrument}_${dayjs().format()}`,
         {
-          strategy,
-          exitStrategy,
+          ...req.body,
+          reqCookies: req.cookies,
           instrument,
-          lots,
-          maxSkewPercent,
-          slmPercent,
           user,
-          runAt,
-          runNow,
-          isAutoSquareOffEnabled,
           autoSquareOffProps: {
             time: squareOffTime,
             deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLDs
           },
-          expiresAt: dayjs(runAt).add(expireIfUnsuccessfulInMins, 'minutes').format()
+          expiresAt: expireIfUnsuccessfulInMins
+            ? dayjs(runNow ? new Date() : runAt)
+                .add(expireIfUnsuccessfulInMins, 'minutes')
+                .format()
+            : null
         },
         queueOptions
       )

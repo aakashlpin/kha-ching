@@ -1,8 +1,11 @@
+import 'react-toastify/dist/ReactToastify.css';
+
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -26,12 +29,22 @@ function getDefaultSquareOffTime() {
   }
 }
 
-const TradeSetup = ({
+const notify = (message) =>
+  toast.error(message, {
+    position: 'bottom-center',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined
+  });
+
+const DirectionTradeSetup = ({
   LOCALSTORAGE_KEY,
   strategy,
   enabledInstruments,
-  defaultLots = process.env.NEXT_PUBLIC_DEFAULT_LOTS,
-  exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
+  exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]
 }) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
   function getScheduleableTradeTime() {
@@ -66,12 +79,12 @@ const TradeSetup = ({
         }),
         {}
       ),
-      lots: defaultLots,
-      maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
-      slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      lots: 2,
+      slmPercent: 50,
+      maxTrades: 3,
+      martingaleIncrementSize: 2,
       runNow: false,
       runAt: getScheduleableTradeTime(),
-      expireIfUnsuccessfulInMins: 15,
       exitStrategy: exitStrategies[0],
       isAutoSquareOffEnabled: true,
       squareOffTime: getDefaultSquareOffTime()
@@ -109,24 +122,26 @@ const TradeSetup = ({
 
     const {
       lots,
-      maxSkewPercent,
       slmPercent,
       runNow,
       runAt,
-      expireIfUnsuccessfulInMins,
       exitStrategy,
       isAutoSquareOffEnabled,
-      squareOffTime
+      squareOffTime,
+      maxTrades,
+      martingaleIncrementSize
     } = state;
 
+    const maxTradesNumber = Number(maxTrades);
+    const remainingAttempts = maxTradesNumber > 1 ? maxTradesNumber - 1 : 0;
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
-      lots,
-      maxSkewPercent,
+      lots: Number(lots),
+      martingaleIncrementSize: Number(martingaleIncrementSize),
+      remainingAttempts,
       slmPercent,
       runNow,
       runAt: runNow ? dayjs().format() : runAt,
-      expireIfUnsuccessfulInMins,
       strategy,
       exitStrategy,
       isAutoSquareOffEnabled,
@@ -145,6 +160,9 @@ const TradeSetup = ({
         behavior: 'smooth'
       });
     } catch (e) {
+      if (e.response) {
+        notify(e.response.data);
+      }
       console.error(e);
     }
   };
@@ -207,8 +225,19 @@ const TradeSetup = ({
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
       />
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };
 
-export default TradeSetup;
+export default DirectionTradeSetup;

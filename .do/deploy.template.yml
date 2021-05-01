@@ -24,7 +24,15 @@ spec:
       value: "50"
     - key: NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME
       value: "15:20"
+    - key: NEXT_PUBLIC_APP_URL
+      value: ${APP_URL}
+    - key: SIGNALX_URL
+      value: "https://indicator.signalx.trade"
+    - key: SIGNALX_API_KEY
+      value: "Your SignalX API Key"
     - key: NEXT_PUBLIC_GIT_HASH
       value: ${_self.COMMIT_HASH}
+    - key: ACCESS_TOKEN_JSONBOX_URL
+      value: ""
     - key: MOCK_ORDERS
       value: "false"

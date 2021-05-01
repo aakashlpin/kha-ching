@@ -1,23 +1,13 @@
-### Exit strategies:
-  1. SLM buy orders
-    1.1. Buy the leg that hits the SL (configurable quantity 2x)
-  2. Combined legs premium based SL
-  3. Profit = if one leg was to hit SL and other was brought to cost
+Status 4.45am
+
+- have wrapped up all major pieces for the BNF directional option selling
 
 
-Do we need a interrupt to stop the exit strategy?
-
-Want to build:
-
-- See max loss as per strategy before placing the order
-- Auto square off (at 3.15)
-
-## How would auto square off work?
-- Create a redis job when the initial task is completed. This task should contain { tradingSymbol, quantity, product, etc }
-- 2 tiered work:
-  - ensure open positions contain those tradingSymbols. Place counter orders to close positions
-  - goto pending orders and modify or delete orders depending on quantity
-
-Open TODO:
-  - remove the logic of adding to next queue on completion event
-  - schedule the auto square off queue and exit strat queue from within the core strat
+## TODOs
+  1. ✅ Test if the exit strat works - haven't been able to check if we're able to get ST value of option that's sold
+  2. ✅ Code the logic that'd place another order as per martingale
+  3. ✅ deploy signalx.trade on DO
+  4. ✅ build the khaching connection to signalx.trade
+  6. ✅ Enable form fields for customization
+  5. ✅ DO NOT take another trade if it's beyond 2pm
+  7. ✅ don't send modify order if difference is small ie 3-5% option price.
