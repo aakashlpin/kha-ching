@@ -3,6 +3,7 @@ import { Link, List, ListItem } from '@material-ui/core';
 import dayjs from 'dayjs';
 
 import Layout from '../components/Layout';
+import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import useUser from '../lib/useUser';
 
 const Dashboard = () => {
@@ -18,13 +19,17 @@ const Dashboard = () => {
 
       <List>
         <ListItem>
-          <Link href="/strat/straddle">Daily straddle trade</Link>
+          <Link href="/strat/straddle">{STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].heading}</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/cm-wed-thurs">Wed Thurs 1:2 trade</Link>
+          <Link href="/strat/cm-wed-thurs">
+            {STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].heading}
+          </Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/dos">⭐️ BNF Directional Option Selling (Premium)</Link>
+          <Link href="/strat/dos">
+            {STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING].heading}
+          </Link>
         </ListItem>
       </List>
     </Layout>

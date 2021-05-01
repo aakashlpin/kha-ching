@@ -71,7 +71,7 @@ Enter `https://indicator.signalx.trade` here or leave this value as it is if you
 
 #### `SIGNALX_API_KEY`
 
-Enter your SignalX API key for access to premium bots. [Become a member here](https://www.buymeacoffee.com/aakashgoel/) to receive your API key. SignalX is Khaching's private API for technical indicators.
+Enter your SignalX API key for access to premium bots. Upgrade to [Khaching Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX is Khaching's private API for technical indicators.
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
