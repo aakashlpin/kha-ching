@@ -35,7 +35,7 @@ const Details = ({ job, strategy, onDeleteJob }) => {
     lots,
     slmPercent,
     instrument,
-    remainingAttempts,
+    maxTrades,
     martingaleIncrementSize
   } = job.data;
 
@@ -76,7 +76,7 @@ const Details = ({ job, strategy, onDeleteJob }) => {
           [
             { value: lots * INSTRUMENT_DETAILS[instrument].lotSize, align: 'right' },
             { value: martingaleIncrementSize, align: 'right' },
-            { value: remainingAttempts + 1, align: 'right' },
+            { value: maxTrades, align: 'right' },
             { value: slmPercent, align: 'right' }
           ]
         ]}

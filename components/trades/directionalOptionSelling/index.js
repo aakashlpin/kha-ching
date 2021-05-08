@@ -132,13 +132,11 @@ const DirectionTradeSetup = ({
       martingaleIncrementSize
     } = state;
 
-    const maxTradesNumber = Number(maxTrades);
-    const remainingAttempts = maxTradesNumber > 1 ? maxTradesNumber - 1 : 0;
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
       lots: Number(lots),
       martingaleIncrementSize: Number(martingaleIncrementSize),
-      remainingAttempts,
+      maxTrades: Number(maxTrades),
       slmPercent,
       runNow,
       runAt: runNow ? dayjs().format() : runAt,

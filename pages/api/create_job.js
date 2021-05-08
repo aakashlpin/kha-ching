@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
-import { tradingQueue } from '../../lib/queue';
+import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
 
 export default withSession(async (req, res) => {
@@ -29,16 +29,9 @@ export default withSession(async (req, res) => {
 
   console.log('create job request', req.body);
 
-  const queueOptions = runNow
-    ? {}
-    : {
-        delay: dayjs(runAt).diff(dayjs())
-      };
-
   const addToQueueResponses = await Promise.all(
     instruments.map((instrument) =>
-      tradingQueue.add(
-        `${strategy}_${instrument}_${dayjs().format()}`,
+      addToNextQueue(
         {
           ...req.body,
           reqCookies: req.cookies,
@@ -46,7 +39,7 @@ export default withSession(async (req, res) => {
           user,
           autoSquareOffProps: {
             time: squareOffTime,
-            deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLDs
+            deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
           },
           expiresAt: expireIfUnsuccessfulInMins
             ? dayjs(runNow ? new Date() : runAt)
@@ -54,7 +47,9 @@ export default withSession(async (req, res) => {
                 .format()
             : null
         },
-        queueOptions
+        {
+          __nextTradingQueue: TRADING_Q_NAME
+        }
       )
     )
   );
