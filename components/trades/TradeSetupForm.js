@@ -164,7 +164,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               onClick={(e) => {
                 onChange({ runNow: true });
               }}>
-              Execute now
+              Schedule now
             </Button>
           </Grid>
 
