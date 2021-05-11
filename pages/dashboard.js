@@ -33,11 +33,11 @@ const Dashboard = () => {
         </ListItem>
       </List>
 
-      <Box align="left">
+      <Box align="center" style={{ color: 'darkgray', fontStyle: 'italic' }}>
         <Link
           href="https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d"
           target="_blank">
-          Khaching Readme ↗️
+          Learn more about Khaching ↗
         </Link>
       </Box>
     </Layout>

@@ -38,8 +38,9 @@ const TradeSetupForm = ({
   exitStrategies,
   entryStrategies
 }) => {
-  const isSchedulingDisabled =
-    dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+  // const isSchedulingDisabled =
+  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+  const isSchedulingDisabled = false;
 
   return (
     <form noValidate>
