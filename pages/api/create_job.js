@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { getDateTimeInIST } from '../../lib/utils';
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user');
@@ -43,7 +42,7 @@ export default withSession(async (req, res) => {
             deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
           },
           expiresAt: expireIfUnsuccessfulInMins
-            ? dayjs(runNow ? getDateTimeInIST() : runAt)
+            ? dayjs(runNow ? new Date() : runAt)
                 .add(expireIfUnsuccessfulInMins, 'minutes')
                 .format()
             : null
