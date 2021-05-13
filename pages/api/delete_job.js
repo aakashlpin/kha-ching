@@ -1,3 +1,4 @@
+import console from '../../lib/logging';
 import { tradingQueue } from '../../lib/queue';
 import withSession from '../../lib/session';
 
@@ -15,12 +16,12 @@ export default withSession(async (req, res) => {
       await tradingQueue.removeRepeatableByKey(id);
     } else {
       const job = await tradingQueue.getJob(id);
-      console.log('Job deleted from API', job.name, job.data);
+      console.log('Job deleted from API', job.name);
       await job.remove();
     }
     res.json({ status: 'ok' });
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     res.status(500).json({ error: e });
   }
 });

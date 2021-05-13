@@ -5,7 +5,7 @@ import Layout from '../../components/Layout';
 import StratLayout from '../../components/StratLayout';
 import DirectionalOptionSellingTradeSetup from '../../components/trades/DirectionalOptionSellingTradeSetup';
 import TradeSetup from '../../components/trades/TradeSetup';
-import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES } from '../../lib/constants';
+import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 
 const TWELVE_THIRTY_TRADE_LS_KEY = 'khaching/trades/1230';
 const WED_THURS_TRADE_LS_KEY = 'khaching/trades/wed_thurs';
@@ -25,7 +25,6 @@ const Strategy = () => {
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[
               EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-              EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_2X,
               EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
             ]}
           />
@@ -51,6 +50,10 @@ const Strategy = () => {
             LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING}
             strategy={STRATEGIES.DIRECTIONAL_OPTION_SELLING}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
+            entryStrategies={[
+              STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
+              STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
+            ]}
             exitStrategies={[EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]}
           />
         </StratLayout>

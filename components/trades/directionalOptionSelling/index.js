@@ -44,7 +44,8 @@ const DirectionTradeSetup = ({
   LOCALSTORAGE_KEY,
   strategy,
   enabledInstruments,
-  exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]
+  exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND],
+  entryStrategies
 }) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
   function getScheduleableTradeTime() {
@@ -85,6 +86,7 @@ const DirectionTradeSetup = ({
       martingaleIncrementSize: 2,
       runNow: false,
       runAt: getScheduleableTradeTime(),
+      entryStrategy: entryStrategies[0],
       exitStrategy: exitStrategies[0],
       isAutoSquareOffEnabled: true,
       squareOffTime: getDefaultSquareOffTime()
@@ -126,24 +128,24 @@ const DirectionTradeSetup = ({
       runNow,
       runAt,
       exitStrategy,
+      entryStrategy,
       isAutoSquareOffEnabled,
       squareOffTime,
       maxTrades,
       martingaleIncrementSize
     } = state;
 
-    const maxTradesNumber = Number(maxTrades);
-    const remainingAttempts = maxTradesNumber > 1 ? maxTradesNumber - 1 : 0;
     const jobProps = {
       instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
       lots: Number(lots),
       martingaleIncrementSize: Number(martingaleIncrementSize),
-      remainingAttempts,
+      maxTrades: Number(maxTrades),
       slmPercent,
       runNow,
       runAt: runNow ? dayjs().format() : runAt,
       strategy,
       exitStrategy,
+      entryStrategy,
       isAutoSquareOffEnabled,
       squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
     };
@@ -224,6 +226,7 @@ const DirectionTradeSetup = ({
         onSubmit={onSubmit}
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
+        entryStrategies={entryStrategies}
       />
       <ToastContainer
         position="bottom-center"

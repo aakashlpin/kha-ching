@@ -24,11 +24,23 @@ import dayjs from 'dayjs';
 import React from 'react';
 
 import { ensureIST } from '../../../lib/browserUtils';
-import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../../lib/constants';
+import {
+  EXIT_STRATEGIES_DETAILS,
+  INSTRUMENT_DETAILS,
+  STRATEGIES_DETAILS
+} from '../../../lib/constants';
 
-const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
-  const isSchedulingDisabled =
-    dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+const TradeSetupForm = ({
+  enabledInstruments,
+  state,
+  onChange,
+  onSubmit,
+  exitStrategies,
+  entryStrategies
+}) => {
+  // const isSchedulingDisabled =
+  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+  const isSchedulingDisabled = false;
 
   return (
     <form noValidate>
@@ -87,6 +99,29 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               onChange={(e) => onChange({ maxTrades: e.target.value || '' })}
               label="⚡️ Maximum trades to take"
             />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Enter trade</FormLabel>
+              <RadioGroup
+                aria-label="entryStrategy"
+                name="entryStrategy"
+                value={state.entryStrategy}
+                onChange={(e) => onChange({ entryStrategy: e.target.value })}>
+                {entryStrategies.map((entryStrategy) => (
+                  <FormControlLabel
+                    key={entryStrategy}
+                    value={entryStrategy}
+                    control={<Radio />}
+                    label={
+                      <Typography style={{ fontSize: '14px' }}>
+                        {STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING[entryStrategy].label}
+                      </Typography>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
             <FormControl component="fieldset">
@@ -164,7 +199,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               onClick={(e) => {
                 onChange({ runNow: true });
               }}>
-              Execute now
+              Schedule now
             </Button>
           </Grid>
 
@@ -204,13 +239,13 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                 <p>Note —</p>
                 <ol>
                   <li>
-                    ⚡️ Martingale additional lots — if SL gets hit, the next trade gets taken with
-                    new lot size = last lot size + martingale additional lots. Set it to 0 if you
-                    wish to deactivate the martingale method.
+                    ⚡️ Martingale additional lots — if Supertrend (10,3) on futures changes, next
+                    trade gets taken with last lot size + martingale additional lots. Set it to 0 if
+                    you wish to deactivate the martingale method.
                   </li>
                   <li>
-                    ⚡️ Maximum trades to take — it's recommended to not take more than 3 trades a
-                    day. Set it to 0 if you wish to take only 1 trade a day.
+                    ⚡️ Maximum trades to take — it's recommended to NOT trade more than 3
+                    Supertrend changes per day. Set it to 1 if you wish to take only 1 trade today.
                   </li>
                   <li>You can delete the task until scheduled time on the next step.</li>
                 </ol>

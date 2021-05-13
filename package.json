@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p ${PORT:-8080}",
+    "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080}",
     "lint": "eslint --fix .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
@@ -19,6 +19,7 @@
     "csvtojson": "^2.0.10",
     "date-fns": "^2.19.0",
     "dayjs": "^1.10.4",
+    "esm": "^3.2.25",
     "final-form": "^4.20.1",
     "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",

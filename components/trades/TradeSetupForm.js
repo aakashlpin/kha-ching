@@ -26,8 +26,9 @@ import { ensureIST } from '../../lib/browserUtils';
 import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
-  const isSchedulingDisabled =
-    dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+  // const isSchedulingDisabled =
+  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+  const isSchedulingDisabled = false;
 
   return (
     <form noValidate>
@@ -164,7 +165,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               onClick={(e) => {
                 onChange({ runNow: true });
               }}>
-              Execute now
+              Schedule now
             </Button>
           </Grid>
 

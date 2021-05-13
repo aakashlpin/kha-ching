@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import { Link, List, ListItem } from '@material-ui/core';
+import { Box, Link, List, ListItem } from '@material-ui/core';
 import dayjs from 'dayjs';
 
 import Layout from '../components/Layout';
@@ -17,7 +17,7 @@ const Dashboard = () => {
     <Layout>
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
 
-      <List>
+      <List style={{ marginBottom: '60px' }}>
         <ListItem>
           <Link href="/strat/straddle">{STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].heading}</Link>
         </ListItem>
@@ -32,6 +32,15 @@ const Dashboard = () => {
           </Link>
         </ListItem>
       </List>
+
+      <Box align="center">
+        <Link
+          href="https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d"
+          target="_blank"
+          style={{ color: 'darkgray', fontStyle: 'italic' }}>
+          Learn more about Khaching ↗
+        </Link>
+      </Box>
     </Layout>
   );
 };
