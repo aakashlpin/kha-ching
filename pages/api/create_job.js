@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 
 import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
+import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
 
