@@ -71,7 +71,7 @@ const TradeSetup = ({
       slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       runNow: false,
       runAt: getScheduleableTradeTime(),
-      expireIfUnsuccessfulInMins: 15,
+      expireIfUnsuccessfulInMins: 10,
       exitStrategy: exitStrategies[0],
       isAutoSquareOffEnabled: true,
       squareOffTime: getDefaultSquareOffTime()

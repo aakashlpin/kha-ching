@@ -67,7 +67,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               name="lots"
               value={state.lots}
               onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Lots per instrument"
+              label="Lots per instrument (use multiples of 3 for 1:2 trade)"
             />
           </Grid>
           <Grid item xs={12}>
@@ -85,7 +85,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               name="expireIfUnsuccessfulInMins"
               value={state.expireIfUnsuccessfulInMins}
               onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
-              label="Skew check expiry (in minutes)"
+              label="Take trade irrespective skew after (mins)"
             />
           </Grid>
 
