@@ -67,7 +67,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               name="lots"
               value={state.lots}
               onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Lots per instrument (use multiples of 3 for 1:2 trade)"
+              label="# Lots (in multiples of 3 for 1:2 trade)"
             />
           </Grid>
           <Grid item xs={12}>
@@ -85,7 +85,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               name="expireIfUnsuccessfulInMins"
               value={state.expireIfUnsuccessfulInMins}
               onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
-              label="Take trade irrespective skew after (mins)"
+              label="Enter trade irrespective skew after (in mins)"
             />
           </Grid>
 
@@ -207,8 +207,8 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                   <li>You can delete the task until scheduled time on the next step.</li>
                   <li>
                     Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
-                    within &quot;Take trade irrespective skew after (mins) &quot;, the trade will be
-                    punched irrespective of skew.`
+                    within &quot;Enter trade irrespective skew after (in mins)&quot;, the trade will
+                    be punched irrespective of skew.`
                   </li>
                 </ol>
               </Box>

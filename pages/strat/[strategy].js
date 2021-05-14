@@ -31,7 +31,7 @@ const Strategy = () => {
         </StratLayout>
       );
     }
-    case 'cm-wed-thurs': {
+    case 'straddle1x-strangle2x': {
       return (
         <StratLayout>
           <TradeSetup

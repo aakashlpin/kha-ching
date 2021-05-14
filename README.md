@@ -1,8 +1,12 @@
 # KhaChing!
 
-Khaching is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies. Learn about all the algo trading strategies built in Khaching in this [comprehensive doc](https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d).
+Khaching is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
 
-## Prerequisites:
+✅ Learn everything about Khaching [here](https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d).
+
+Once you've gone through the Notion doc above, come back here for instructions to setup KhaChing!
+
+## Setup Prerequisites:
 
 1. [Sign up on DigitalOcean using this link](https://m.do.co/c/d9db955b428e). You'd receive $100 in new signup credits valid for 2 months. Running this app costs $5/month. So you'd be able to run it FREE for first 2 months.
 

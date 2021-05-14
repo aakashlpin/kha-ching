@@ -25,7 +25,7 @@ const Dashboard = () => {
           <Link href="/strat/straddle">{STRATEGIES_DETAILS[STRATEGIES.ATM_STRADDLE].heading}</Link>
         </ListItem>
         <ListItem>
-          <Link href="/strat/cm-wed-thurs">
+          <Link href="/strat/straddle1x-strangle2x">
             {STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].heading}
           </Link>
         </ListItem>
@@ -44,7 +44,7 @@ const Dashboard = () => {
             await axios.post('/api/revoke_session');
             router.push('/');
           }}>
-          🔴 Terminate API access!
+          🔴 Stop and Kill all!
         </Button>
 
         <br />
