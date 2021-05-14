@@ -207,7 +207,8 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                   <li>You can delete the task until scheduled time on the next step.</li>
                   <li>
                     Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
-                    within &quot;Skew check expiry minutes&quot;, the task will fail.`
+                    within &quot;Take trade irrespective skew after (mins) &quot;, the trade will be
+                    punched irrespective of skew.`
                   </li>
                 </ol>
               </Box>

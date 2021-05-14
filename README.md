@@ -1,6 +1,6 @@
-# Kha-ching
+# KhaChing!
 
-Kha-ching helps you easily take the daily 12.30 trades and Prof Rao's Wednesday/Thursday trades.
+Khaching is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies. Learn about all the algo trading strategies built in Khaching in this [comprehensive doc](https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d).
 
 ## Prerequisites:
 
@@ -19,8 +19,6 @@ Kha-ching helps you easily take the daily 12.30 trades and Prof Rao's Wednesday/
 ## 1-click Installation
 
 Now, click the button to deploy the application on DigitalOcean's (DO) apps platform.
-
-- You'd be prompted to enter environment variables. Refer below for details 👇.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master&refcode=d9db955b428e)
 
@@ -93,19 +91,9 @@ Leave the value in this field as it-is. This'll inform if there's an app update 
 ## Using the application
 
 - Bookmark the URL, or save it to your homescreen. You'd need it every trading day!
-- Zerodha automatically expires the authentication token required to access their APIs at around 7.35am. So you'd need to login on this app every day after 7.45am for the system to save your new access token.
+- Zerodha automatically expires the authentication token required to access the APIs at around 7.35am. You're required to login to this app every day after 7.45am to generate a new access token.
 - Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. *Trades setup after market hours will fail the next day as the API access token would have expired.*
 
-### Daily 12.30 trade
-
-Run your daily NF and BNF ATM straddles at any time of the day. Best run daily at 12.30pm.
-### Expiry and pre-expiry day trade
-
-Sell an ATM straddle and an OTM strangle on NF in 1:2 ratio. Ideally run on Wednesdays and Thursdays at anytime between 9.20-9.30am.
-
-### Directional Option selling trade
-
-Sell directional BNF option based on BNF futures supertrend direction. Then trail the SL basis supertrend value on the option strike. Strategy built and popularised by [Vishal Mehta on Youtube](https://www.youtube.com/watch?v=bj6hVKjweZ8).
 ## Data and Security
 
 - All access tokens are saved via a first-party cookie in your browser and are encrypted via the `SECRET_COOKIE_PASSWORD` environment variable. Whatever you do, **DO NOT** share this with anyone!
@@ -123,4 +111,4 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## License
 
-Kha-ching is [MIT licensed](https://github.com/aakashlpin/kha-ching/blob/master/LICENSE.md).
+KhaChing is [MIT licensed](https://github.com/aakashlpin/kha-ching/blob/master/LICENSE.md).
