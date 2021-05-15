@@ -2,7 +2,9 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
+import { commonOnChangeHandler } from '../../lib/browserUtils';
 import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
+import { getDefaultSquareOffTime } from '../../lib/utils';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -14,17 +16,6 @@ import Form from './TradeSetupForm';
  * on the "days" section, show all jobs of the day only
  * and automatically clean up any jobs that belong to days before today
  */
-
-function getDefaultSquareOffTime() {
-  try {
-    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
-      ':'
-    );
-    return dayjs().set('hours', hours).set('minutes', minutes).format();
-  } catch (e) {
-    return null;
-  }
-}
 
 const TradeSetup = ({
   LOCALSTORAGE_KEY,
@@ -149,22 +140,7 @@ const TradeSetup = ({
     }
   };
 
-  const onChange = (props) => {
-    if (props.instruments) {
-      setState({
-        ...state,
-        instruments: {
-          ...state.instruments,
-          ...props.instruments
-        }
-      });
-    } else {
-      setState({
-        ...state,
-        ...props
-      });
-    }
-  };
+  const onChange = (props) => commonOnChangeHandler(props, state, setState);
 
   const onDeleteJob = async ({ jobId } = {}) => {
     if (!jobId) {

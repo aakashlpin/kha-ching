@@ -5,7 +5,13 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
+import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
+import {
+  EXIT_STRATEGIES,
+  INSTRUMENTS,
+  STRATEGIES,
+  STRATEGIES_DETAILS
+} from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -17,17 +23,6 @@ import Form from './TradeSetupForm';
  * on the "days" section, show all jobs of the day only
  * and automatically clean up any jobs that belong to days before today
  */
-
-function getDefaultSquareOffTime() {
-  try {
-    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
-      ':'
-    );
-    return dayjs().set('hours', hours).set('minutes', minutes).format();
-  } catch (e) {
-    return null;
-  }
-}
 
 const notify = (message) =>
   toast.error(message, {
@@ -42,22 +37,15 @@ const notify = (message) =>
 
 const DirectionTradeSetup = ({
   LOCALSTORAGE_KEY,
-  strategy,
-  enabledInstruments,
+  strategy = STRATEGIES.DIRECTIONAL_OPTION_SELLING,
+  enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
   exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND],
-  entryStrategies
+  entryStrategies = [
+    STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
+    STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
+  ]
 }) => {
-  const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
-  function getScheduleableTradeTime() {
-    const defaultDate = dayjs(defaultRunAt).format();
-
-    if (dayjs().isAfter(dayjs(defaultDate))) {
-      return dayjs().add(10, 'minutes').format();
-    }
-
-    return defaultDate;
-  }
-
+  const { heading } = STRATEGIES_DETAILS[strategy];
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -71,27 +59,10 @@ const DirectionTradeSetup = ({
     return existingDb;
   });
 
-  function getDefaultState() {
-    return {
-      instruments: enabledInstruments.reduce(
-        (accum, item) => ({
-          ...accum,
-          [item]: true
-        }),
-        {}
-      ),
-      lots: 2,
-      slmPercent: 50,
-      maxTrades: 3,
-      martingaleIncrementSize: 2,
-      runNow: false,
-      runAt: getScheduleableTradeTime(),
-      entryStrategy: entryStrategies[0],
-      exitStrategy: exitStrategies[0],
-      isAutoSquareOffEnabled: true,
-      squareOffTime: getDefaultSquareOffTime()
-    };
-  }
+  const getDefaultState = () => ({
+    ...STRATEGIES_DETAILS[strategy].defaultFormState,
+    ...getSchedulingStateProps(strategy)
+  });
 
   const [state, setState] = useState(getDefaultState());
 
@@ -169,22 +140,7 @@ const DirectionTradeSetup = ({
     }
   };
 
-  const onChange = (props) => {
-    if (props.instruments) {
-      setState({
-        ...state,
-        instruments: {
-          ...state.instruments,
-          ...props.instruments
-        }
-      });
-    } else {
-      setState({
-        ...state,
-        ...props
-      });
-    }
-  };
+  const onChange = (props) => commonOnChangeHandler(props, state, setState);
 
   const onDeleteJob = async ({ jobId } = {}) => {
     if (!jobId) {

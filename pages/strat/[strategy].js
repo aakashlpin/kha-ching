@@ -46,16 +46,7 @@ const Strategy = () => {
     case 'dos': {
       return (
         <StratLayout>
-          <DirectionalOptionSellingTradeSetup
-            LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING}
-            strategy={STRATEGIES.DIRECTIONAL_OPTION_SELLING}
-            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
-            entryStrategies={[
-              STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
-              STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
-            ]}
-            exitStrategies={[EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]}
-          />
+          <DirectionalOptionSellingTradeSetup LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING} />
         </StratLayout>
       );
     }
