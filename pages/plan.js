@@ -237,21 +237,23 @@ const Plan = () => {
               <Typography className={classes.heading}>{dayProps.heading}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.flexVertical}>
-              <div className={classes.pillsContainer}>
-                {Object.keys(dayProps.strategies).map((strategyKey) => {
-                  const config = dayProps.strategies[strategyKey];
-                  return (
-                    <Chip
-                      key={`${dayOfWeek}_${strategyKey}`}
-                      label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
-                        INSTRUMENT_DETAILS[config.instrument].displayName
-                      }`}
-                      onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
-                      onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
-                    />
-                  );
-                })}
-              </div>
+              {Object.keys(dayProps.strategies).length ? (
+                <div className={classes.pillsContainer}>
+                  {Object.keys(dayProps.strategies).map((strategyKey) => {
+                    const config = dayProps.strategies[strategyKey];
+                    return (
+                      <Chip
+                        key={`${dayOfWeek}_${strategyKey}`}
+                        label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
+                          INSTRUMENT_DETAILS[config.instrument].displayName
+                        }`}
+                        onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
+                        onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
               <Grid container alignItems="flex-start" spacing={2}>
                 <FormControl className={classes.formControl}>
                   <InputLabel id={`${dayOfWeek}_label`}>Select strategy</InputLabel>
