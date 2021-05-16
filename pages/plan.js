@@ -16,7 +16,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import DoneIcon from '@material-ui/icons/Done';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -63,6 +64,13 @@ import Layout from '../components/Layout';
 import DOS_TradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm';
 import { getSchedulingStateProps } from '../lib/browserUtils';
 import { INSTRUMENT_DETAILS, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
+
+/**
+ *
+ * remote storage
+ *
+ * https://api.signalx.trade/key_16_digit_api_key/dayOfWeek
+ */
 
 const Plan = () => {
   const [dayState, setDayState] = useState({
@@ -167,6 +175,8 @@ const Plan = () => {
   const commonOnSubmitHandler = () => {
     const selectedConfig = stratState[currentEditStrategy];
     console.log('commonOnSubmitHandler', selectedConfig);
+    // [TODO] here first push it to remote DB
+    // then the response that you get here should be set in state
     setDayState({
       ...dayState,
       [currentEditDay]: {
@@ -222,6 +232,11 @@ const Plan = () => {
       }
     });
   };
+
+  useEffect(() => {
+    console.log('dayState updated', dayState);
+    axios.post('/api/plan', dayState);
+  }, [dayState]);
 
   return (
     <Layout>
