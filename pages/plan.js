@@ -172,30 +172,51 @@ const Plan = () => {
     }
   };
 
-  const commonOnSubmitHandler = () => {
+  const commonOnSubmitHandler = async () => {
     const selectedConfig = stratState[currentEditStrategy];
     console.log('commonOnSubmitHandler', selectedConfig);
-    // [TODO] here first push it to remote DB
-    // then the response that you get here should be set in state
+
+    let updatedConfig;
+    if (selectedConfig._id) {
+      // editing an existing strategy
+      await axios.put(`/api/plan`, {
+        _id: selectedConfig._id,
+        dayOfWeek: currentEditDay,
+        config: selectedConfig
+      });
+
+      updatedConfig = { [selectedConfig._id]: selectedConfig };
+    } else {
+      // creating a new strategy
+      const config = Object.keys(selectedConfig.instruments)
+        .filter((instrument) => selectedConfig.instruments[instrument])
+        .map((instrument) => ({
+          ...selectedConfig,
+          instrument,
+          strategy: currentEditStrategy
+        }));
+
+      const { data: newStrategyConfig } = await axios.post(`/api/plan`, {
+        dayOfWeek: currentEditDay,
+        config
+      });
+
+      updatedConfig = newStrategyConfig.reduce(
+        (accum, item) => ({
+          ...accum,
+          [item._id]: item
+        }),
+        {}
+      );
+    }
+
     setDayState({
       ...dayState,
       [currentEditDay]: {
         ...dayState[currentEditDay],
         strategies: {
           ...dayState[currentEditDay].strategies,
-          ...Object.keys(selectedConfig.instruments)
-            .filter((instrument) => selectedConfig.instruments[instrument])
-            .reduce(
-              (accum, instrument) => ({
-                ...accum,
-                [`${currentEditStrategy}_${instrument}`]: {
-                  ...selectedConfig,
-                  instrument,
-                  strategy: currentEditStrategy
-                }
-              }),
-              {}
-            )
+          ...updatedConfig
         }
       }
     });
@@ -233,10 +254,40 @@ const Plan = () => {
     });
   };
 
+  // useEffect(() => {
+  //   console.log('dayState updated', dayState);
+  // }, [dayState]);
+
   useEffect(() => {
-    console.log('dayState updated', dayState);
-    axios.post('/api/plan', dayState);
-  }, [dayState]);
+    async function fn() {
+      const { data } = await axios('/api/plan');
+      const dayWiseData = data.reduce((accum, config) => {
+        if (accum[config._collection]) {
+          return {
+            ...accum,
+            [config._collection]: { ...accum[config._collection], [config._id]: config }
+          };
+        }
+        return {
+          ...accum,
+          [config._collection]: { [config._id]: config }
+        };
+      }, {});
+      const updatedDayState = Object.keys(dayState).reduce((accum, dayKey) => {
+        return {
+          ...accum,
+          [dayKey]: {
+            ...dayState[dayKey],
+            strategies: dayWiseData[dayKey] || {}
+          }
+        };
+      }, {});
+
+      setDayState(updatedDayState);
+    }
+
+    fn();
+  }, []);
 
   return (
     <Layout>
