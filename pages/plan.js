@@ -236,7 +236,16 @@ const Plan = () => {
     handleOpen();
   };
 
-  const handleDeleteStrategyConfig = ({ dayOfWeek, strategyKey }) => {
+  const handleDeleteStrategyConfig = async ({ dayOfWeek, strategyKey }) => {
+    const stratConfig = dayState[dayOfWeek].strategies[strategyKey];
+    await axios.delete(`/api/plan`, {
+      // notice the change in payload for delete request
+      data: {
+        dayOfWeek: currentEditDay,
+        config: stratConfig
+      }
+    });
+
     setDayState({
       ...dayState,
       [dayOfWeek]: {

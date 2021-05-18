@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 
 import Layout from '../components/Layout';
+import PlanDash from '../components/PlanDash';
 import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import useUser from '../lib/useUser';
 
@@ -19,6 +20,8 @@ const Dashboard = () => {
   return (
     <Layout>
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
+
+      <PlanDash />
 
       <List style={{ marginBottom: '60px' }}>
         <ListItem>

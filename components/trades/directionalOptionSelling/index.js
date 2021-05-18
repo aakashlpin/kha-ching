@@ -5,7 +5,11 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
-import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
+import {
+  commonOnChangeHandler,
+  getSchedulingStateProps,
+  handleCreateJob
+} from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   INSTRUMENTS,
@@ -93,36 +97,8 @@ const DirectionTradeSetup = ({
       }
     }
 
-    const {
-      lots,
-      slmPercent,
-      runNow,
-      runAt,
-      exitStrategy,
-      entryStrategy,
-      isAutoSquareOffEnabled,
-      squareOffTime,
-      maxTrades,
-      martingaleIncrementSize
-    } = state;
-
-    const jobProps = {
-      instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
-      lots: Number(lots),
-      martingaleIncrementSize: Number(martingaleIncrementSize),
-      maxTrades: Number(maxTrades),
-      slmPercent,
-      runNow,
-      runAt: runNow ? dayjs().format() : runAt,
-      strategy,
-      exitStrategy,
-      entryStrategy,
-      isAutoSquareOffEnabled,
-      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
-    };
-
     try {
-      const { data } = await axios.post('/api/create_job', jobProps);
+      const { data } = await handleCreateJob({ ...state, strategy });
       setDb((exDb) => ({
         queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
       }));
