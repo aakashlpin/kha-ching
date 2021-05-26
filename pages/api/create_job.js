@@ -4,6 +4,7 @@ import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
+import { isMarketOpen } from '../../lib/utils';
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user');
@@ -29,6 +30,10 @@ export default withSession(async (req, res) => {
   }
 
   console.log('create job request', req.body);
+
+  if (runNow && !isMarketOpen()) {
+    return res.status(400).send('Market is closed right now!');
+  }
 
   const addToQueueResponses = await Promise.all(
     instruments.map((instrument) =>
