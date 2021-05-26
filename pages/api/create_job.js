@@ -29,11 +29,15 @@ export default withSession(async (req, res) => {
     }
   }
 
-  console.log('create job request', req.body);
-
   if (runNow && !isMarketOpen()) {
     return res.status(400).send('Market is closed right now!');
   }
+
+  if (!runNow && runAt && !isMarketOpen(dayjs(runAt))) {
+    return res.status(400).send('Market would be closed at the scheduled time!');
+  }
+
+  console.log('create job request', req.body);
 
   const addToQueueResponses = await Promise.all(
     instruments.map((instrument) =>
