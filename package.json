@@ -23,6 +23,7 @@
     "final-form": "^4.20.1",
     "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",
+    "lodash": "^4.17.21",
     "next": "10.0.7",
     "next-iron-session": "^4.1.11",
     "react": "17.0.1",

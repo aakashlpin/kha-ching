@@ -46,7 +46,7 @@ export default withSession(async (req, res) => {
       addToNextQueue(
         {
           ...req.body,
-          reqCookies: req.cookies,
+          // reqCookies: req.cookies,
           instrument,
           user,
           autoSquareOffProps: {
