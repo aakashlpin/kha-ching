@@ -74,7 +74,6 @@ const TradeSetup = ({
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: exitStrategies[0],
       isAutoSquareOffEnabled: true,
-      isMonitorSLMOrderEnabled: true,
       squareOffTime: getDefaultSquareOffTime()
     };
   }
@@ -117,7 +116,6 @@ const TradeSetup = ({
       expireIfUnsuccessfulInMins,
       exitStrategy,
       isAutoSquareOffEnabled,
-      isMonitorSLMOrderEnabled,
       squareOffTime
     } = state;
 
@@ -132,7 +130,6 @@ const TradeSetup = ({
       strategy,
       exitStrategy,
       isAutoSquareOffEnabled,
-      isMonitorSLMOrderEnabled,
       squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
     };
 

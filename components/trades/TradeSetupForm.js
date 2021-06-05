@@ -2,18 +2,14 @@ import DateFnsUtils from '@date-io/date-fns';
 import {
   Button,
   Checkbox,
-  CssBaseline,
   FormControl,
   FormControlLabel,
   FormGroup,
   FormLabel,
   Grid,
-  Link,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography
 } from '@material-ui/core';
@@ -23,13 +19,7 @@ import dayjs from 'dayjs';
 import React from 'react';
 
 import { ensureIST } from '../../lib/browserUtils';
-import {
-  EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS,
-  INSTRUMENT_DETAILS,
-  WATCHERS,
-  WATCHERS_DETAILS
-} from '../../lib/constants';
+import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
   // const isSchedulingDisabled =
@@ -118,29 +108,13 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{ marginBottom: '16px' }}>
             <TextField
               fullWidth
               name="slmPercent"
               value={state.slmPercent}
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
               label="SLM %"
-            />
-          </Grid>
-          <Grid item xs={12} style={{ marginBottom: '-16px' }}>
-            <FormControlLabel
-              key={'slmWatcher'}
-              label={WATCHERS_DETAILS[WATCHERS.SLM_WATCHER].label}
-              control={
-                <Checkbox
-                  checked={state.isMonitorSLMOrderEnabled}
-                  onChange={() =>
-                    onChange({
-                      isMonitorSLMOrderEnabled: !state.isMonitorSLMOrderEnabled
-                    })
-                  }
-                />
-              }
             />
           </Grid>
           <Grid item xs={12}>
