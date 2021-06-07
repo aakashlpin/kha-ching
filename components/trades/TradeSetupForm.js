@@ -2,18 +2,14 @@ import DateFnsUtils from '@date-io/date-fns';
 import {
   Button,
   Checkbox,
-  CssBaseline,
   FormControl,
   FormControlLabel,
   FormGroup,
   FormLabel,
   Grid,
-  Link,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography
 } from '@material-ui/core';
@@ -112,7 +108,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
+          <Grid item xs={12} style={{ marginBottom: '16px' }}>
             <TextField
               fullWidth
               name="slmPercent"

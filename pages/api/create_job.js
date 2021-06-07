@@ -6,6 +6,8 @@ import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
 import { isMarketOpen } from '../../lib/utils';
 
+const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
+
 export default withSession(async (req, res) => {
   const user = req.session.get('user');
 
@@ -29,11 +31,11 @@ export default withSession(async (req, res) => {
     }
   }
 
-  if (runNow && !isMarketOpen()) {
+  if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
     return res.status(400).send('Market is closed right now!');
   }
 
-  if (!runNow && runAt && !isMarketOpen(dayjs(runAt))) {
+  if (!MOCK_ORDERS && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
     return res.status(400).send('Market would be closed at the scheduled time!');
   }
 
@@ -44,7 +46,7 @@ export default withSession(async (req, res) => {
       addToNextQueue(
         {
           ...req.body,
-          reqCookies: req.cookies,
+          // reqCookies: req.cookies,
           instrument,
           user,
           autoSquareOffProps: {
