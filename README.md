@@ -57,7 +57,7 @@ Default lots that you trade on a regular basis. This is only the default initial
 for e.g. If you regularly trade `150` quantity of Nifty Options, you'd enter `2` lots here.
 #### `NEXT_PUBLIC_DEFAULT_SKEW_PERCENT`
 
-Default skew that you're okay with when selling straddles. Anywhere between 5-15 is a good value. YMMV. The value here only serves as a default and can be changed before setting up daily trades.
+Default skew that you're okay with when selling straddles. Anywhere between 5-15 is a good value. The value here only serves as a default and can be changed before setting up daily trades.
 
 #### `NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME`
 
@@ -77,11 +77,12 @@ Enter your SignalX API key for access to premium bots. Upgrade to [Khaching Prem
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
-Default percent of SLM BUY orders to be placed after initial order goes through. The value here only serves as a default and can be changed before setting up daily trades. Backtests recommend setting this to 30 on Friday, Monday, and Tuesday, and setting it to 50 on Wednesday and Thursday.
+Default percent of SLM BUY orders to be placed after initial order goes through. The value here only serves as a default and can be changed before setting up daily trades.
 
 #### `NEXT_PUBLIC_GIT_HASH`
 
 Leave the value in this field as it-is. This'll inform if there's an app update available in the app UI. If there's an update available, you can hit the "Deploy" button in your DigitalOcean app to install the new build for yourself.
+
 ## Next Steps
 
 - DigitalOcean Step 2: After entering all environment variables in setup Step 1, proceed to the next step and select `Bangalore` as region.
