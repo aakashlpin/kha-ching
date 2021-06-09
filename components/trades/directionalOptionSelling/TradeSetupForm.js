@@ -91,13 +91,22 @@ const TradeSetupForm = ({
               label="⚡️ Martingale additional lots"
             />
           </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               name="maxTrades"
               value={state.maxTrades}
               onChange={(e) => onChange({ maxTrades: e.target.value || '' })}
               label="⚡️ Maximum trades to take"
+            />
+          </Grid>
+          <Grid item xs={12} style={{ marginBottom: 16 }}>
+            <TextField
+              fullWidth
+              name="strikeByPrice"
+              value={state.strikeByPrice}
+              onChange={(e) => onChange({ strikeByPrice: e.target.value || '' })}
+              label="(Optional) Select strikes close to price"
             />
           </Grid>
           <Grid item xs={12}>

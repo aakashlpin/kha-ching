@@ -89,6 +89,7 @@ const DirectionTradeSetup = ({
       entryStrategy: entryStrategies[0],
       exitStrategy: exitStrategies[0],
       isAutoSquareOffEnabled: true,
+      strikeByPrice: '',
       squareOffTime: getDefaultSquareOffTime()
     };
   }
@@ -132,6 +133,7 @@ const DirectionTradeSetup = ({
       isAutoSquareOffEnabled,
       squareOffTime,
       maxTrades,
+      strikeByPrice,
       martingaleIncrementSize
     } = state;
 
@@ -140,6 +142,7 @@ const DirectionTradeSetup = ({
       lots: Number(lots),
       martingaleIncrementSize: Number(martingaleIncrementSize),
       maxTrades: Number(maxTrades),
+      strikeByPrice: Number(strikeByPrice),
       slmPercent,
       runNow,
       runAt: runNow ? dayjs().format() : runAt,
