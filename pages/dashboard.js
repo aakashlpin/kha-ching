@@ -4,6 +4,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 
+import Footer from '../components/Footer';
 import Layout from '../components/Layout';
 import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import useUser from '../lib/useUser';
@@ -36,27 +37,18 @@ const Dashboard = () => {
         </ListItem>
       </List>
 
-      <Box align="center">
+      <Box align="center" marginBottom="120px">
         <Button
-          color="primary"
+          color=""
           variant="contained"
           onClick={async () => {
             await axios.post('/api/revoke_session');
             router.push('/');
           }}>
-          🔴 Stop and Kill all!
+          🔴 Stop SignalX and Logout!
         </Button>
-
-        <br />
-        <br />
-
-        <Link
-          href="https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d"
-          target="_blank"
-          style={{ color: 'darkgray', fontStyle: 'italic' }}>
-          Learn more about Khaching ↗
-        </Link>
       </Box>
+      <Footer />
     </Layout>
   );
 };
