@@ -5,10 +5,10 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
-import { ensureIST } from '../../../lib/browserUtils';
 import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
+const TESTING = false;
 
 /**
  *
@@ -96,6 +96,20 @@ const OptionBuyingStrategy = ({
   const onSubmit = async (e) => {
     e && e.preventDefault();
 
+    const { lots, exitStrategy, instruments } = state;
+
+    if (TESTING) {
+      const jobProps = {
+        instruments: Object.keys(instruments).filter((key) => state.instruments[key]),
+        lots: Number(lots),
+        runNow: true,
+        strategy,
+        exitStrategy
+      };
+      await axios.post('/api/create_job', jobProps);
+      return;
+    }
+
     const allowedTimes = STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].schedule;
 
     /**
@@ -131,8 +145,6 @@ const OptionBuyingStrategy = ({
     if (!yes) {
       return notify(`No trade taken as you didn't confirm!`);
     }
-
-    const { lots, exitStrategy } = state;
 
     const jobs = runnableSlots
       .map((runnable, idx) => {

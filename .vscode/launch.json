@@ -5,7 +5,7 @@
       "type": "node",
       "request": "attach",
       "name": "Launch Program",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": ["${workspaceFolder}/node_modules/**/*.js", "<node_internals>/**"],
       "port": 9229
     }
   ]
