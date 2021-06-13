@@ -5,7 +5,8 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
+import { ensureIST } from '../../../lib/browserUtils';
+import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -46,17 +47,7 @@ const OptionBuyingStrategy = ({
   enabledInstruments,
   exitStrategies = [EXIT_STRATEGIES.OBS_TRAIL_SL]
 }) => {
-  const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
-  function getScheduleableTradeTime() {
-    const defaultDate = dayjs(defaultRunAt).format();
-
-    if (dayjs().isAfter(dayjs(defaultDate))) {
-      return dayjs().add(10, 'minutes').format();
-    }
-
-    return defaultDate;
-  }
-
+  const { heading } = STRATEGIES_DETAILS[strategy];
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -81,9 +72,9 @@ const OptionBuyingStrategy = ({
       ),
       lots: 2,
       runNow: false,
-      exitStrategy: exitStrategies[0],
-      isAutoSquareOffEnabled: true,
-      squareOffTime: getDefaultSquareOffTime()
+      exitStrategy: exitStrategies[0]
+      // isAutoSquareOffEnabled: true,
+      // squareOffTime: getDefaultSquareOffTime()
     };
   }
 
@@ -105,36 +96,64 @@ const OptionBuyingStrategy = ({
   const onSubmit = async (e) => {
     e && e.preventDefault();
 
-    if (state.runNow) {
-      const yes = await window.confirm(
-        'This strategy will take trades between 9.30-11am and between 1-3pm. Okay?'
-      );
-      if (!yes) {
-        setState({
-          ...state,
-          runNow: false
-        });
-        return;
-      }
+    const allowedTimes = STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].schedule;
+
+    /**
+     * 9.29am or before
+     * both trades can be taken
+     *
+     * 11am-12.59pm
+     * only 1pm trade can be taken
+     *
+     * 1pm or after
+     * no trade can be taken
+     */
+
+    const runnableSlots = allowedTimes.map(({ afterTime }) => dayjs().isBefore(afterTime));
+
+    let message;
+    let isScheduleable = true;
+    if (runnableSlots.every((val) => val)) {
+      message = 'This strategy will take trades between 9.30-11am and between 1-3pm. Okay?';
+    } else if (runnableSlots[1]) {
+      message = `You've missed the 9.30-11am slot. Trade will now be attempted between 1-3pm. Okay?`;
+    } else {
+      message = `Sorry! No further trades can be taken today.`;
+      isScheduleable = false;
     }
 
-    const { lots, runNow, exitStrategy, isAutoSquareOffEnabled, squareOffTime } = state;
+    if (!isScheduleable) {
+      return notify(message);
+    }
 
-    const jobProps = {
-      instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
-      lots: Number(lots),
-      runNow,
-      strategy,
-      exitStrategy,
-      isAutoSquareOffEnabled,
-      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
-    };
+    const yes = await window.confirm(message);
+
+    if (!yes) {
+      return notify(`No trade taken as you didn't confirm!`);
+    }
+
+    const { lots, exitStrategy } = state;
+
+    const jobs = runnableSlots
+      .map((runnable, idx) => {
+        if (!runnable) {
+          return null;
+        }
+        const jobProps = {
+          instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
+          lots: Number(lots),
+          runNow: false,
+          runAt: allowedTimes[idx].afterTime.add(1, 'second'),
+          strategy,
+          exitStrategy
+        };
+        return axios.post('/api/create_job', jobProps);
+      })
+      .filter((i) => i);
 
     try {
-      // [TODO] think this will need to be executed twice on client side
-      // for the 2 times this strategy can be scheduled
-      // can do on backend also - but lets just keep this here for now
-      const { data } = await axios.post('/api/create_job', jobProps);
+      const responses = await Promise.all(jobs);
+      const data = responses.reduce((accum, res) => [...accum, ...res.data], []);
       setDb((exDb) => ({
         queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
       }));
