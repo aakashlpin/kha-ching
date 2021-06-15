@@ -35,11 +35,11 @@ const Dashboard = () => {
             {STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING].heading}
           </Link>
         </ListItem>
-        <ListItem>
+        {/* <ListItem>
           <Link href="/strat/obs">
             {STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].heading}
           </Link>
-        </ListItem>
+        </ListItem> */}
       </List>
 
       <Box align="center" marginBottom="120px">
