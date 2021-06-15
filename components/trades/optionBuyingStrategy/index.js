@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
-const TESTING = false;
+const TESTING = true;
 
 /**
  *
