@@ -2,7 +2,7 @@
 import { Button, Paper } from '@material-ui/core';
 import axios from 'axios';
 import { omit } from 'lodash';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 
 import StratLayout from '../components/StratLayout';
 import useUser from '../lib/useUser';
@@ -24,7 +24,8 @@ const Mirror = () => {
     try {
       const { data } = await axios(mirrorDetails?.mirrorUrl);
       const deletedKeys = omit(data, ['api_key', 'access_token']);
-      axios.put(mirrorDetails?.mirrorUrl, deletedKeys);
+      await axios.put(mirrorDetails?.mirrorUrl, deletedKeys);
+      mutate(mirrorDetails.mirrorUrl);
     } catch (e) {
       console.log('[mirror handleStopMirror] error', e);
     }
@@ -38,8 +39,19 @@ const Mirror = () => {
         api_key: user.session.api_key,
         access_token: user.session.access_token
       });
+      mutate(mirrorDetails.mirrorUrl);
     } catch (e) {
       console.log('[mirror handleStartMirror] error', e);
+    }
+  }
+
+  async function handlePunchTestTrade() {
+    try {
+      await axios.post('/api/mirror', {
+        test_trade: true
+      });
+    } catch (e) {
+      console.log('[mirror handlePunchTestTrade] error', e);
     }
   }
 
@@ -54,9 +66,19 @@ const Mirror = () => {
         </h4>
 
         {subsDetails?.access_token ? (
-          <Button variant="contained" color="primary" type="button" onClick={handleStopMirror}>
-            🔴 Stop mirroring
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              type="button"
+              onClick={handleStopMirror}
+              style={{ marginRight: 8 }}>
+              🔴 Stop mirroring
+            </Button>
+            <Button variant="contained" color="" type="button" onClick={handlePunchTestTrade}>
+              Punch test trade
+            </Button>
+          </>
         ) : mirrorDetails?.userType === 'CONSUMER' ? (
           <Button variant="contained" color="primary" type="button" onClick={handleStartMirror}>
             Start mirroring
@@ -66,6 +88,17 @@ const Mirror = () => {
         ) : (
           <i>No idea why I&apos;m here!</i>
         )}
+
+        {/* {mirrorDetails?.userType === 'PUBLISHER' && subsDetails?.access_token ? (
+          <p>
+            Subscriber connected at:{' '}
+            {
+              subsDetails?.status_history?.find(
+                (history) => history.user === 'CONSUMER' && history.status_code === 'connect'
+              )?.timestamp
+            }{' '}
+          </p>
+        ) : null} */}
       </Paper>
     </StratLayout>
   );
