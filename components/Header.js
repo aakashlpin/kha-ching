@@ -42,7 +42,7 @@ const Header = () => {
 
   const router = useRouter();
   return (
-    <header>
+    <header style={{ marginBottom: 24 }}>
       <nav>
         <ul>
           {isUpdateAvailable ? (
