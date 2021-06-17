@@ -123,7 +123,7 @@ const OptionBuyingStrategy = ({
      * no trade can be taken
      */
 
-    const runnableSlots = allowedTimes.map(({ afterTime }) => dayjs().isBefore(afterTime));
+    const runnableSlots = allowedTimes.map(({ afterTime }) => dayjs().isBefore(afterTime()));
 
     let message;
     let isScheduleable = true;
@@ -155,7 +155,7 @@ const OptionBuyingStrategy = ({
           instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
           lots: Number(lots),
           runNow: false,
-          runAt: allowedTimes[idx].afterTime.add(1, 'second'),
+          runAt: allowedTimes[idx].afterTime().add(1, 'second'),
           strategy,
           exitStrategy
         };
