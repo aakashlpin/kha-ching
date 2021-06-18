@@ -45,15 +45,15 @@ const Mirror = () => {
     }
   }
 
-  async function handlePunchTestTrade() {
-    try {
-      await axios.post('/api/mirror', {
-        test_trade: true
-      });
-    } catch (e) {
-      console.log('[mirror handlePunchTestTrade] error', e);
-    }
-  }
+  // async function handlePunchTestTrade() {
+  //   try {
+  //     await axios.post('/api/mirror', {
+  //       test_trade: true
+  //     });
+  //   } catch (e) {
+  //     console.log('[mirror handlePunchTestTrade] error', e);
+  //   }
+  // }
 
   return (
     <StratLayout>
@@ -75,9 +75,11 @@ const Mirror = () => {
               style={{ marginRight: 8 }}>
               🔴 Stop mirroring
             </Button>
-            <Button variant="contained" color="" type="button" onClick={handlePunchTestTrade}>
-              Punch test trade
-            </Button>
+            {/* {mirrorDetails?.userType === 'PUBLISHER' ? (
+              <Button variant="contained" color="" type="button" onClick={handlePunchTestTrade}>
+                Punch test trade
+              </Button>
+            ) : null} */}
           </>
         ) : mirrorDetails?.userType === 'CONSUMER' ? (
           <Button variant="contained" color="primary" type="button" onClick={handleStartMirror}>
