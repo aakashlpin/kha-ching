@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 
 import Layout from '../../components/Layout';
 import StratLayout from '../../components/StratLayout';
+import AtmStraddleSetup from '../../components/trades/atmStraddle';
 import DirectionalOptionSellingTradeSetup from '../../components/trades/DirectionalOptionSellingTradeSetup';
 import OptionBuyingStrategyTradeSetup from '../../components/trades/OptionBuyingStrategyTradeSetup';
-import TradeSetup from '../../components/trades/TradeSetup';
 import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 
 const STRADDLE_TRADE_LS_KEY = 'khaching/trades/straddle';
@@ -21,7 +21,7 @@ const Strategy = () => {
     case 'straddle': {
       return (
         <StratLayout>
-          <TradeSetup
+          <AtmStraddleSetup
             LOCALSTORAGE_KEY={STRADDLE_TRADE_LS_KEY}
             strategy={STRATEGIES.ATM_STRADDLE}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
@@ -36,7 +36,7 @@ const Strategy = () => {
     case 'straddle1x-strangle2x': {
       return (
         <StratLayout>
-          <TradeSetup
+          <AtmStraddleSetup
             LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
             strategy={STRATEGIES.CM_WED_THURS}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}

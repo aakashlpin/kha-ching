@@ -18,8 +18,8 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../lib/browserUtils';
-import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
+import { ensureIST } from '../../../lib/browserUtils';
+import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../../lib/constants';
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
   // const isSchedulingDisabled =

@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 import Layout from '../components/Layout';
+import ATM_Straddle_TradeForm from '../components/trades/atmStraddle/TradeSetupForm';
 import DOS_TradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm';
 import { getSchedulingStateProps } from '../lib/browserUtils';
 import { INSTRUMENT_DETAILS, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';

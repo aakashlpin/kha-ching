@@ -8,9 +8,8 @@ import {
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   STRATEGIES_DETAILS
-} from '../../lib/constants';
-import OrdersTable from '../lib/ordersTable';
-// import OrdersTable from '../lib/ordersTable';
+} from '../../../lib/constants';
+import OrdersTable from '../../lib/ordersTable';
 
 const Details = ({ job, strategy, onDeleteJob }) => {
   const { data: jobDetails, error } = useSWR(`/api/get_job?id=${job.id}`);

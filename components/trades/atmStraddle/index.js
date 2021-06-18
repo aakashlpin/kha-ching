@@ -2,9 +2,8 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
-import { commonOnChangeHandler } from '../../lib/browserUtils';
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
-import { getDefaultSquareOffTime } from '../../lib/utils';
+import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
+import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants';
 import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
 
@@ -17,24 +16,13 @@ import Form from './TradeSetupForm';
  * and automatically clean up any jobs that belong to days before today
  */
 
-const TradeSetup = ({
+const AtmStraddle = ({
   LOCALSTORAGE_KEY,
   strategy,
   enabledInstruments,
-  defaultLots = process.env.NEXT_PUBLIC_DEFAULT_LOTS,
   exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 }) => {
   const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
-  function getScheduleableTradeTime() {
-    const defaultDate = dayjs(defaultRunAt).format();
-
-    if (dayjs().isAfter(dayjs(defaultDate))) {
-      return dayjs().add(10, 'minutes').format();
-    }
-
-    return defaultDate;
-  }
-
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -48,26 +36,31 @@ const TradeSetup = ({
     return existingDb;
   });
 
-  function getDefaultState() {
-    return {
-      instruments: enabledInstruments.reduce(
-        (accum, item) => ({
-          ...accum,
-          [item]: true
-        }),
-        {}
-      ),
-      lots: defaultLots,
-      maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
-      slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
-      runNow: false,
-      runAt: getScheduleableTradeTime(),
-      expireIfUnsuccessfulInMins: 10,
-      exitStrategy: exitStrategies[0],
-      isAutoSquareOffEnabled: true,
-      squareOffTime: getDefaultSquareOffTime()
-    };
-  }
+  const getDefaultState = () => ({
+    ...STRATEGIES_DETAILS[strategy].defaultFormState,
+    ...getSchedulingStateProps(strategy)
+  });
+
+  // {
+  //   return {
+  //     instruments: enabledInstruments.reduce(
+  //       (accum, item) => ({
+  //         ...accum,
+  //         [item]: false
+  //       }),
+  //       {}
+  //     ),
+  //     lots: defaultLots,
+  //     maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
+  //     slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+  //     runNow: false,
+  //     runAt: getScheduleableTradeTime(),
+  //     expireIfUnsuccessfulInMins: 10,
+  //     exitStrategy: exitStrategies[0],
+  //     isAutoSquareOffEnabled: true,
+  //     squareOffTime: getDefaultSquareOffTime()
+  //   };
+  // }
 
   const [state, setState] = useState(getDefaultState());
 
@@ -187,4 +180,4 @@ const TradeSetup = ({
   );
 };
 
-export default TradeSetup;
+export default AtmStraddle;
