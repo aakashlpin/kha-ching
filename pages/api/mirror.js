@@ -42,6 +42,7 @@ async function updateStatus(statusCode, ...params) {
 }
 
 async function orderUpdate(trade, kc, isTestTrade = false) {
+  console.log('[mirror orderUpdate]', trade, kc, isTestTrade);
   try {
     if (!isTestTrade) {
       axios.post(TRADES_HOST_URL, trade);
