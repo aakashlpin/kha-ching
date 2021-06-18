@@ -41,7 +41,8 @@ async function updateStatus(statusCode, ...params) {
   }
 }
 
-async function orderUpdate(trade, kc, isTestTrade = false) {
+async function orderUpdate(trade, isTestTrade = false) {
+  console.log('[mirror new orderUpdate]', trade, isTestTrade);
   try {
     if (!isTestTrade) {
       axios.post(TRADES_HOST_URL, trade);
@@ -51,6 +52,17 @@ async function orderUpdate(trade, kc, isTestTrade = false) {
       return;
     }
 
+    const { data: subscribersDetails } = await axios(SIGNALX_MIRROR_URL);
+    const { api_key: subscriberApiKey, access_token: subscriberAccessToken } = subscribersDetails;
+
+    const kc =
+      subscriberApiKey && subscriberAccessToken
+        ? new KiteConnect({
+            api_key: subscriberApiKey,
+            access_token: subscriberAccessToken
+          })
+        : null;
+
     if (!kc) {
       return;
     }
@@ -59,7 +71,6 @@ async function orderUpdate(trade, kc, isTestTrade = false) {
       variety,
       exchange,
       status,
-      // instrument_token,
       tradingsymbol,
       transaction_type,
       validity,
@@ -67,7 +78,7 @@ async function orderUpdate(trade, kc, isTestTrade = false) {
       quantity
     } = trade;
 
-    if (status !== kc.STATUS_COMPLETE) {
+    if (status !== kc.STATUS_COMPLETE || exchange !== kc.EXCHANGE_NFO) {
       return;
     }
 
@@ -94,17 +105,6 @@ export default withSession(async (req, res) => {
     return res.status(401).send('Unauthorized');
   }
 
-  const { data: subscribersDetails } = await axios(SIGNALX_MIRROR_URL);
-  const { api_key: subscriberApiKey, access_token: subscriberAccessToken } = subscribersDetails;
-
-  const subscribersKiteConnect =
-    subscriberApiKey && subscriberAccessToken
-      ? new KiteConnect({
-          api_key: subscriberApiKey,
-          access_token: subscriberAccessToken
-        })
-      : null;
-
   useKiteTicker({
     apiKey,
     accessToken: user.session.access_token,
@@ -114,11 +114,11 @@ export default withSession(async (req, res) => {
     onClose: () => updateStatus('clean_close'),
     onReconnect: (...args) => updateStatus('reconnect', ...args),
     onNoReconnect: () => updateStatus('noreconnect'),
-    onOrderUpdate: (trade) => orderUpdate(trade, subscribersKiteConnect)
+    onOrderUpdate: (trade) => orderUpdate(trade)
   });
 
   if (req.body?.test_trade) {
-    orderUpdate(testPayload, subscribersKiteConnect, true);
+    orderUpdate(testPayload, true);
   }
 
   res.json({ mirrorUrl: SIGNALX_MIRROR_URL, userType: SIGNALX_MIRROR_USER_TYPE });
@@ -142,12 +142,12 @@ const testPayload = {
   transaction_type: 'BUY',
   validity: 'DAY',
   product: 'MIS',
-  quantity: 300,
+  quantity: 25,
   disclosed_quantity: 0,
   price: 0,
   trigger_price: 0,
   average_price: 178.72083332999998,
-  filled_quantity: 300,
+  filled_quantity: 25,
   pending_quantity: 0,
   cancelled_quantity: 0,
   market_protection: 0,
