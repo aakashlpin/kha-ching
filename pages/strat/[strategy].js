@@ -4,12 +4,14 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import StratLayout from '../../components/StratLayout';
 import DirectionalOptionSellingTradeSetup from '../../components/trades/DirectionalOptionSellingTradeSetup';
+import OptionBuyingStrategyTradeSetup from '../../components/trades/OptionBuyingStrategyTradeSetup';
 import TradeSetup from '../../components/trades/TradeSetup';
 import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 
-const TWELVE_THIRTY_TRADE_LS_KEY = 'khaching/trades/1230';
-const WED_THURS_TRADE_LS_KEY = 'khaching/trades/wed_thurs';
+const STRADDLE_TRADE_LS_KEY = 'khaching/trades/straddle';
+const WED_THURS_TRADE_LS_KEY = 'khaching/trades/atm1x-otm2x';
 const DIRECTIONAL_OPTION_SELLING = 'khaching/trades/dos';
+const OPTION_BUYING_STRATEGY = 'khaching/trades/obs';
 
 const Strategy = () => {
   const router = useRouter();
@@ -20,7 +22,7 @@ const Strategy = () => {
       return (
         <StratLayout>
           <TradeSetup
-            LOCALSTORAGE_KEY={TWELVE_THIRTY_TRADE_LS_KEY}
+            LOCALSTORAGE_KEY={STRADDLE_TRADE_LS_KEY}
             strategy={STRATEGIES.ATM_STRADDLE}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[
@@ -47,6 +49,18 @@ const Strategy = () => {
       return (
         <StratLayout>
           <DirectionalOptionSellingTradeSetup LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING} />
+        </StratLayout>
+      );
+    }
+    case 'obs': {
+      return (
+        <StratLayout>
+          <OptionBuyingStrategyTradeSetup
+            LOCALSTORAGE_KEY={OPTION_BUYING_STRATEGY}
+            strategy={STRATEGIES.OPTION_BUYING_STRATEGY}
+            enabledInstruments={[INSTRUMENTS.BANKNIFTY]}
+            exitStrategies={[EXIT_STRATEGIES.OBS_TRAIL_SL]}
+          />
         </StratLayout>
       );
     }

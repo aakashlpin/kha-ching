@@ -22,8 +22,10 @@
     "dayjs": "^1.10.4",
     "esm": "^3.2.25",
     "final-form": "^4.20.1",
+    "fyers-api": "^1.1.0",
     "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",
+    "lodash": "^4.17.21",
     "next": "10.0.7",
     "next-iron-session": "^4.1.11",
     "react": "17.0.1",
@@ -31,7 +33,10 @@
     "react-final-form": "^6.5.2",
     "react-timeago": "^5.2.0",
     "react-toastify": "^7.0.4",
-    "swr": "^0.4.2"
+    "request": "^2.88.2",
+    "swr": "^0.4.2",
+    "trace-unhandled": "^2.0.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "eslint": "^7.20.0",

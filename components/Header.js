@@ -42,7 +42,7 @@ const Header = () => {
 
   const router = useRouter();
   return (
-    <header>
+    <header style={{ marginBottom: 24 }}>
       <nav>
         <ul>
           {isUpdateAvailable ? (
@@ -68,12 +68,14 @@ const Header = () => {
               <li>
                 <Link href="/profile">
                   <a>
-                    <img
-                      alt={user.session.user_shortname}
-                      src={user.session.avatar_url}
-                      width={20}
-                      height={20}
-                    />{' '}
+                    {user?.session?.avatar_url && (
+                      <img
+                        alt={user.session.user_shortname}
+                        src={user.session.avatar_url}
+                        width={20}
+                        height={20}
+                      />
+                    )}
                     Profile
                   </a>
                 </Link>
@@ -118,8 +120,7 @@ const Header = () => {
         }
         header {
           padding: 0.2rem;
-          color: #fff;
-          background-color: #333;
+          background-color: #19857b;
         }
       `}</style>
     </header>

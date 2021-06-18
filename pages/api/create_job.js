@@ -1,9 +1,12 @@
 import dayjs from 'dayjs';
 
-import { EXIT_STRATEGIES, STRATEGIES } from '../../lib/constants';
+import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
+import { isMarketOpen } from '../../lib/utils';
+
+const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user');
@@ -22,10 +25,16 @@ export default withSession(async (req, res) => {
     expireIfUnsuccessfulInMins
   } = req.body;
 
-  if (strategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING) {
-    if (!process.env.SIGNALX_API_KEY?.length) {
-      return res.status(401).send('Reserved for Khaching Premium users!');
-    }
+  if (STRATEGIES_DETAILS[strategy].premium && !process.env.SIGNALX_API_KEY?.length) {
+    return res.status(401).send('Please upgrade to Khaching Premium to use this strategy!');
+  }
+
+  if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
+    return res.status(400).send('Market is closed right now!');
+  }
+
+  if (!MOCK_ORDERS && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
+    return res.status(400).send('Market would be closed at your scheduled time!');
   }
 
   console.log('create job request', req.body);
@@ -35,13 +44,15 @@ export default withSession(async (req, res) => {
       addToNextQueue(
         {
           ...req.body,
-          reqCookies: req.cookies,
+          // reqCookies: req.cookies,
           instrument,
           user,
-          autoSquareOffProps: {
-            time: squareOffTime,
-            deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-          },
+          autoSquareOffProps: squareOffTime
+            ? {
+                time: squareOffTime,
+                deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+              }
+            : null,
           expiresAt: expireIfUnsuccessfulInMins
             ? dayjs(runNow ? new Date() : runAt)
                 .add(expireIfUnsuccessfulInMins, 'minutes')

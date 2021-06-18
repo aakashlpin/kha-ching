@@ -4,6 +4,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 
+import Footer from '../components/Footer';
 import Layout from '../components/Layout';
 import PlanDash from '../components/PlanDash';
 import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
@@ -37,29 +38,25 @@ const Dashboard = () => {
             {STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING].heading}
           </Link>
         </ListItem>
+        {/* <ListItem>
+          <Link href="/strat/obs">
+            {STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].heading}
+          </Link>
+        </ListItem> */}
       </List>
 
-      <Box align="center">
+      <Box align="center" marginBottom="120px">
         <Button
-          color="primary"
+          color=""
           variant="contained"
           onClick={async () => {
             await axios.post('/api/revoke_session');
             router.push('/');
           }}>
-          🔴 Stop and Kill all!
+          🔴 Stop SignalX and Logout!
         </Button>
-
-        <br />
-        <br />
-
-        <Link
-          href="https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d"
-          target="_blank"
-          style={{ color: 'darkgray', fontStyle: 'italic' }}>
-          Learn more about Khaching ↗
-        </Link>
       </Box>
+      <Footer />
     </Layout>
   );
 };
