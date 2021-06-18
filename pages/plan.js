@@ -397,6 +397,15 @@ const Plan = () => {
                   onSubmit={commonOnSubmitHandler}
                   isRunnable={false}
                 />
+              ) : currentEditStrategy === STRATEGIES.ATM_STRADDLE ? (
+                <ATM_Straddle_TradeForm
+                  state={stratState[STRATEGIES.ATM_STRADDLE]}
+                  onChange={(changedProps) =>
+                    stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)
+                  }
+                  onSubmit={commonOnSubmitHandler}
+                  isRunnable={false}
+                />
               ) : null}
             </div>
           </Fade>

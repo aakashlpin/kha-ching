@@ -19,17 +19,30 @@ import dayjs from 'dayjs';
 import React from 'react';
 
 import { ensureIST } from '../../../lib/browserUtils';
-import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../../lib/constants';
+import {
+  EXIT_STRATEGIES,
+  EXIT_STRATEGIES_DETAILS,
+  INSTRUMENT_DETAILS,
+  INSTRUMENTS
+} from '../../../lib/constants';
 
-const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
-  // const isSchedulingDisabled =
-  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+const TradeSetupForm = ({
+  state,
+  onChange,
+  onSubmit,
+  isRunnable = true,
+  enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
+  exitStrategies = [
+    EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+    EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+  ]
+}) => {
   const isSchedulingDisabled = false;
 
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <h3>Setup new trade</h3>
+        {isRunnable ? <h3>Setup new trade</h3> : null}
         <Grid container alignItems="flex-start" spacing={2}>
           <Grid item xs={12}>
             <FormControl component="fieldset">
@@ -153,17 +166,19 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </FormGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="secondary"
-              type="button"
-              onClick={(e) => {
-                onChange({ runNow: true });
-              }}>
-              Schedule now
-            </Button>
-          </Grid>
+          {isRunnable ? (
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="secondary"
+                type="button"
+                onClick={(e) => {
+                  onChange({ runNow: true });
+                }}>
+                Schedule now
+              </Button>
+            </Grid>
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -200,7 +215,9 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               <Box fontStyle="italic" fontSize={14}>
                 <p>Note —</p>
                 <ol>
-                  <li>You can delete the task until scheduled time on the next step.</li>
+                  {isRunnable ? (
+                    <li>You can delete the task until scheduled time on the next step.</li>
+                  ) : null}
                   <li>
                     Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
                     within &quot;Enter trade irrespective skew after (in mins)&quot;, the trade will

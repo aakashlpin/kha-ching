@@ -44,8 +44,6 @@ const TradeSetupForm = ({
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
   ]
 }) => {
-  // const isSchedulingDisabled =
-  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
   const isSchedulingDisabled = false;
 
   return (
