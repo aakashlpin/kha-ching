@@ -67,24 +67,35 @@ const PlanDash = () => {
     mutate('/api/trades_day');
   }
 
-  const enableAllSchedule = plans[dayOfWeek]?.every((plan) => dayjs().isBefore(dayjs(plan.runAt)));
+  const getScheduleableTrades = () => {
+    const pendingTrades = getPendingTrades();
+    if (!pendingTrades) {
+      return null;
+    }
+
+    return pendingTrades.filter((trade) => dayjs().isBefore(dayjs(trade.runAt)));
+  };
+
+  const getPendingTrades = () =>
+    plans[dayOfWeek]?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id));
 
   async function handleScheduleEverything() {
-    await Promise.all(plans[dayOfWeek].map(handleScheduleJob));
+    const pendingTrades = getPendingTrades();
+    await Promise.all(pendingTrades.map(handleScheduleJob));
     mutate('/api/trades_day');
   }
 
-  const pendingTrades = plans[dayOfWeek]?.filter(
-    (plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id)
-  );
+  const pendingTrades = getPendingTrades();
 
   if (!pendingTrades?.length) {
     return null;
   }
 
+  const scheduleableTrades = getScheduleableTrades();
+
   return (
     <div>
-      {plans[dayOfWeek] && enableAllSchedule ? (
+      {plans[dayOfWeek] && scheduleableTrades ? (
         <Button
           style={{ marginBottom: 18 }}
           variant="contained"
@@ -94,6 +105,7 @@ const PlanDash = () => {
           Schedule all trades
         </Button>
       ) : null}
+
       {pendingTrades.map((plan, idx) => {
         return (
           <div key={plan._id}>
@@ -102,15 +114,11 @@ const PlanDash = () => {
                 {idx + 1} · {STRATEGIES_DETAILS[plan.strategy].heading}
               </h4>
 
-              <h2>{INSTRUMENT_DETAILS[plan.instrument].displayName}</h2>
-
               <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
 
               <Grid item style={{ marginTop: 16 }}>
                 <Button variant="contained" type="button" onClick={() => handleScheduleJob(plan)}>
-                  {dayjs().isBefore(dayjs(plan.runAt))
-                    ? `Schedule for ${dayjs(plan.runAt).format('hh:mm a')}`
-                    : `Run now`}
+                  {dayjs().isBefore(dayjs(plan.runAt)) ? `Schedule trade` : `Run now`}
                 </Button>
               </Grid>
             </Paper>
