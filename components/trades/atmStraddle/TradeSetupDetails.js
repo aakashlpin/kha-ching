@@ -4,8 +4,19 @@ import React from 'react';
 import { EXIT_STRATEGIES_DETAILS } from '../../../lib/constants';
 import OrdersTable from '../../lib/ordersTable';
 
-const Details = ({ lots, maxSkewPercent, instrument, exitStrategy, slmPercent, runAt }) => {
-  const humanTime = dayjs(runAt).format('hh:mma');
+const Details = ({
+  lots,
+  maxSkewPercent,
+  instrument,
+  exitStrategy,
+  slmPercent,
+  runNow,
+  runAt,
+  _createdOn
+}) => {
+  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
+  const humanTime = dayjs(runNow ? _createdOn : runAt).format('hh:mma');
+
   return (
     <OrdersTable
       rows={[
@@ -14,7 +25,7 @@ const Details = ({ lots, maxSkewPercent, instrument, exitStrategy, slmPercent, r
         [{ value: 'Skew %' }, { value: maxSkewPercent }],
         [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
         [{ value: 'SLM %' }, { value: slmPercent }],
-        [{ value: dayjs().isBefore(runAt) ? 'ETA' : 'Run at' }, { value: humanTime }]
+        [{ value: scheduleString }, { value: humanTime }]
       ]}
     />
   );

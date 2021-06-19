@@ -47,12 +47,9 @@ const AtmStraddle = ({ strategy }) => {
           )
       );
       setState(getDefaultState());
-      router.push('/dashboard');
+      router.push('/dashboard?tabId=0');
     } catch (e) {
-      // if (e.response) {
-      //   notify(e.response.data);
-      // }
-      // console.error(e);
+      console.error(e);
     }
   };
 

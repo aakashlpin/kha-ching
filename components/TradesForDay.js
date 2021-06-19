@@ -21,15 +21,15 @@ const WrapperComponent = (props) => {
       if (props.status_message) {
         return (
           <>
-            <Typography variant="p" color="error">
+            <Typography component="p" color="error">
               FAILED: {props.status_message}
             </Typography>
-            <Typography variant="p">{strategyDetails.heading}</Typography>
+            <Typography component="p">{strategyDetails.heading}</Typography>
           </>
         );
       } else {
         return (
-          <Typography variant="p" color="error">
+          <Typography component="p" color="error">
             Something went wrong!
           </Typography>
         );
@@ -37,7 +37,7 @@ const WrapperComponent = (props) => {
     }
 
     return (
-      <Typography variant="p" color="">
+      <Typography component="p" color="">
         #{props.queue.id} · {strategyDetails.heading}
         {/* {isJobPastScheduledTime ? (
           <>

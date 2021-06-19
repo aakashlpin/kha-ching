@@ -27,6 +27,7 @@ function TabPanel(props) {
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
+      style={{ minHeight: 300 }}
       {...other}>
       {value === index && (
         <Box p={3}>
@@ -46,8 +47,8 @@ function a11yProps(index) {
 
 const Dashboard = () => {
   const { user } = useUser({ redirectTo: '/' });
-  const [value, setValue] = useState(0);
   const router = useRouter();
+  const [value, setValue] = useState(() => (router.query?.tabId ? Number(router.query.tabId) : 1));
 
   if (!user || user.isLoggedIn === false) {
     return <Layout>loading...</Layout>;
@@ -63,9 +64,9 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <h1>
-        {dayjs().format('dddd')} — {dayjs().format('DD MMM YYYY')}
-      </h1>
+      <Typography component="h1" variant="h6" style={{ marginBottom: 24, textAlign: 'center' }}>
+        {dayjs().format('dddd')} / {dayjs().format('DD MMM YYYY')}
+      </Typography>
 
       <AppBar position="static" color="default">
         <Tabs
@@ -113,7 +114,7 @@ const Dashboard = () => {
         </TabPanel>
       </SwipeableViews>
 
-      <Box align="center" marginBottom="120px">
+      {/* <Box align="center" marginBottom="120px">
         <Button
           color=""
           variant="contained"
@@ -123,7 +124,7 @@ const Dashboard = () => {
           }}>
           🔴 Stop SignalX and Logout!
         </Button>
-      </Box>
+      </Box> */}
       <Footer />
     </Layout>
   );

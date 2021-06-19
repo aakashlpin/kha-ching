@@ -1,45 +1,16 @@
-import 'react-toastify/dist/ReactToastify.css';
-
 import axios from 'axios';
-import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
 
-import {
-  commonOnChangeHandler,
-  getSchedulingStateProps,
-  handleCreateJob
-} from '../../../lib/browserUtils';
+import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   INSTRUMENTS,
   STRATEGIES,
   STRATEGIES_DETAILS
 } from '../../../lib/constants';
-import Details from './TradeSetupDetails';
 import Form from './TradeSetupForm';
-
-/**
- *
- * lets show the details popup per instrument
- * set the actionable as "remove job" to clean up memory
- *
- * on the "days" section, show all jobs of the day only
- * and automatically clean up any jobs that belong to days before today
- */
-
-const notify = (message) =>
-  toast.error(message, {
-    position: 'bottom-center',
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined
-  });
 
 const DirectionTradeSetup = ({
   strategy = STRATEGIES.DIRECTIONAL_OPTION_SELLING,
@@ -90,30 +61,13 @@ const DirectionTradeSetup = ({
 
       setState(getDefaultState());
 
-      router.push('/dashboard');
+      router.push('/dashboard?tabId=0');
     } catch (e) {
-      if (e.response) {
-        notify(e.response.data);
-      }
       console.error(e);
     }
   };
 
   const onChange = (props) => commonOnChangeHandler(props, state, setState);
-
-  const onDeleteJob = async ({ jobId } = {}) => {
-    if (!jobId) {
-      throw new Error('onDeleteJob called without jobId');
-    }
-
-    try {
-      await axios.post('/api/delete_job', {
-        id: jobId
-      });
-    } catch (e) {
-      console.log('error deleting job', e);
-    }
-  };
 
   useEffect(() => {
     if (state.runNow) {
@@ -131,17 +85,6 @@ const DirectionTradeSetup = ({
         enabledInstruments={enabledInstruments}
         exitStrategies={exitStrategies}
         entryStrategies={entryStrategies}
-      />
-      <ToastContainer
-        position="bottom-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
       />
     </div>
   );

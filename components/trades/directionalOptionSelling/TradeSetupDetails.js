@@ -3,8 +3,18 @@ import React from 'react';
 
 import OrdersTable from '../../lib/ordersTable';
 
-const Details = ({ lots, martingaleIncrementSize, instrument, maxTrades, slmPercent, runAt }) => {
-  const humanTime = dayjs(runAt).format('hh:mma');
+const Details = ({
+  lots,
+  martingaleIncrementSize,
+  instrument,
+  maxTrades,
+  slmPercent,
+  runNow,
+  runAt,
+  _createdAt
+}) => {
+  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
+  const humanTime = dayjs(runNow ? _createdAt : runAt).format('hh:mma');
 
   return (
     <OrdersTable
@@ -14,7 +24,7 @@ const Details = ({ lots, martingaleIncrementSize, instrument, maxTrades, slmPerc
         [{ value: 'Martingale lots' }, { value: martingaleIncrementSize }],
         [{ value: 'Maximum trades' }, { value: maxTrades }],
         [{ value: 'SLM %' }, { value: slmPercent }],
-        [{ value: dayjs().isBefore(runAt) ? 'ETA' : 'Run at' }, { value: humanTime }]
+        [{ value: scheduleString }, { value: humanTime }]
       ]}
     />
   );
