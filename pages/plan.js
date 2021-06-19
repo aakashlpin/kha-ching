@@ -180,7 +180,7 @@ const Plan = () => {
     return omit(props, ['instruments', 'disableInstrumentChange']);
   };
 
-  const commonOnSubmitHandler = async () => {
+  const commonOnSubmitHandler = async (formattedStateForApiProps) => {
     const selectedConfig = stratState[currentEditStrategy];
     console.log('commonOnSubmitHandler', selectedConfig);
 
@@ -190,7 +190,7 @@ const Plan = () => {
       await axios.put(`/api/plan`, {
         _id: selectedConfig._id,
         dayOfWeek: currentEditDay,
-        config: cleanupForRemoteSync(selectedConfig)
+        config: cleanupForRemoteSync({ ...selectedConfig, ...formattedStateForApiProps })
       });
 
       updatedConfig = { [selectedConfig._id]: selectedConfig };
@@ -200,6 +200,7 @@ const Plan = () => {
         .filter((instrument) => selectedConfig.instruments[instrument])
         .map((instrument) => ({
           ...selectedConfig,
+          ...formattedStateForApiProps,
           instrument,
           strategy: currentEditStrategy
         }))
@@ -411,9 +412,20 @@ const Plan = () => {
                 />
               ) : currentEditStrategy === STRATEGIES.ATM_STRADDLE ? (
                 <ATM_Straddle_TradeForm
+                  strategy={STRATEGIES.ATM_STRADDLE}
                   state={stratState[STRATEGIES.ATM_STRADDLE]}
                   onChange={(changedProps) =>
                     stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)
+                  }
+                  onSubmit={commonOnSubmitHandler}
+                  isRunnable={false}
+                />
+              ) : currentEditStrategy === STRATEGIES.CM_WED_THURS ? (
+                <ATM_Straddle_TradeForm
+                  strategy={STRATEGIES.CM_WED_THURS}
+                  state={stratState[STRATEGIES.CM_WED_THURS]}
+                  onChange={(changedProps) =>
+                    stratOnChangeHandler(changedProps, STRATEGIES.CM_WED_THURS)
                   }
                   onSubmit={commonOnSubmitHandler}
                   isRunnable={false}

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import { Box, Button, Link, List, ListItem } from '@material-ui/core';
+import { Box, Button, Divider, Link, List, ListItem } from '@material-ui/core';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
@@ -24,6 +24,8 @@ const Dashboard = () => {
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
 
       <TradesForDay />
+
+      <Divider />
 
       <PlanDash />
 

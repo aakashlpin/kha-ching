@@ -23,21 +23,48 @@ import {
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
-  INSTRUMENTS
+  INSTRUMENTS,
+  STRATEGIES
 } from '../../../lib/constants';
 
-const TradeSetupForm = ({
-  state,
-  onChange,
-  onSubmit,
-  isRunnable = true,
-  enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
-  exitStrategies = [
-    EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-    EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-  ]
-}) => {
+const TradeSetupForm = ({ strategy, state, onChange, onSubmit, isRunnable = true }) => {
   const isSchedulingDisabled = false;
+
+  const enabledInstruments =
+    strategy === STRATEGIES.ATM_STRADDLE
+      ? [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
+      : [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY];
+
+  const exitStrategies =
+    strategy === STRATEGIES.ATM_STRADDLE
+      ? [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
+      : [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X];
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const {
+      lots,
+      runNow,
+      runAt,
+      isAutoSquareOffEnabled,
+      squareOffTime,
+      slmPercent,
+      maxSkewPercent,
+      expireIfUnsuccessfulInMins
+    } = state;
+
+    const apiProps = {
+      lots: Number(lots),
+      slmPercent: Number(slmPercent),
+      maxSkewPercent: Number(maxSkewPercent),
+      expireIfUnsuccessfulInMins: Number(expireIfUnsuccessfulInMins),
+      runAt: runNow ? dayjs().format() : runAt,
+      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
+    };
+
+    onSubmit(apiProps);
+  };
 
   return (
     <form noValidate>
@@ -204,7 +231,7 @@ const TradeSetupForm = ({
               variant="contained"
               color="primary"
               type="button"
-              onClick={() => onSubmit()}
+              onClick={handleFormSubmit}
               disabled={isSchedulingDisabled}>
               {isSchedulingDisabled
                 ? `Schedule run`

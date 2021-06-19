@@ -5,33 +5,20 @@ import React, { useEffect, useState } from 'react';
 import TimeAgo from 'react-timeago';
 import useSWR from 'swr';
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants';
+import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import OrdersTable from './lib/ordersTable';
+import ATM_StraddleDetails from './trades/atmStraddle/TradeSetupDetails';
+import DOS_Details from './trades/directionalOptionSelling/TradeSetupDetails';
 
-const TradeDetails = (props) => {
-  const { data: jobDetails, error } = useSWR(
-    props.queue?.id ? `/api/get_job?id=${props.queue.id}` : null
-  );
-
+const WrapperComponent = (props) => {
   const strategyDetails = STRATEGIES_DETAILS[props.strategy];
-  const {
-    runAt,
-    runNow,
-    lots,
-    slmPercent,
-    instrument,
-    maxTrades,
-    martingaleIncrementSize,
-    queue
-  } = props;
-
-  const humanTime = dayjs(runAt).format('h.mma');
+  const humanTime = dayjs(props.runAt).format('h.mma');
   const Heading = () => (
     <>
-      #{queue.id} · {strategyDetails.heading}{' '}
-      {runNow ? (
+      #{props.queue.id} · {strategyDetails.heading}{' '}
+      {props.runNow ? (
         <>
-          was run <TimeAgo date={new Date(queue.timestamp)} />.
+          was run <TimeAgo date={new Date(props.queue.timestamp)} />.
         </>
       ) : (
         <>is scheduled to run at {humanTime}.</>
@@ -39,7 +26,7 @@ const TradeDetails = (props) => {
     </>
   );
 
-  const deleteDisclaimer = !runNow
+  const deleteDisclaimer = !props.runNow
     ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
     : null;
 
@@ -49,28 +36,13 @@ const TradeDetails = (props) => {
         <Heading />
       </h4>
 
-      <h2>{INSTRUMENT_DETAILS[instrument].displayName}</h2>
+      <h2>{INSTRUMENT_DETAILS[props.instrument].displayName}</h2>
 
-      <OrdersTable
-        headerItems={[
-          { title: 'Initial lots', align: 'right' },
-          { title: 'Additional lots', align: 'right' },
-          { title: 'Max trades', align: 'right' },
-          { title: 'SL(%)', align: 'right' }
-        ]}
-        rows={[
-          [
-            { value: lots, align: 'right' },
-            { value: martingaleIncrementSize, align: 'right' },
-            { value: maxTrades, align: 'right' },
-            { value: slmPercent, align: 'right' }
-          ]
-        ]}
-      />
+      {props.detailsComponent(props.strategy)}
 
-      <div>
+      {/* <div>
         <h3>Status: {jobDetails?.current_state?.toUpperCase() || 'Loading...'}</h3>
-      </div>
+      </div> */}
 
       <Grid item style={{ marginTop: 16 }}>
         {/* <div style={{ marginBottom: 16 }}>
@@ -103,15 +75,44 @@ const TradeDetails = (props) => {
   );
 };
 
+const TradeDetails = (props) => {
+  const { data: jobDetails, error } = useSWR(
+    props.queue?.id ? `/api/get_job?id=${props.queue.id}` : null
+  );
+
+  if (!jobDetails || error) {
+    return null;
+  }
+
+  return (
+    <WrapperComponent
+      {...props}
+      detailsComponent={(strategy) => {
+        switch (strategy) {
+          case STRATEGIES.ATM_STRADDLE:
+          case STRATEGIES.CM_WED_THURS: {
+            return <ATM_StraddleDetails {...jobDetails.job.data} />;
+          }
+          case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
+            return <DOS_Details {...jobDetails.job.data} />;
+          }
+          default:
+            return null;
+        }
+      }}
+    />
+  );
+};
+
 const TradesForDay = () => {
   const { data: trades, error } = useSWR('/api/trades_day');
   if (!trades?.length || error) {
-    return 'No trades setup yet!';
+    return null;
   }
 
   return (
     <div>
-      <h3>Trades setup for the day</h3>
+      <h3>Trades executed today</h3>
       {trades.map((trade) => (
         <TradeDetails key={trade._id} {...trade} />
       ))}

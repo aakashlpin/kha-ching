@@ -46,6 +46,34 @@ const TradeSetupForm = ({
 }) => {
   const isSchedulingDisabled = false;
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const {
+      lots,
+      runNow,
+      runAt,
+      isAutoSquareOffEnabled,
+      squareOffTime,
+      maxTrades,
+      martingaleIncrementSize,
+      strikeByPrice,
+      slmPercent
+    } = state;
+
+    const apiProps = {
+      lots: Number(lots),
+      martingaleIncrementSize: Number(martingaleIncrementSize),
+      slmPercent: Number(slmPercent),
+      maxTrades: Number(maxTrades),
+      runAt: runNow ? dayjs().format() : runAt,
+      strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
+      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
+    };
+
+    onSubmit(apiProps);
+  };
+
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
@@ -242,7 +270,7 @@ const TradeSetupForm = ({
               variant="contained"
               color="primary"
               type="button"
-              onClick={() => onSubmit()}
+              onClick={handleFormSubmit}
               disabled={isSchedulingDisabled}>
               {isSchedulingDisabled
                 ? `Schedule run`

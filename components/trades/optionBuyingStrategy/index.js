@@ -43,7 +43,7 @@ const notify = (message) =>
 
 const OptionBuyingStrategy = ({
   LOCALSTORAGE_KEY,
-  strategy,
+  strategy = STRATEGIES.OPTION_BUYING_STRATEGY,
   enabledInstruments,
   exitStrategies = [EXIT_STRATEGIES.OBS_TRAIL_SL]
 }) => {

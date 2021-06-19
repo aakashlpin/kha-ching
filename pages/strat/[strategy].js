@@ -4,14 +4,9 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import StratLayout from '../../components/StratLayout';
 import AtmStraddleSetup from '../../components/trades/atmStraddle';
-import DirectionalOptionSellingTradeSetup from '../../components/trades/DirectionalOptionSellingTradeSetup';
-import OptionBuyingStrategyTradeSetup from '../../components/trades/OptionBuyingStrategyTradeSetup';
-import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
-
-const STRADDLE_TRADE_LS_KEY = 'khaching/trades/straddle';
-const WED_THURS_TRADE_LS_KEY = 'khaching/trades/atm1x-otm2x';
-const DIRECTIONAL_OPTION_SELLING = 'khaching/trades/dos';
-const OPTION_BUYING_STRATEGY = 'khaching/trades/obs';
+import DirectionalOptionSellingTradeSetup from '../../components/trades/directionalOptionSelling';
+import OptionBuyingStrategyTradeSetup from '../../components/trades/optionBuyingStrategy';
+import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES } from '../../lib/constants';
 
 const Strategy = () => {
   const router = useRouter();
@@ -22,9 +17,8 @@ const Strategy = () => {
       return (
         <StratLayout>
           <AtmStraddleSetup
-            LOCALSTORAGE_KEY={STRADDLE_TRADE_LS_KEY}
             strategy={STRATEGIES.ATM_STRADDLE}
-            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
+            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]}
             exitStrategies={[
               EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
               EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
@@ -37,7 +31,6 @@ const Strategy = () => {
       return (
         <StratLayout>
           <AtmStraddleSetup
-            LOCALSTORAGE_KEY={WED_THURS_TRADE_LS_KEY}
             strategy={STRATEGIES.CM_WED_THURS}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]}
@@ -48,7 +41,7 @@ const Strategy = () => {
     case 'dos': {
       return (
         <StratLayout>
-          <DirectionalOptionSellingTradeSetup LOCALSTORAGE_KEY={DIRECTIONAL_OPTION_SELLING} />
+          <DirectionalOptionSellingTradeSetup />
         </StratLayout>
       );
     }
@@ -56,8 +49,6 @@ const Strategy = () => {
       return (
         <StratLayout>
           <OptionBuyingStrategyTradeSetup
-            LOCALSTORAGE_KEY={OPTION_BUYING_STRATEGY}
-            strategy={STRATEGIES.OPTION_BUYING_STRATEGY}
             enabledInstruments={[INSTRUMENTS.BANKNIFTY]}
             exitStrategies={[EXIT_STRATEGIES.OBS_TRAIL_SL]}
           />
@@ -66,9 +57,9 @@ const Strategy = () => {
     }
     default: {
       return (
-        <Layout>
+        <StratLayout>
           <Link href="/dashboard">Nothing here. Go back to dashboard!</Link>
-        </Layout>
+        </StratLayout>
       );
     }
   }

@@ -64,6 +64,7 @@ const PlanDash = () => {
       plan_ref: plan._id,
       runNow
     });
+    mutate('/api/trades_day');
   }
 
   const enableAllSchedule = plans[dayOfWeek]?.every((plan) => dayjs().isBefore(dayjs(plan.runAt)));
@@ -73,9 +74,17 @@ const PlanDash = () => {
     mutate('/api/trades_day');
   }
 
+  const pendingTrades = plans[dayOfWeek]?.filter(
+    (plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id)
+  );
+
+  if (!pendingTrades.length) {
+    return null;
+  }
+
   return (
     <div>
-      <h3>Your saved day plan</h3>
+      <h3>Pending trades as per plan</h3>
       {plans[dayOfWeek] && enableAllSchedule ? (
         <Button
           variant="contained"
@@ -85,51 +94,49 @@ const PlanDash = () => {
           1-click schedule all
         </Button>
       ) : null}
-      {plans[dayOfWeek]
-        ?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id))
-        .map((plan) => {
-          return (
-            <div key={plan._id}>
-              <Paper style={{ padding: 16, marginBottom: 32 }}>
-                <h4>{STRATEGIES_DETAILS[plan.strategy].heading}</h4>
+      {pendingTrades.map((plan) => {
+        return (
+          <div key={plan._id}>
+            <Paper style={{ padding: 16, marginBottom: 32 }}>
+              <h4>{STRATEGIES_DETAILS[plan.strategy].heading}</h4>
 
-                <h2>{INSTRUMENT_DETAILS[plan.instrument].displayName}</h2>
+              <h2>{INSTRUMENT_DETAILS[plan.instrument].displayName}</h2>
 
-                <OrdersTable
-                  headerItems={[
-                    { title: 'Initial Qty.', align: 'right' },
-                    { title: 'Martingale additional lots', align: 'right' },
-                    { title: 'Maximum trades', align: 'right' },
-                    { title: 'SLM %', align: 'right' }
-                  ]}
-                  rows={[
-                    [
-                      {
-                        value: plan.lots * INSTRUMENT_DETAILS[plan.instrument].lotSize,
-                        align: 'right'
-                      },
-                      { value: plan.martingaleIncrementSize, align: 'right' },
-                      { value: plan.maxTrades, align: 'right' },
-                      { value: plan.slmPercent, align: 'right' }
-                    ]
-                  ]}
-                />
+              <OrdersTable
+                headerItems={[
+                  { title: 'Initial Qty.', align: 'right' },
+                  { title: 'Martingale additional lots', align: 'right' },
+                  { title: 'Maximum trades', align: 'right' },
+                  { title: 'SLM %', align: 'right' }
+                ]}
+                rows={[
+                  [
+                    {
+                      value: plan.lots * INSTRUMENT_DETAILS[plan.instrument].lotSize,
+                      align: 'right'
+                    },
+                    { value: plan.martingaleIncrementSize, align: 'right' },
+                    { value: plan.maxTrades, align: 'right' },
+                    { value: plan.slmPercent, align: 'right' }
+                  ]
+                ]}
+              />
 
-                <div>
-                  <h3>Status: Unscheduled</h3>
-                </div>
+              <div>
+                <h3>Status: Unscheduled</h3>
+              </div>
 
-                <Grid item style={{ marginTop: 16 }}>
-                  <Button variant="contained" type="button" onClick={() => handleScheduleJob(plan)}>
-                    {dayjs().isBefore(dayjs(plan.runAt))
-                      ? `Schedule for ${dayjs(plan.runAt).format('hh:mm a')}`
-                      : `Run now`}
-                  </Button>
-                </Grid>
-              </Paper>
-            </div>
-          );
-        })}
+              <Grid item style={{ marginTop: 16 }}>
+                <Button variant="contained" type="button" onClick={() => handleScheduleJob(plan)}>
+                  {dayjs().isBefore(dayjs(plan.runAt))
+                    ? `Schedule for ${dayjs(plan.runAt).format('hh:mm a')}`
+                    : `Run now`}
+                </Button>
+              </Grid>
+            </Paper>
+          </div>
+        );
+      })}
     </div>
   );
 };
