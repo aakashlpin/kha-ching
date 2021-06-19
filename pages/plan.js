@@ -17,6 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import DoneIcon from '@material-ui/icons/Done';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import axios from 'axios';
+import { omit } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
@@ -125,19 +126,13 @@ const Plan = () => {
     });
   };
 
-  const onClickConfigureStrategy = ({ dayOfWeek, selectedStrategy }) => {
-    setCurrentEditDay(dayOfWeek);
-    setCurrentEditStrategy(selectedStrategy);
-    handleOpen();
-  };
-
   const getDefaultState = (strategy) => ({
     ...STRATEGIES_DETAILS[strategy].defaultFormState,
     ...getSchedulingStateProps(strategy)
   });
 
-  const [stratState, setStratState] = useState(() => {
-    return [
+  const resetDefaultStratState = () =>
+    [
       STRATEGIES.ATM_STRADDLE,
       STRATEGIES.CM_WED_THURS,
       STRATEGIES.DIRECTIONAL_OPTION_SELLING
@@ -148,7 +143,15 @@ const Plan = () => {
       }),
       {}
     );
-  });
+
+  const [stratState, setStratState] = useState(resetDefaultStratState);
+
+  const onClickConfigureStrategy = ({ dayOfWeek, selectedStrategy }) => {
+    setCurrentEditDay(dayOfWeek);
+    setCurrentEditStrategy(selectedStrategy);
+    setStratState(resetDefaultStratState());
+    handleOpen();
+  };
 
   const stratOnChangeHandler = (changedProps, strategy) => {
     if (changedProps.instruments) {
@@ -173,6 +176,10 @@ const Plan = () => {
     }
   };
 
+  const cleanupForRemoteSync = (props) => {
+    return omit(props, ['instruments', 'disableInstrumentChange']);
+  };
+
   const commonOnSubmitHandler = async () => {
     const selectedConfig = stratState[currentEditStrategy];
     console.log('commonOnSubmitHandler', selectedConfig);
@@ -183,7 +190,7 @@ const Plan = () => {
       await axios.put(`/api/plan`, {
         _id: selectedConfig._id,
         dayOfWeek: currentEditDay,
-        config: selectedConfig
+        config: cleanupForRemoteSync(selectedConfig)
       });
 
       updatedConfig = { [selectedConfig._id]: selectedConfig };
@@ -195,7 +202,8 @@ const Plan = () => {
           ...selectedConfig,
           instrument,
           strategy: currentEditStrategy
-        }));
+        }))
+        .map(cleanupForRemoteSync);
 
       const { data: newStrategyConfig } = await axios.post(`/api/plan`, {
         dayOfWeek: currentEditDay,
@@ -231,7 +239,11 @@ const Plan = () => {
     setCurrentEditStrategy(strategy);
     setStratState({
       ...stratState,
-      [strategy]: stratConfig
+      [strategy]: {
+        ...stratConfig,
+        instruments: { [stratConfig.instrument]: true },
+        disableInstrumentChange: true
+      }
     });
 
     handleOpen();

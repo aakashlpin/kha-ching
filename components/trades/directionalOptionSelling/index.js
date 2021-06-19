@@ -2,6 +2,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { omit } from 'lodash';
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -40,7 +42,6 @@ const notify = (message) =>
   });
 
 const DirectionTradeSetup = ({
-  LOCALSTORAGE_KEY,
   strategy = STRATEGIES.DIRECTIONAL_OPTION_SELLING,
   enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
   exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND],
@@ -49,19 +50,20 @@ const DirectionTradeSetup = ({
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
   ]
 }) => {
+  const router = useRouter();
   const { heading } = STRATEGIES_DETAILS[strategy];
-  const [db, setDb] = useState(() => {
-    const existingDb =
-      typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
-        ? JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY))
-        : null;
+  // const [db, setDb] = useState(() => {
+  //   const existingDb =
+  //     typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
+  //       ? JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY))
+  //       : null;
 
-    if (!existingDb) {
-      return {};
-    }
+  //   if (!existingDb) {
+  //     return {};
+  //   }
 
-    return existingDb;
-  });
+  //   return existingDb;
+  // });
 
   const getDefaultState = () => ({
     ...STRATEGIES_DETAILS[strategy].defaultFormState,
@@ -70,18 +72,18 @@ const DirectionTradeSetup = ({
 
   const [state, setState] = useState(getDefaultState());
 
-  useEffect(() => {
-    async function fn() {
-      try {
-        if (!Object.isExtensible(db)) return;
-        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(db));
-      } catch (e) {
-        console.log(e);
-      }
-    }
+  // useEffect(() => {
+  //   async function fn() {
+  //     try {
+  //       if (!Object.isExtensible(db)) return;
+  //       localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(db));
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   }
 
-    fn();
-  }, [db]);
+  //   fn();
+  // }, [db]);
 
   const onSubmit = async (e) => {
     e && e.preventDefault();
@@ -97,22 +99,41 @@ const DirectionTradeSetup = ({
       }
     }
 
+    function handleSyncJob(props) {
+      return axios.post('/api/trades_day', props);
+    }
+
     try {
-      const { data } = await handleCreateJob({ ...state, strategy });
-      setDb((exDb) => ({
-        queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
-      }));
+      const trades = await Promise.all(
+        Object.keys(state.instruments)
+          .filter((key) => state.instruments[key])
+          .map((instrument) =>
+            handleSyncJob({
+              ...omit(state, ['instruments']),
+              instrument,
+              strategy
+            })
+          )
+      );
+      console.log(trades);
+      // const { data } = await handleSyncJob({ ...state, strategy });
+      // const { data } = await handleCreateJob({ ...state, strategy });
+      // setDb((exDb) => ({
+      //   queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
+      // }));
       setState(getDefaultState());
 
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      // window.scrollTo({
+      //   top: 0,
+      //   behavior: 'smooth'
+      // });
+
+      router.push('/dashboard');
     } catch (e) {
-      if (e.response) {
-        notify(e.response.data);
-      }
-      console.error(e);
+      // if (e.response) {
+      //   notify(e.response.data);
+      // }
+      // console.error(e);
     }
   };
 
@@ -123,11 +144,11 @@ const DirectionTradeSetup = ({
       throw new Error('onDeleteJob called without jobId');
     }
 
-    const queueWithoutJobId = db.queue.filter((job) => job.id !== jobId);
-    setDb((exDb) => ({
-      ...exDb,
-      queue: queueWithoutJobId
-    }));
+    // const queueWithoutJobId = db.queue.filter((job) => job.id !== jobId);
+    // setDb((exDb) => ({
+    //   ...exDb,
+    //   queue: queueWithoutJobId
+    // }));
 
     try {
       await axios.post('/api/delete_job', {
@@ -147,11 +168,11 @@ const DirectionTradeSetup = ({
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
-      {db.queue?.length
+      {/* {db.queue?.length
         ? db.queue.map((job) => (
             <Details key={job.name} job={job} strategy={strategy} onDeleteJob={onDeleteJob} />
           ))
-        : null}
+        : null} */}
       <Form
         state={state}
         onChange={onChange}

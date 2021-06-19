@@ -62,6 +62,7 @@ const TradeSetupForm = ({
                     control={
                       <Checkbox
                         name="instruments"
+                        disabled={state.disableInstrumentChange}
                         checked={state.instruments[instrument]}
                         onChange={() => {
                           onChange({

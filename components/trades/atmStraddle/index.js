@@ -22,7 +22,7 @@ const AtmStraddle = ({
   enabledInstruments,
   exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 }) => {
-  const { heading, defaultRunAt } = STRATEGIES_DETAILS[strategy];
+  const { heading } = STRATEGIES_DETAILS[strategy];
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
@@ -40,27 +40,6 @@ const AtmStraddle = ({
     ...STRATEGIES_DETAILS[strategy].defaultFormState,
     ...getSchedulingStateProps(strategy)
   });
-
-  // {
-  //   return {
-  //     instruments: enabledInstruments.reduce(
-  //       (accum, item) => ({
-  //         ...accum,
-  //         [item]: false
-  //       }),
-  //       {}
-  //     ),
-  //     lots: defaultLots,
-  //     maxSkewPercent: process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT,
-  //     slmPercent: process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
-  //     runNow: false,
-  //     runAt: getScheduleableTradeTime(),
-  //     expireIfUnsuccessfulInMins: 10,
-  //     exitStrategy: exitStrategies[0],
-  //     isAutoSquareOffEnabled: true,
-  //     squareOffTime: getDefaultSquareOffTime()
-  //   };
-  // }
 
   const [state, setState] = useState(getDefaultState());
 

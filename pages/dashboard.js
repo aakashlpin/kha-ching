@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import Footer from '../components/Footer';
 import Layout from '../components/Layout';
 import PlanDash from '../components/PlanDash';
+import TradesForDay from '../components/TradesForDay';
 import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 import useUser from '../lib/useUser';
 
@@ -21,6 +22,8 @@ const Dashboard = () => {
   return (
     <Layout>
       <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
+
+      <TradesForDay />
 
       <PlanDash />
 
