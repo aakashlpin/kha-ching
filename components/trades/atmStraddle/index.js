@@ -97,20 +97,6 @@ const AtmStraddle = ({ strategy }) => {
 
   const onChange = (props) => commonOnChangeHandler(props, state, setState);
 
-  // const onDeleteJob = async ({ jobId } = {}) => {
-  //   if (!jobId) {
-  //     throw new Error('onDeleteJob called without jobId');
-  //   }
-
-  //   try {
-  //     await axios.post('/api/delete_job', {
-  //       id: jobId
-  //     });
-  //   } catch (e) {
-  //     console.log('error deleting job', e);
-  //   }
-  // };
-
   useEffect(() => {
     if (state.runNow) {
       onSubmit();

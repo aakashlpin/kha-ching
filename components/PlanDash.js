@@ -78,7 +78,7 @@ const PlanDash = () => {
     (plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id)
   );
 
-  if (!pendingTrades.length) {
+  if (!pendingTrades?.length) {
     return null;
   }
 

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { pick } from 'lodash';
 
+import { tradingQueue } from '../../lib/queue';
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
 
 import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
@@ -22,15 +24,15 @@ async function createJob({ jobData, user }) {
   } = jobData;
 
   if (STRATEGIES_DETAILS[strategy].premium && !process.env.SIGNALX_API_KEY?.length) {
-    return Promise.reject('Please upgrade to Khaching Premium to use this strategy!');
+    return Promise.reject('You need SignalX Premium to use this strategy.');
   }
 
   if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
-    return Promise.reject('Market is closed right now!');
+    return Promise.reject('Exchange is offline right now.');
   }
 
   if (!MOCK_ORDERS && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
-    return Promise.reject('Market would be closed at the scheduled time!');
+    return Promise.reject('Exchange would be offline at the scheduled time.');
   }
 
   const qRes = addToNextQueue(
@@ -55,6 +57,20 @@ async function createJob({ jobData, user }) {
   );
 
   return qRes;
+}
+
+async function deleteJob(id) {
+  try {
+    if (id.includes('repeat')) {
+      await tradingQueue.removeRepeatableByKey(id);
+    } else {
+      const job = await tradingQueue.getJob(id);
+      await job.remove();
+    }
+  } catch (e) {
+    console.log('[deleteJob] failed', e);
+    return Promise.reject(e);
+  }
 }
 
 export default withSession(async (req, res) => {
@@ -83,13 +99,16 @@ export default withSession(async (req, res) => {
     );
 
     try {
-      const qRes = await createJob({ jobData: data, user });
+      const qRes = await createJob({
+        jobData: data,
+        user
+      });
       await axios.put(
         `${endpoint}/${data._id}`,
         {
           ...data,
-          status: 'QUEUED',
-          queue: qRes
+          status: 'QUEUE',
+          queue: pick(qRes, ['id', 'name', 'opts', 'timestamp', 'stacktrace', 'returnvalue'])
         },
         SIGNALX_AXIOS_DB_AUTH
       );
@@ -99,7 +118,7 @@ export default withSession(async (req, res) => {
         `${endpoint}/${data._id}`,
         {
           ...data,
-          status: 'REJECTED',
+          status: 'REJECT',
           status_message: e
         },
         SIGNALX_AXIOS_DB_AUTH
@@ -107,6 +126,15 @@ export default withSession(async (req, res) => {
 
       return res.json(data);
     }
+  }
+
+  if (req.method === 'DELETE') {
+    const { data } = await axios(`${endpoint}/${req.body._id}`);
+    if (data.queue.id) {
+      await deleteJob(data.queue.id);
+    }
+    await axios.delete(`${endpoint}/${req.body._id}`, SIGNALX_AXIOS_DB_AUTH);
+    return res.end();
   }
 
   if (req.method === 'GET') {
