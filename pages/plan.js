@@ -314,7 +314,9 @@ const Plan = () => {
 
   return (
     <Layout>
-      <h1>Day-wise trade setup</h1>
+      <Typography variant="h5" component="h1" style={{ marginBottom: 16 }}>
+        Your daily trade plan
+      </Typography>
       {Object.keys(dayState).map((dayOfWeek) => {
         const dayProps = dayState[dayOfWeek];
         return (

@@ -1,3 +1,5 @@
+import { Typography } from '@material-ui/core';
+import { Link } from '@material-ui/core';
 import { Button, Grid, Paper } from '@material-ui/core';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -10,8 +12,9 @@ import TradeDetails from './lib/tradeDetails';
 const PlanDash = () => {
   const [plans, setPlans] = useState({});
   const { data: tradesDay, error } = useSWR('/api/trades_day');
-  // const dayOfWeek = dayjs().format('dddd').toLowerCase();
-  const dayOfWeek = 'monday';
+  const dayOfWeekHuman = dayjs().format('dddd');
+  const dayOfWeek = dayOfWeekHuman.toLowerCase();
+  // const dayOfWeek = 'monday';
 
   useEffect(() => {
     async function fn() {
@@ -88,7 +91,19 @@ const PlanDash = () => {
   const pendingTrades = getPendingTrades();
 
   if (!pendingTrades?.length) {
-    return null;
+    if (plans[dayOfWeek]) {
+      return (
+        <Typography variant="">
+          You&apos;ve scheduled all trades as per plan. Check "Today" tab for details.
+        </Typography>
+      );
+    }
+    return (
+      <Typography variant="">
+        You don&apos;t have a plan for {dayOfWeekHuman} yet. Create one{' '}
+        <Link href="/plan">here</Link>.
+      </Typography>
+    );
   }
 
   const scheduleableTrades = getScheduleableTrades();

@@ -56,6 +56,11 @@ const Header = () => {
               <a>Dashboard</a>
             </Link>
           </li>
+          <li>
+            <Link href="/plan">
+              <a>Trade Plan</a>
+            </Link>
+          </li>
           {!user?.isLoggedIn && (
             <li>
               <Link href="/">
