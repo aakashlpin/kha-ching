@@ -1,5 +1,4 @@
 import axios from 'axios';
-import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -55,44 +54,6 @@ const AtmStraddle = ({ strategy }) => {
       // }
       // console.error(e);
     }
-
-    // const {
-    //   lots,
-    //   maxSkewPercent,
-    //   slmPercent,
-    //   runNow,
-    //   runAt,
-    //   expireIfUnsuccessfulInMins,
-    //   exitStrategy,
-    //   isAutoSquareOffEnabled,
-    //   squareOffTime
-    // } = state;
-
-    // const jobProps = {
-    //   instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
-    //   lots,
-    //   maxSkewPercent,
-    //   slmPercent,
-    //   runNow,
-    //   runAt: runNow ? dayjs().format() : runAt,
-    //   expireIfUnsuccessfulInMins,
-    //   strategy,
-    //   exitStrategy,
-    //   isAutoSquareOffEnabled,
-    //   squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
-    // };
-
-    // try {
-    //   const { data } = await axios.post('/api/create_job', jobProps);
-    //   setState(getDefaultState());
-
-    //   window.scrollTo({
-    //     top: 0,
-    //     behavior: 'smooth'
-    //   });
-    // } catch (e) {
-    //   console.error(e);
-    // }
   };
 
   const onChange = (props) => commonOnChangeHandler(props, state, setState);

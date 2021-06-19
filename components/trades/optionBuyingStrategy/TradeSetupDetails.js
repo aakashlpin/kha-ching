@@ -75,21 +75,6 @@ const Details = ({ job, strategy, onDeleteJob }) => {
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
-        {/* <div style={{ marginBottom: 16 }}>
-          {jobDetails?.current_state === 'completed' ? (
-            <OrdersTable
-              rows={jobDetails.job.returnvalue.rawKiteOrdersResponse.map((row) => {
-                const [item] = row;
-                return {
-                  product: item.product,
-                  instrument: item.tradingsymbol,
-                  qty: item.quantity * (item.transaction_type === 'SELL' ? -1 : 1),
-                  avg: item.average_price
-                };
-              })}
-            />
-          ) : null}
-        </div> */}
         <Button
           variant="contained"
           type="button"

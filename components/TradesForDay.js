@@ -6,7 +6,6 @@ import TimeAgo from 'react-timeago';
 import useSWR, { mutate } from 'swr';
 
 import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
-import OrdersTable from './lib/ordersTable';
 import ATM_StraddleDetails from './trades/atmStraddle/TradeSetupDetails';
 import DOS_Details from './trades/directionalOptionSelling/TradeSetupDetails';
 
