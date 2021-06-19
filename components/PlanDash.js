@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants';
-import OrdersTable from './lib/ordersTable';
+import TradeDetails from './lib/tradeDetails';
 
 const PlanDash = () => {
   const [plans, setPlans] = useState({});
@@ -87,44 +87,25 @@ const PlanDash = () => {
       <h3>Pending trades as per plan</h3>
       {plans[dayOfWeek] && enableAllSchedule ? (
         <Button
+          style={{ marginBottom: 18 }}
           variant="contained"
           color="primary"
           type="button"
           onClick={handleScheduleEverything}>
-          1-click schedule all
+          Schedule all trades
         </Button>
       ) : null}
-      {pendingTrades.map((plan) => {
+      {pendingTrades.map((plan, idx) => {
         return (
           <div key={plan._id}>
             <Paper style={{ padding: 16, marginBottom: 32 }}>
-              <h4>{STRATEGIES_DETAILS[plan.strategy].heading}</h4>
+              <h4>
+                {idx + 1} · {STRATEGIES_DETAILS[plan.strategy].heading}
+              </h4>
 
               <h2>{INSTRUMENT_DETAILS[plan.instrument].displayName}</h2>
 
-              <OrdersTable
-                headerItems={[
-                  { title: 'Initial Qty.', align: 'right' },
-                  { title: 'Martingale additional lots', align: 'right' },
-                  { title: 'Maximum trades', align: 'right' },
-                  { title: 'SLM %', align: 'right' }
-                ]}
-                rows={[
-                  [
-                    {
-                      value: plan.lots * INSTRUMENT_DETAILS[plan.instrument].lotSize,
-                      align: 'right'
-                    },
-                    { value: plan.martingaleIncrementSize, align: 'right' },
-                    { value: plan.maxTrades, align: 'right' },
-                    { value: plan.slmPercent, align: 'right' }
-                  ]
-                ]}
-              />
-
-              <div>
-                <h3>Status: Unscheduled</h3>
-              </div>
+              <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
 
               <Grid item style={{ marginTop: 16 }}>
                 <Button variant="contained" type="button" onClick={() => handleScheduleJob(plan)}>

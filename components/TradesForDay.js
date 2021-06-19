@@ -1,13 +1,12 @@
 import { Button, Grid, Paper, Typography } from '@material-ui/core';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import TimeAgo from 'react-timeago';
 import useSWR, { mutate } from 'swr';
 
-import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
-import ATM_StraddleDetails from './trades/atmStraddle/TradeSetupDetails';
-import DOS_Details from './trades/directionalOptionSelling/TradeSetupDetails';
+import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants';
+import TradeDetails from './lib/tradeDetails';
 
 const WrapperComponent = (props) => {
   const jobWasQueued = props.status !== 'REJECT' && props.queue?.id;
@@ -16,7 +15,7 @@ const WrapperComponent = (props) => {
   );
 
   const strategyDetails = STRATEGIES_DETAILS[props.strategy];
-  const humanTime = dayjs(props.runAt).format('h.mma');
+  const humanTime = dayjs(props.runAt).format('hh:mma');
   const isJobPastScheduledTime = props.runNow || dayjs().isAfter(props.runAt);
   const Heading = () => {
     if (!jobWasQueued) {
@@ -39,18 +38,14 @@ const WrapperComponent = (props) => {
         #{props.queue.id} · {strategyDetails.heading}{' '}
         {isJobPastScheduledTime ? (
           <>
-            was run <TimeAgo date={new Date(props.queue.timestamp)} />.
+            was run <TimeAgo date={new Date(props.queue.timestamp)} />
           </>
         ) : (
-          <>is scheduled to run at {humanTime}.</>
+          <>will run at {humanTime}</>
         )}
       </Typography>
     );
   };
-
-  const deleteDisclaimer = !props.runNow
-    ? `⏰ This task can be safely deleted before the clock hits ${humanTime}.`
-    : null;
 
   const handleDeleteTrade = async (tradeId) => {
     try {
@@ -66,8 +61,10 @@ const WrapperComponent = (props) => {
   };
 
   return (
-    <Paper style={{ padding: 16, marginBottom: 32 }}>
-      <Heading />
+    <Paper style={{ marginBottom: 24, padding: 16 }}>
+      <h4>
+        <Heading />
+      </h4>
 
       <h2>{INSTRUMENT_DETAILS[props.instrument].displayName}</h2>
 
@@ -78,18 +75,14 @@ const WrapperComponent = (props) => {
           <h3>
             Status: {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
           </h3>
-          {!isJobPastScheduledTime ? (
+          {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state) ? (
             <Grid item style={{ marginTop: 16 }}>
               <Button
                 variant="contained"
                 type="button"
-                onClick={() => handleDeleteTrade(props._id)}
-                disabled={jobDetails?.current_state === 'active'}>
+                onClick={() => handleDeleteTrade(props._id)}>
                 Delete trade
               </Button>
-              {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer ? (
-                <p>{deleteDisclaimer}</p>
-              ) : null}
             </Grid>
           ) : null}
         </>
@@ -97,25 +90,6 @@ const WrapperComponent = (props) => {
     </Paper>
   );
 };
-
-const TradeDetails = (props) => (
-  <WrapperComponent
-    {...props}
-    detailsComponent={(strategy) => {
-      switch (strategy) {
-        case STRATEGIES.ATM_STRADDLE:
-        case STRATEGIES.CM_WED_THURS: {
-          return <ATM_StraddleDetails {...props} />;
-        }
-        case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
-          return <DOS_Details {...props} />;
-        }
-        default:
-          return null;
-      }
-    }}
-  />
-);
 
 const TradesForDay = () => {
   const { data: trades, error } = useSWR('/api/trades_day');
@@ -125,9 +99,13 @@ const TradesForDay = () => {
 
   return (
     <div>
-      <h3>Trades executed today</h3>
+      <h3>Your trades today</h3>
       {trades.map((trade) => (
-        <TradeDetails key={trade._id} {...trade} />
+        <WrapperComponent
+          key={trade._id}
+          {...trade}
+          detailsComponent={(strategy) => <TradeDetails strategy={strategy} tradeDetails={trade} />}
+        />
       ))}
     </div>
   );

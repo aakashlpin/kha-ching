@@ -21,12 +21,12 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <h1>{dayjs().format('dddd')}&apos;s trade setup</h1>
+      <h1>
+        {dayjs().format('dddd')} — {dayjs().format('DD MMM YYYY')}
+      </h1>
 
       <TradesForDay />
-
       <Divider />
-
       <PlanDash />
 
       <List style={{ marginBottom: '60px' }}>

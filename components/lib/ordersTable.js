@@ -18,7 +18,7 @@ export default function OrdersTable({ headerItems, rows }) {
   const classes = useStyles();
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table className={classes.table} size="small">
         <TableHead>
           <TableRow>
