@@ -84,7 +84,6 @@ const PlanDash = () => {
 
   return (
     <div>
-      <h3>Pending trades as per plan</h3>
       {plans[dayOfWeek] && enableAllSchedule ? (
         <Button
           style={{ marginBottom: 18 }}

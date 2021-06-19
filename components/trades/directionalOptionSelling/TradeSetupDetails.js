@@ -1,23 +1,20 @@
+import dayjs from 'dayjs';
 import React from 'react';
 
 import OrdersTable from '../../lib/ordersTable';
 
-const Details = ({ lots, martingaleIncrementSize, maxTrades, slmPercent }) => {
+const Details = ({ lots, martingaleIncrementSize, instrument, maxTrades, slmPercent, runAt }) => {
+  const humanTime = dayjs(runAt).format('hh:mma');
+
   return (
     <OrdersTable
-      headerItems={[
-        { title: 'Initial lots', align: 'right' },
-        { title: 'Martingale lots', align: 'right' },
-        { title: 'Maximum trades', align: 'right' },
-        { title: 'SLM %', align: 'right' }
-      ]}
       rows={[
-        [
-          { value: lots, align: 'right' },
-          { value: martingaleIncrementSize, align: 'right' },
-          { value: maxTrades, align: 'right' },
-          { value: slmPercent, align: 'right' }
-        ]
+        [{ value: 'Instrument' }, { value: instrument }],
+        [{ value: 'Initial lots' }, { value: lots }],
+        [{ value: 'Martingale lots' }, { value: martingaleIncrementSize }],
+        [{ value: 'Maximum trades' }, { value: maxTrades }],
+        [{ value: 'SLM %' }, { value: slmPercent }],
+        [{ value: dayjs().isBefore(runAt) ? 'ETA' : 'Run at' }, { value: humanTime }]
       ]}
     />
   );

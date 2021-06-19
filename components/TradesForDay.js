@@ -15,7 +15,6 @@ const WrapperComponent = (props) => {
   );
 
   const strategyDetails = STRATEGIES_DETAILS[props.strategy];
-  const humanTime = dayjs(props.runAt).format('hh:mma');
   const isJobPastScheduledTime = props.runNow || dayjs().isAfter(props.runAt);
   const Heading = () => {
     if (!jobWasQueued) {
@@ -25,24 +24,28 @@ const WrapperComponent = (props) => {
             <Typography variant="p" color="error">
               FAILED: {props.status_message}
             </Typography>
-            <p>{strategyDetails.heading}</p>
+            <Typography variant="p">{strategyDetails.heading}</Typography>
           </>
         );
       } else {
-        return <>Something went wrong!</>;
+        return (
+          <Typography variant="p" color="error">
+            Something went wrong!
+          </Typography>
+        );
       }
     }
 
     return (
       <Typography variant="p" color="">
-        #{props.queue.id} · {strategyDetails.heading}{' '}
-        {isJobPastScheduledTime ? (
+        #{props.queue.id} · {strategyDetails.heading}
+        {/* {isJobPastScheduledTime ? (
           <>
             was run <TimeAgo date={new Date(props.queue.timestamp)} />
           </>
         ) : (
           <>will run at {humanTime}</>
-        )}
+        )} */}
       </Typography>
     );
   };
@@ -62,19 +65,18 @@ const WrapperComponent = (props) => {
 
   return (
     <Paper style={{ marginBottom: 24, padding: 16 }}>
-      <h4>
+      <Typography variant="subtitle2" style={{ marginBottom: 16 }}>
         <Heading />
-      </h4>
+      </Typography>
 
-      <h2>{INSTRUMENT_DETAILS[props.instrument].displayName}</h2>
-
-      {props.detailsComponent(props.strategy)}
+      <div style={{ marginBottom: 16 }}>{props.detailsComponent(props.strategy, jobDetails)}</div>
 
       {jobWasQueued ? (
         <>
-          <h3>
-            Status: {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
-          </h3>
+          <Typography variant="subtitle2">
+            Live status —{' '}
+            {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
+          </Typography>
           {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state) ? (
             <Grid item style={{ marginTop: 16 }}>
               <Button
@@ -99,12 +101,13 @@ const TradesForDay = () => {
 
   return (
     <div>
-      <h3>Your trades today</h3>
       {trades.map((trade) => (
         <WrapperComponent
           key={trade._id}
           {...trade}
-          detailsComponent={(strategy) => <TradeDetails strategy={strategy} tradeDetails={trade} />}
+          detailsComponent={(strategy, jobDetails) => (
+            <TradeDetails strategy={strategy} tradeDetails={trade} jobDetails={jobDetails} />
+          )}
         />
       ))}
     </div>

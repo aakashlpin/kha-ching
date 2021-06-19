@@ -1,24 +1,20 @@
+import dayjs from 'dayjs';
 import React from 'react';
 
 import { EXIT_STRATEGIES_DETAILS } from '../../../lib/constants';
 import OrdersTable from '../../lib/ordersTable';
 
-const Details = ({ lots, maxSkewPercent, exitStrategy, slmPercent }) => {
+const Details = ({ lots, maxSkewPercent, instrument, exitStrategy, slmPercent, runAt }) => {
+  const humanTime = dayjs(runAt).format('hh:mma');
   return (
     <OrdersTable
-      headerItems={[
-        { title: 'Lots', align: 'right' },
-        { title: 'Skew %', align: 'right' },
-        { title: 'Exit Strategy' },
-        { title: 'SLM %', align: 'right' }
-      ]}
       rows={[
-        [
-          { value: lots, align: 'right' },
-          { value: maxSkewPercent, align: 'right' },
-          { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label },
-          { value: slmPercent, align: 'right' }
-        ]
+        [{ value: 'Instrument' }, { value: instrument }],
+        [{ value: 'Lots' }, { value: lots }],
+        [{ value: 'Skew %' }, { value: maxSkewPercent }],
+        [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
+        [{ value: 'SLM %' }, { value: slmPercent }],
+        [{ value: dayjs().isBefore(runAt) ? 'ETA' : 'Run at' }, { value: humanTime }]
       ]}
     />
   );
