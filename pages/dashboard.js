@@ -5,6 +5,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Typography from '@material-ui/core/Typography';
+import Alert from '@material-ui/lab/Alert';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
@@ -45,7 +46,7 @@ function a11yProps(index) {
   };
 }
 
-const Dashboard = () => {
+const Dashboard = ({ hasDbSetup }) => {
   const { user } = useUser({ redirectTo: '/' });
   const router = useRouter();
   const [value, setValue] = useState(() => (router.query?.tabId ? Number(router.query.tabId) : 1));
@@ -67,6 +68,16 @@ const Dashboard = () => {
       <Typography component="h1" variant="h6" style={{ marginBottom: 24, textAlign: 'center' }}>
         {dayjs().format('dddd')} / {dayjs().format('DD MMM YYYY')}
       </Typography>
+
+      {!hasDbSetup ? (
+        <Alert variant="outlined" severity="error" style={{ marginBottom: 24 }}>
+          [IMP] Your app no longer works. Follow upgrade instruction{' '}
+          <Link href="https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2">
+            here
+          </Link>
+          .
+        </Alert>
+      ) : null}
 
       <AppBar position="static" color="default">
         <Tabs
@@ -129,5 +140,18 @@ const Dashboard = () => {
     </Layout>
   );
 };
+
+export async function getStaticProps(context) {
+  const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL;
+  const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY;
+  const DATABASE_API_KEY = process.env.DATABASE_API_KEY;
+
+  const hasDbSetup = !!(DATABASE_HOST_URL && DATABASE_USER_KEY && DATABASE_API_KEY);
+  return {
+    props: {
+      hasDbSetup
+    } // will be passed to the page component as props
+  };
+}
 
 export default Dashboard;

@@ -36,6 +36,7 @@ const TradeSetupForm = ({
   state,
   onChange,
   onSubmit,
+  onCancel,
   isRunnable = true,
   enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
   exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND],
@@ -276,6 +277,17 @@ const TradeSetupForm = ({
                 ? `Schedule run`
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
+            {!isRunnable ? (
+              <Button
+                variant="contained"
+                color="default"
+                type="button"
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}
+                disabled={isSchedulingDisabled}>
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>

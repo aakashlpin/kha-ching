@@ -27,7 +27,7 @@ import {
   STRATEGIES
 } from '../../../lib/constants';
 
-const TradeSetupForm = ({ strategy, state, onChange, onSubmit, isRunnable = true }) => {
+const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
   const isSchedulingDisabled = false;
 
   const enabledInstruments =
@@ -237,6 +237,16 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, isRunnable = true
                 ? `Schedule run`
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
+            {!isRunnable ? (
+              <Button
+                variant="contained"
+                color="default"
+                type="button"
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}>
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>

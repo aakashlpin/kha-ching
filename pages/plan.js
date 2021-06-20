@@ -65,7 +65,7 @@ import Layout from '../components/Layout';
 import ATM_Straddle_TradeForm from '../components/trades/atmStraddle/TradeSetupForm';
 import DOS_TradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm';
 import { getSchedulingStateProps } from '../lib/browserUtils';
-import { INSTRUMENT_DETAILS, INSTRUMENTS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
+import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
 
 /**
  *
@@ -174,6 +174,10 @@ const Plan = () => {
         }
       });
     }
+  };
+
+  const commonOnCancelHandler = () => {
+    handleClose();
   };
 
   const cleanupForRemoteSync = (props) => {
@@ -329,29 +333,36 @@ const Plan = () => {
             </AccordionSummary>
             <AccordionDetails className={classes.flexVertical}>
               {Object.keys(dayProps.strategies).length ? (
-                <div className={classes.pillsContainer}>
-                  {Object.keys(dayProps.strategies).map((strategyKey) => {
-                    const config = dayProps.strategies[strategyKey];
-                    return (
-                      <Chip
-                        key={`${dayOfWeek}_${strategyKey}`}
-                        label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
-                          INSTRUMENT_DETAILS[config.instrument].displayName
-                        }`}
-                        onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
-                        onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
-                      />
-                    );
-                  })}
-                </div>
+                <>
+                  <Typography component="p" variant="subtitle1">
+                    Saved trades — (click to edit, or cross to delete)
+                  </Typography>
+                  <div className={classes.pillsContainer}>
+                    {Object.keys(dayProps.strategies).map((strategyKey) => {
+                      const config = dayProps.strategies[strategyKey];
+                      return (
+                        <Chip
+                          color="secondary"
+                          key={`${dayOfWeek}_${strategyKey}`}
+                          label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
+                            INSTRUMENT_DETAILS[config.instrument].displayName
+                          }`}
+                          onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
+                          onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
               ) : null}
               <Grid container alignItems="flex-start" spacing={2}>
                 <FormControl className={classes.formControl}>
-                  <InputLabel id={`${dayOfWeek}_label`}>Select strategy</InputLabel>
+                  <InputLabel id={`${dayOfWeek}_label`}>Select trade here</InputLabel>
                   <Select
                     labelId={`${dayOfWeek}_label`}
                     id={`${dayOfWeek}_strat_select`}
                     value={dayProps.selectedStrategy}
+                    style={{ minWidth: 200 }}
                     onChange={(e) =>
                       handleSelectStrategy({ dayOfWeek, selectedStrategy: e.target.value })
                     }>
@@ -400,8 +411,8 @@ const Plan = () => {
           <Fade in={open}>
             <div className={classes.paper}>
               <h2 id="transition-modal-title">
-                Configure {STRATEGIES_DETAILS[currentEditStrategy].heading} for{' '}
-                {dayState[currentEditDay].heading}&apos;s
+                {dayState[currentEditDay].heading} |{' '}
+                {STRATEGIES_DETAILS[currentEditStrategy].heading}
               </h2>
               {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING ? (
                 <DOS_TradeForm
@@ -410,6 +421,7 @@ const Plan = () => {
                     stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)
                   }
                   onSubmit={commonOnSubmitHandler}
+                  onCancel={commonOnCancelHandler}
                   isRunnable={false}
                 />
               ) : currentEditStrategy === STRATEGIES.ATM_STRADDLE ? (
@@ -420,6 +432,7 @@ const Plan = () => {
                     stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)
                   }
                   onSubmit={commonOnSubmitHandler}
+                  onCancel={commonOnCancelHandler}
                   isRunnable={false}
                 />
               ) : currentEditStrategy === STRATEGIES.CM_WED_THURS ? (
@@ -430,6 +443,7 @@ const Plan = () => {
                     stratOnChangeHandler(changedProps, STRATEGIES.CM_WED_THURS)
                   }
                   onSubmit={commonOnSubmitHandler}
+                  onCancel={commonOnCancelHandler}
                   isRunnable={false}
                 />
               ) : null}
