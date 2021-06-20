@@ -23,3 +23,5 @@ Then follow usual procedure
 TODO
 
 - Allow interrupts from even when queue is in progress (by checking for db props before punching orders)
+- Move terminate trades button to profile page
+- button to cleanup redis memory
