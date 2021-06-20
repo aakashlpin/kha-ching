@@ -26,7 +26,7 @@ export default withSession(async (req, res) => {
   } = req.body;
 
   if (STRATEGIES_DETAILS[strategy].premium && !process.env.SIGNALX_API_KEY?.length) {
-    return res.status(401).send('Please upgrade to Khaching Premium to use this strategy!');
+    return res.status(401).send('Please upgrade to SignalX Premium to use this strategy!');
   }
 
   if (!MOCK_ORDERS && runNow && !isMarketOpen()) {

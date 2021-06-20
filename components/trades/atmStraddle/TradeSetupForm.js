@@ -18,18 +18,58 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../lib/browserUtils';
-import { EXIT_STRATEGIES_DETAILS, INSTRUMENT_DETAILS } from '../../lib/constants';
+import { ensureIST } from '../../../lib/browserUtils';
+import {
+  EXIT_STRATEGIES,
+  EXIT_STRATEGIES_DETAILS,
+  INSTRUMENT_DETAILS,
+  INSTRUMENTS,
+  STRATEGIES
+} from '../../../lib/constants';
 
-const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStrategies }) => {
-  // const isSchedulingDisabled =
-  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
+const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
   const isSchedulingDisabled = false;
+
+  const enabledInstruments =
+    strategy === STRATEGIES.ATM_STRADDLE
+      ? [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
+      : [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY];
+
+  const exitStrategies =
+    strategy === STRATEGIES.ATM_STRADDLE
+      ? [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
+      : [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X];
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const {
+      lots,
+      runNow,
+      runAt,
+      isAutoSquareOffEnabled,
+      squareOffTime,
+      slmPercent,
+      maxSkewPercent,
+      expireIfUnsuccessfulInMins
+    } = state;
+
+    const apiProps = {
+      lots: Number(lots),
+      slmPercent: Number(slmPercent),
+      maxSkewPercent: Number(maxSkewPercent),
+      expireIfUnsuccessfulInMins: Number(expireIfUnsuccessfulInMins),
+      runAt: runNow ? dayjs().format() : runAt,
+      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
+    };
+
+    onSubmit(apiProps);
+  };
 
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <h3>Setup new trade</h3>
+        {isRunnable ? <h3>Setup new trade</h3> : null}
         <Grid container alignItems="flex-start" spacing={2}>
           <Grid item xs={12}>
             <FormControl component="fieldset">
@@ -42,6 +82,7 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
                     control={
                       <Checkbox
                         name="instruments"
+                        disabled={state.disableInstrumentChange}
                         checked={state.instruments[instrument]}
                         onChange={() => {
                           onChange({
@@ -153,17 +194,19 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               </FormGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="secondary"
-              type="button"
-              onClick={(e) => {
-                onChange({ runNow: true });
-              }}>
-              Schedule now
-            </Button>
-          </Grid>
+          {isRunnable ? (
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="secondary"
+                type="button"
+                onClick={(e) => {
+                  onChange({ runNow: true });
+                }}>
+                Schedule now
+              </Button>
+            </Grid>
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -188,19 +231,31 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit, exitStr
               variant="contained"
               color="primary"
               type="button"
-              onClick={() => onSubmit()}
+              onClick={handleFormSubmit}
               disabled={isSchedulingDisabled}>
               {isSchedulingDisabled
                 ? `Schedule run`
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
+            {!isRunnable ? (
+              <Button
+                variant="contained"
+                color="default"
+                type="button"
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}>
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>
               <Box fontStyle="italic" fontSize={14}>
                 <p>Note —</p>
                 <ol>
-                  <li>You can delete the task until scheduled time on the next step.</li>
+                  {isRunnable ? (
+                    <li>You can delete the task until scheduled time on the next step.</li>
+                  ) : null}
                   <li>
                     Once task is active, if &quot;Acceptable Premium Skew&quot; does not happen
                     within &quot;Enter trade irrespective skew after (in mins)&quot;, the trade will

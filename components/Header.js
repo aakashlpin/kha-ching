@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
+import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -45,15 +46,14 @@ const Header = () => {
     <header style={{ marginBottom: 24 }}>
       <nav>
         <ul>
-          {isUpdateAvailable ? (
-            <li>
-              <a href="https://cloud.digitalocean.com/apps">🔥 App Update 🔥</a>
-            </li>
-          ) : null}
-
           <li>
             <Link href="/dashboard">
               <a>Dashboard</a>
+            </Link>
+          </li>
+          <li>
+            <Link href="/plan">
+              <a>Trade Plan</a>
             </Link>
           </li>
           {!user?.isLoggedIn && (
@@ -93,6 +93,13 @@ const Header = () => {
               </li>
             </>
           )}
+          {isUpdateAvailable ? (
+            <li>
+              <a href="https://cloud.digitalocean.com/apps" title="App update available">
+                <NotificationsActiveIcon color="default" />
+              </a>
+            </li>
+          ) : null}
         </ul>
       </nav>
       <style jsx>{`

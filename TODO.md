@@ -18,3 +18,10 @@ Use S2 as the apex of your straddle. If S2 is different from S2, get prices of C
 Then follow usual procedure
 
 **/
+
+
+TODO
+
+- Allow interrupts from even when queue is in progress (by checking for db props before punching orders)
+- Move terminate trades button to profile page
+- button to cleanup redis memory

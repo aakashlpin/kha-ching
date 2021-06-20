@@ -25,27 +25,60 @@ import React from 'react';
 
 import { ensureIST } from '../../../lib/browserUtils';
 import {
+  EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
+  INSTRUMENTS,
   STRATEGIES_DETAILS
 } from '../../../lib/constants';
 
 const TradeSetupForm = ({
-  enabledInstruments,
   state,
   onChange,
   onSubmit,
-  exitStrategies,
-  entryStrategies
+  onCancel,
+  isRunnable = true,
+  enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY],
+  exitStrategies = [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND],
+  entryStrategies = [
+    STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
+    STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
+  ]
 }) => {
-  // const isSchedulingDisabled =
-  //   dayjs().get('hours') > 15 || (dayjs().get('hours') === 15 && dayjs().get('minutes') > 30);
   const isSchedulingDisabled = false;
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const {
+      lots,
+      runNow,
+      runAt,
+      isAutoSquareOffEnabled,
+      squareOffTime,
+      maxTrades,
+      martingaleIncrementSize,
+      strikeByPrice,
+      slmPercent
+    } = state;
+
+    const apiProps = {
+      lots: Number(lots),
+      martingaleIncrementSize: Number(martingaleIncrementSize),
+      slmPercent: Number(slmPercent),
+      maxTrades: Number(maxTrades),
+      runAt: runNow ? dayjs().format() : runAt,
+      strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
+      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
+    };
+
+    onSubmit(apiProps);
+  };
 
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <h3>Setup new trade</h3>
+        {isRunnable ? <h3>Setup new trade</h3> : null}
         <Grid container alignItems="flex-start" spacing={2}>
           <Grid item xs={12}>
             <FormControl component="fieldset">
@@ -58,6 +91,7 @@ const TradeSetupForm = ({
                     control={
                       <Checkbox
                         name="instruments"
+                        disabled={state.disableInstrumentChange}
                         checked={state.instruments[instrument]}
                         onChange={() => {
                           onChange({
@@ -200,17 +234,19 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="secondary"
-              type="button"
-              onClick={(e) => {
-                onChange({ runNow: true });
-              }}>
-              Schedule now
-            </Button>
-          </Grid>
+          {isRunnable ? (
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="secondary"
+                type="button"
+                onClick={(e) => {
+                  onChange({ runNow: true });
+                }}>
+                Schedule now
+              </Button>
+            </Grid>
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -235,12 +271,23 @@ const TradeSetupForm = ({
               variant="contained"
               color="primary"
               type="button"
-              onClick={() => onSubmit()}
+              onClick={handleFormSubmit}
               disabled={isSchedulingDisabled}>
               {isSchedulingDisabled
                 ? `Schedule run`
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
+            {!isRunnable ? (
+              <Button
+                variant="contained"
+                color="default"
+                type="button"
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}
+                disabled={isSchedulingDisabled}>
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>
@@ -253,10 +300,12 @@ const TradeSetupForm = ({
                     you wish to deactivate the martingale method.
                   </li>
                   <li>
-                    ⚡️ Maximum trades to take — it's recommended to NOT trade more than 3
-                    Supertrend changes per day. Set it to 1 if you wish to take only 1 trade today.
+                    ⚡️ Maximum trades to take — it&apos;s recommended to NOT trade more than 3
+                    Supertrend changes per day. Set it to 1 if you wish to take only 1 trade/day.
                   </li>
-                  <li>You can delete the task until scheduled time on the next step.</li>
+                  {isRunnable ? (
+                    <li>You can delete the task until scheduled time on the next step.</li>
+                  ) : null}
                 </ol>
               </Box>
             </Typography>
