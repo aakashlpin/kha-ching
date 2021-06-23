@@ -1,10 +1,10 @@
-# KhaChing!
+# SignalX
 
-Khaching is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
+SignalX is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
 
-✅ Learn everything about Khaching [here](https://www.notion.so/Khaching-5a43061a2b1f4e3ea10843f65186c30d).
+✅  Read everything about SignalX [here](https://www.notion.so/SignalX-5a43061a2b1f4e3ea10843f65186c30d).
 
-Once you've gone through the Notion doc above, come back here for instructions to setup KhaChing!
+Once you've gone through the Notion doc above, come back here for instructions to setup SignalX!
 
 ## Setup Prerequisites:
 
@@ -18,7 +18,7 @@ Once you've gone through the Notion doc above, come back here for instructions t
 
 3. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://i.imgur.com/k9sZScs.jpg)
 
-    - Copy the `Endpoint` and `Default User Password` fields to construct the following Redis URL - `redis://:{Default User Password}@{Endpoint}`. Keep this handy.
+    - Copy the `Endpoint` and `Default User Password` fields to construct the following Redis URL - `redis://:{Default User Password}@{Endpoint}`. Keep this handy. (remove the curly brackets)
 
 ## 1-click Installation
 
@@ -67,13 +67,15 @@ Default square off time of the strategy. The value here only serves as a default
 
 Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
 
-#### `SIGNALX_URL`
-
-Enter `https://indicator.signalx.trade` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
-
 #### `SIGNALX_API_KEY`
 
-Enter your SignalX API key for access to premium bots. Upgrade to [Khaching Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX is Khaching's private API for technical indicators.
+Upgrade to [SignalX Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX Premium gives you access to technical indicators required to trade certain strategies.
+
+#### `DATABASE_HOST_URL`
+#### `DATABASE_USER_KEY`
+#### `DATABASE_API_KEY`
+
+[Follow the upgrade guide here](https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2#7a05ef9737904c148ea299177f1de8f0) to get values for all these 3 variables.
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
@@ -116,4 +118,4 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## License
 
-KhaChing is [MIT licensed](https://github.com/aakashlpin/kha-ching/blob/master/LICENSE.md).
+SignalX is [MIT licensed](https://github.com/aakashlpin/kha-ching/blob/master/LICENSE.md).
