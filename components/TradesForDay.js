@@ -1,8 +1,9 @@
-import { Button, Grid, Paper, Typography } from '@material-ui/core';
+/* eslint-disable jsx-a11y/accessible-emoji */
+import { Box, Button, Grid, Link, Paper, Typography } from '@material-ui/core';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import router from 'next/router';
 import React from 'react';
-import TimeAgo from 'react-timeago';
 import useSWR, { mutate } from 'swr';
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants';
@@ -96,21 +97,56 @@ const WrapperComponent = (props) => {
 const TradesForDay = () => {
   const { data: trades, error } = useSWR('/api/trades_day');
   if (!trades?.length || error) {
-    return null;
+    return (
+      <Typography variant="">
+        You don&apos;t have any trades scheduled today. Run from{' '}
+        <Link
+          href="/dashboard?tabId=2"
+          onClick={(e) => {
+            e.preventDefault();
+            router.push('/dashboard?tabId=2');
+          }}>
+          your trade plan
+        </Link>{' '}
+        or{' '}
+        <Link
+          href="/dashboard?tabId=1"
+          onClick={(e) => {
+            e.preventDefault();
+            router.push('/dashboard?tabId=1');
+          }}>
+          create a new trade
+        </Link>
+        .
+      </Typography>
+    );
   }
 
   return (
-    <div>
-      {trades.map((trade) => (
-        <WrapperComponent
-          key={trade._id}
-          {...trade}
-          detailsComponent={(strategy, jobDetails) => (
-            <TradeDetails strategy={strategy} tradeDetails={trade} jobDetails={jobDetails} />
-          )}
-        />
-      ))}
-    </div>
+    <>
+      <div style={{ marginBottom: 48 }}>
+        {trades.map((trade) => (
+          <WrapperComponent
+            key={trade._id}
+            {...trade}
+            detailsComponent={(strategy, jobDetails) => (
+              <TradeDetails strategy={strategy} tradeDetails={trade} jobDetails={jobDetails} />
+            )}
+          />
+        ))}
+      </div>
+
+      <Box align="center" marginBottom="60px">
+        <Button
+          variant="contained"
+          onClick={async () => {
+            await axios.post('/api/revoke_session');
+            router.push('/');
+          }}>
+          🔴 Kill Switch (no further trades)
+        </Button>
+      </Box>
+    </>
   );
 };
 

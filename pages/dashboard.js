@@ -9,7 +9,7 @@ import Alert from '@material-ui/lab/Alert';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SwipeableViews from 'react-swipeable-views';
 
 import Footer from '../components/Footer';
@@ -50,6 +50,12 @@ const Dashboard = ({ hasDbSetup }) => {
   const { user } = useUser({ redirectTo: '/' });
   const router = useRouter();
   const [value, setValue] = useState(() => (router.query?.tabId ? Number(router.query.tabId) : 1));
+
+  useEffect(() => {
+    if (router.query?.tabId && router.query?.tabId !== value) {
+      setValue(Number(router.query.tabId));
+    }
+  }, [router.query]);
 
   if (!user || user.isLoggedIn === false) {
     return <Layout>loading...</Layout>;
@@ -125,17 +131,6 @@ const Dashboard = ({ hasDbSetup }) => {
         </TabPanel>
       </SwipeableViews>
 
-      {/* <Box align="center" marginBottom="120px">
-        <Button
-          color=""
-          variant="contained"
-          onClick={async () => {
-            await axios.post('/api/revoke_session');
-            router.push('/');
-          }}>
-          🔴 Stop SignalX and Logout!
-        </Button>
-      </Box> */}
       <Footer />
     </Layout>
   );
