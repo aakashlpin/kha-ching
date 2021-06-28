@@ -9,7 +9,7 @@ import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { isMarketOpen } from '../../lib/utils';
+import { isMarketOpen, withoutFwdSlash } from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
 
@@ -81,7 +81,7 @@ export default withSession(async (req, res) => {
   }
 
   const urlDateParam = dayjs().format('DDMMYYYY');
-  const endpoint = `${DATABASE_HOST_URL}/day_${DATABASE_USER_KEY}/${urlDateParam}`;
+  const endpoint = `${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}/${urlDateParam}`;
 
   console.log({ dailyTradesEndpoint: endpoint });
 
@@ -138,7 +138,7 @@ export default withSession(async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    const { data } = await axios(endpoint);
+    const { data } = await axios(`${endpoint}?limit=100`);
     return res.json(data);
   }
 
