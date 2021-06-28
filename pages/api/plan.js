@@ -1,11 +1,13 @@
 import axios from 'axios';
 
+import { withoutFwdSlash } from '../../lib/utils';
+
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
 
 export default async function plan(req, res) {
   const { dayOfWeek, config } = req.body;
 
-  const baseUrl = `${DATABASE_HOST_URL}/set_${DATABASE_USER_KEY}`;
+  const baseUrl = `${withoutFwdSlash(DATABASE_HOST_URL)}/set_${DATABASE_USER_KEY}`;
   console.log({ baseUrl });
   if (req.method === 'POST') {
     const { data } = await axios[req.method.toLowerCase()](`${baseUrl}/${dayOfWeek}`, config, {
@@ -34,6 +36,6 @@ export default async function plan(req, res) {
     return res.json(data);
   }
 
-  const { data: settings } = await axios(`${baseUrl}`);
+  const { data: settings } = await axios(`${baseUrl}?limit=100`);
   return res.json(settings);
 }
