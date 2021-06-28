@@ -71,6 +71,9 @@ const PlanDash = () => {
     mutate('/api/trades_day');
   }
 
+  const getPendingTrades = () =>
+    plans[dayOfWeek]?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id));
+
   const getScheduleableTrades = () => {
     const pendingTrades = getPendingTrades();
     if (!pendingTrades) {
@@ -80,11 +83,14 @@ const PlanDash = () => {
     return pendingTrades.filter((trade) => dayjs().isBefore(dayjs(trade.runAt)));
   };
 
-  const getPendingTrades = () =>
-    plans[dayOfWeek]?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id));
-
   async function handleScheduleEverything() {
-    const pendingTrades = getPendingTrades();
+    const pendingTrades = getScheduleableTrades();
+    // this condition will never be reached as we don't show the button in the UI
+    // if there's nothing to schedule
+    // but keeping it just in case
+    if (!(Array.isArray(pendingTrades) && pendingTrades.length)) {
+      return;
+    }
     await Promise.all(pendingTrades.map(handleScheduleJob));
     mutate('/api/trades_day');
   }
