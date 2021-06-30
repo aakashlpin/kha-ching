@@ -13,6 +13,12 @@ import { isMarketOpen, withoutFwdSlash } from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
 
+const SIGNALX_AXIOS_DB_AUTH = {
+  headers: {
+    'x-api-key': DATABASE_API_KEY
+  }
+};
+
 async function createJob({ jobData, user }) {
   const {
     runAt,
@@ -85,18 +91,18 @@ export default withSession(async (req, res) => {
 
   console.log({ dailyTradesEndpoint: endpoint });
 
-  const SIGNALX_AXIOS_DB_AUTH = {
-    headers: {
-      'x-api-key': DATABASE_API_KEY
-    }
-  };
-
   if (req.method === 'POST') {
-    const { data } = await axios[req.method.toLowerCase()](
-      endpoint,
-      req.body,
-      SIGNALX_AXIOS_DB_AUTH
-    );
+    let data;
+    try {
+      const response = await axios[req.method.toLowerCase()](
+        endpoint,
+        req.body,
+        SIGNALX_AXIOS_DB_AUTH
+      );
+      data = response.data;
+    } catch (e) {
+      return res.status(e.response.status).json(e.response.data || {});
+    }
 
     try {
       const qRes = await createJob({
@@ -129,17 +135,25 @@ export default withSession(async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
-    const { data } = await axios(`${endpoint}/${req.body._id}`);
-    if (data.queue.id) {
-      await deleteJob(data.queue.id);
+    try {
+      const { data } = await axios(`${endpoint}/${req.body._id}`);
+      if (data.queue.id) {
+        await deleteJob(data.queue.id);
+      }
+      await axios.delete(`${endpoint}/${req.body._id}`, SIGNALX_AXIOS_DB_AUTH);
+      return res.end();
+    } catch (e) {
+      return res.status(e.response.status).json(e.response.data || {});
     }
-    await axios.delete(`${endpoint}/${req.body._id}`, SIGNALX_AXIOS_DB_AUTH);
-    return res.end();
   }
 
   if (req.method === 'GET') {
-    const { data } = await axios(`${endpoint}?limit=100`);
-    return res.json(data);
+    try {
+      const { data } = await axios(`${endpoint}?limit=100`);
+      return res.json(data);
+    } catch (e) {
+      return res.status(e.response.status).json(e.response.data || {});
+    }
   }
 
   res.status(400).end();
