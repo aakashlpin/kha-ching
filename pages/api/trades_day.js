@@ -39,7 +39,15 @@ async function createJob({ jobData, user }) {
       // multifold objective
       // 1. stop the non premium members trying this out super early
       // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
-      await axios.post(`${SIGNALX_URL}/api/auth`, {}, SIGNALX_AXIOS_DB_AUTH);
+      await axios.post(
+        `${SIGNALX_URL}/api/auth`,
+        {},
+        {
+          headers: {
+            'X-API-KEY': process.env.SIGNALX_API_KEY
+          }
+        }
+      );
     } catch (e) {
       if (e.isAxiosError) {
         if (e.response.status === 401) {

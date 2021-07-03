@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
-    "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080}",
+    "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080} && curl ${APP_URL}/api/user",
     "lint": "eslint --fix .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
@@ -35,6 +35,8 @@
     "react-swipeable-views": "^0.14.0",
     "react-timeago": "^5.2.0",
     "react-toastify": "^7.0.4",
+    "redis": "^3.1.2",
+    "redis-memoizer": "^1.0.2",
     "request": "^2.88.2",
     "swr": "^0.4.2",
     "trace-unhandled": "^2.0.1",
