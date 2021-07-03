@@ -9,10 +9,9 @@ import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { isMarketOpen, withoutFwdSlash } from '../../lib/utils';
+import { isMarketOpen, premiumAuthCheck, withoutFwdSlash } from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
-const SIGNALX_URL = process.env.SIGNALX_URL || 'https://indicator.signalx.trade';
 
 const SIGNALX_AXIOS_DB_AUTH = {
   headers: {
@@ -39,15 +38,10 @@ async function createJob({ jobData, user }) {
       // multifold objective
       // 1. stop the non premium members trying this out super early
       // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
-      await axios.post(
-        `${SIGNALX_URL}/api/auth`,
-        {},
-        {
-          headers: {
-            'X-API-KEY': process.env.SIGNALX_API_KEY
-          }
-        }
-      );
+      const res = await premiumAuthCheck();
+      if (!res) {
+        return Promise.reject('You need SignalX Premium to use this strategy.');
+      }
     } catch (e) {
       if (e.isAxiosError) {
         if (e.response.status === 401) {

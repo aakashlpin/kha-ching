@@ -1,6 +1,7 @@
 import { KiteConnect } from 'kiteconnect';
 
 import withSession from '../../lib/session';
+import { getIndexInstruments, premiumAuthCheck } from '../../lib/utils';
 
 const apiKey = process.env.KITE_API_KEY;
 const kiteSecret = process.env.KITE_API_SECRET;
@@ -20,6 +21,13 @@ export default withSession(async (req, res) => {
     const user = { isLoggedIn: true, session: sessionData };
     req.session.set('user', user);
     await req.session.save();
+
+    // prepare the day
+    // fire and forget
+    premiumAuthCheck();
+    getIndexInstruments();
+
+    // then redirect
     res.redirect('/dashboard');
   } catch (error) {
     const { response: fetchResponse } = error;
