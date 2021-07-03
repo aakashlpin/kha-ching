@@ -20,7 +20,7 @@ export default async (req, res) => {
     if (!records.length) {
       return res.json({
         allowed: false,
-        message: 'BOX_ID not found.'
+        message: 'User not found.'
       });
     }
 
@@ -30,6 +30,7 @@ export default async (req, res) => {
     } = user;
 
     return res.json({
+      expireOn: Expires,
       allowed: dayjs().isSameOrBefore(dayjs(Expires, 'YYYY-MM-DD'), 'day')
     });
   } catch (e) {

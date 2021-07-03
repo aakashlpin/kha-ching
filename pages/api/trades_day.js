@@ -12,6 +12,7 @@ import withSession from '../../lib/session';
 import { isMarketOpen, withoutFwdSlash } from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
+const SIGNALX_URL = process.env.SIGNALX_URL || 'https://indicator.signalx.trade';
 
 const SIGNALX_AXIOS_DB_AUTH = {
   headers: {
@@ -29,8 +30,24 @@ async function createJob({ jobData, user }) {
     expireIfUnsuccessfulInMins
   } = jobData;
 
-  if (STRATEGIES_DETAILS[strategy].premium && !process.env.SIGNALX_API_KEY?.length) {
-    return Promise.reject('You need SignalX Premium to use this strategy.');
+  if (STRATEGIES_DETAILS[strategy].premium) {
+    if (!process.env.SIGNALX_API_KEY?.length) {
+      return Promise.reject('You need SignalX Premium to use this strategy.');
+    }
+
+    try {
+      // multifold objective
+      // 1. stop the non premium members trying this out super early
+      // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
+      await axios.post(`${SIGNALX_URL}/api/auth`, {}, SIGNALX_AXIOS_DB_AUTH);
+    } catch (e) {
+      if (e.isAxiosError) {
+        if (e.response.status === 401) {
+          return Promise.reject('You need SignalX Premium to use this strategy.');
+        }
+        return Promise.reject(e.response.data);
+      }
+    }
   }
 
   if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
