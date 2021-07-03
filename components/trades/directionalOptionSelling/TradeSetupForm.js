@@ -59,7 +59,9 @@ const TradeSetupForm = ({
       maxTrades,
       martingaleIncrementSize,
       strikeByPrice,
-      slmPercent
+      slmPercent,
+      isHedgeEnabled,
+      hedgeDistance
     } = state;
 
     const apiProps = {
@@ -69,7 +71,11 @@ const TradeSetupForm = ({
       maxTrades: Number(maxTrades),
       runAt: runNow ? dayjs().format() : runAt,
       strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
-      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
+      squareOffTime: isAutoSquareOffEnabled
+        ? dayjs(squareOffTime).set('seconds', 0).format()
+        : null,
+      isHedgeEnabled,
+      hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : null
     };
 
     onSubmit(apiProps);
@@ -198,6 +204,36 @@ const TradeSetupForm = ({
               label="SLM %"
             />
           </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormGroup column>
+                <FormControlLabel
+                  key={'isHedgeEnabled'}
+                  label={'Add an OTM hedge'}
+                  control={
+                    <Checkbox
+                      checked={state.isHedgeEnabled}
+                      onChange={() =>
+                        onChange({
+                          isHedgeEnabled: !state.isHedgeEnabled
+                        })
+                      }
+                    />
+                  }
+                />
+                {state.isHedgeEnabled ? (
+                  <TextField
+                    fullWidth
+                    name="hedgeDistance"
+                    value={state.hedgeDistance}
+                    onChange={(e) => onChange({ hedgeDistance: e.target.value || '' })}
+                    label="Hedge Distance"
+                  />
+                ) : null}
+              </FormGroup>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormGroup column>
