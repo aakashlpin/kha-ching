@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { pick } from 'lodash';
+import { nanoid } from 'nanoid';
 
 import { tradingQueue } from '../../lib/queue';
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
@@ -112,10 +113,16 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'POST') {
     let data;
+    const orderTag = nanoid(8);
     try {
+      // for every new job, first create a db entry
+      const postData = {
+        ...req.body,
+        orderTag
+      };
       const response = await axios[req.method.toLowerCase()](
         endpoint,
-        req.body,
+        postData,
         SIGNALX_AXIOS_DB_AUTH
       );
       data = response.data;
@@ -124,10 +131,12 @@ export default withSession(async (req, res) => {
     }
 
     try {
+      // then create the queue entry
       const qRes = await createJob({
         jobData: data,
         user
       });
+      // then patch the db entry with queue entry
       await axios.put(
         `${endpoint}/${data._id}`,
         {
@@ -137,6 +146,7 @@ export default withSession(async (req, res) => {
         },
         SIGNALX_AXIOS_DB_AUTH
       );
+      // done!
       return res.json(data);
     } catch (e) {
       await axios.put(
