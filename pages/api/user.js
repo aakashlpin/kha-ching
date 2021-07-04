@@ -1,7 +1,6 @@
 import { KiteConnect } from 'kiteconnect';
 
 import withSession from '../../lib/session';
-import { storeAccessTokenRemotely } from '../../lib/utils';
 
 const apiKey = process.env.KITE_API_KEY;
 
@@ -18,9 +17,6 @@ export default withSession(async (req, res) => {
       // see if we're able to fetch profile with the access token
       // in case access token is expired, then log out the user
       await kc.getProfile();
-
-      // store access token remotely for other services to use it
-      storeAccessTokenRemotely(user.session.access_token);
 
       res.json({
         isLoggedIn: true,
