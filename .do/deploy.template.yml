@@ -36,7 +36,5 @@ spec:
       value: ${APP_URL}
     - key: NEXT_PUBLIC_GIT_HASH
       value: ${_self.COMMIT_HASH}
-    - key: ACCESS_TOKEN_JSONBOX_URL
-      value: ""
     - key: MOCK_ORDERS
       value: "false"
