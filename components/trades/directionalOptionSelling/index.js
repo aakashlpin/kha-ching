@@ -3,7 +3,11 @@ import { omit } from 'lodash';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
-import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
+import {
+  commonOnChangeHandler,
+  formatFormDataForApi,
+  getSchedulingStateProps
+} from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   INSTRUMENTS,
@@ -30,7 +34,7 @@ const DirectionTradeSetup = ({
 
   const [state, setState] = useState(getDefaultState());
 
-  const onSubmit = async (formattedStateForApiProps) => {
+  const onSubmit = async (formattedStateForApiProps = {}) => {
     if (state.runNow) {
       const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
       if (!yes) {
@@ -43,7 +47,7 @@ const DirectionTradeSetup = ({
     }
 
     function handleSyncJob(props) {
-      return axios.post('/api/trades_day', props);
+      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }));
     }
 
     try {

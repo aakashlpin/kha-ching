@@ -23,12 +23,13 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../../lib/browserUtils';
+import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
+  STRATEGIES,
   STRATEGIES_DETAILS
 } from '../../../lib/constants';
 
@@ -49,36 +50,9 @@ const TradeSetupForm = ({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    const {
-      lots,
-      runNow,
-      runAt,
-      isAutoSquareOffEnabled,
-      squareOffTime,
-      maxTrades,
-      martingaleIncrementSize,
-      strikeByPrice,
-      slmPercent,
-      isHedgeEnabled,
-      hedgeDistance
-    } = state;
-
-    const apiProps = {
-      lots: Number(lots),
-      martingaleIncrementSize: Number(martingaleIncrementSize),
-      slmPercent: Number(slmPercent),
-      maxTrades: Number(maxTrades),
-      runAt: runNow ? dayjs().format() : runAt,
-      strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
-      squareOffTime: isAutoSquareOffEnabled
-        ? dayjs(squareOffTime).set('seconds', 0).format()
-        : null,
-      isHedgeEnabled,
-      hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : null
-    };
-
-    onSubmit(apiProps);
+    onSubmit(
+      formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state })
+    );
   };
 
   return (

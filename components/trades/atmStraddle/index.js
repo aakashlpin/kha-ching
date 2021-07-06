@@ -3,7 +3,11 @@ import { omit } from 'lodash';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
-import { commonOnChangeHandler, getSchedulingStateProps } from '../../../lib/browserUtils';
+import {
+  commonOnChangeHandler,
+  formatFormDataForApi,
+  getSchedulingStateProps
+} from '../../../lib/browserUtils';
 import { STRATEGIES_DETAILS } from '../../../lib/constants';
 import Form from './TradeSetupForm';
 
@@ -18,7 +22,7 @@ const AtmStraddle = ({ strategy }) => {
 
   const [state, setState] = useState(getDefaultState());
 
-  const onSubmit = async (formattedStateForApiProps) => {
+  const onSubmit = async (formattedStateForApiProps = {}) => {
     if (state.runNow) {
       const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
       if (!yes) {
@@ -31,11 +35,11 @@ const AtmStraddle = ({ strategy }) => {
     }
 
     function handleSyncJob(props) {
-      return axios.post('/api/trades_day', props);
+      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }));
     }
 
     try {
-      const trades = await Promise.all(
+      await Promise.all(
         Object.keys(state.instruments)
           .filter((key) => state.instruments[key])
           .map((instrument) =>

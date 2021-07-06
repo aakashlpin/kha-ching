@@ -18,7 +18,7 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../../lib/browserUtils';
+import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
@@ -42,28 +42,7 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    const {
-      lots,
-      runNow,
-      runAt,
-      isAutoSquareOffEnabled,
-      squareOffTime,
-      slmPercent,
-      maxSkewPercent,
-      expireIfUnsuccessfulInMins
-    } = state;
-
-    const apiProps = {
-      lots: Number(lots),
-      slmPercent: Number(slmPercent),
-      maxSkewPercent: Number(maxSkewPercent),
-      expireIfUnsuccessfulInMins: Number(expireIfUnsuccessfulInMins),
-      runAt: runNow ? dayjs().format() : runAt,
-      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
-    };
-
-    onSubmit(apiProps);
+    onSubmit(formatFormDataForApi({ strategy, data: state }));
   };
 
   return (
