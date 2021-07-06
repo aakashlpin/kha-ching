@@ -23,12 +23,13 @@ import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import dayjs from 'dayjs';
 import React from 'react';
 
-import { ensureIST } from '../../../lib/browserUtils';
+import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils';
 import {
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
+  STRATEGIES,
   STRATEGIES_DETAILS
 } from '../../../lib/constants';
 
@@ -49,30 +50,9 @@ const TradeSetupForm = ({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    const {
-      lots,
-      runNow,
-      runAt,
-      isAutoSquareOffEnabled,
-      squareOffTime,
-      maxTrades,
-      martingaleIncrementSize,
-      strikeByPrice,
-      slmPercent
-    } = state;
-
-    const apiProps = {
-      lots: Number(lots),
-      martingaleIncrementSize: Number(martingaleIncrementSize),
-      slmPercent: Number(slmPercent),
-      maxTrades: Number(maxTrades),
-      runAt: runNow ? dayjs().format() : runAt,
-      strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
-      squareOffTime: isAutoSquareOffEnabled ? dayjs(squareOffTime).set('seconds', 0).format() : null
-    };
-
-    onSubmit(apiProps);
+    onSubmit(
+      formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state })
+    );
   };
 
   return (
@@ -198,6 +178,36 @@ const TradeSetupForm = ({
               label="SLM %"
             />
           </Grid>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormGroup column>
+                <FormControlLabel
+                  key={'isHedgeEnabled'}
+                  label={'Add an OTM hedge'}
+                  control={
+                    <Checkbox
+                      checked={state.isHedgeEnabled}
+                      onChange={() =>
+                        onChange({
+                          isHedgeEnabled: !state.isHedgeEnabled
+                        })
+                      }
+                    />
+                  }
+                />
+                {state.isHedgeEnabled ? (
+                  <TextField
+                    fullWidth
+                    name="hedgeDistance"
+                    value={state.hedgeDistance}
+                    onChange={(e) => onChange({ hedgeDistance: e.target.value || '' })}
+                    label="Hedge Distance"
+                  />
+                ) : null}
+              </FormGroup>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormGroup column>

@@ -1,9 +1,7 @@
-import csv from 'csvtojson';
-
 import withSession from '../../lib/session';
 import {
+  getIndexInstruments,
   getTradingSymbolsByOptionPrice,
-  saveInstrumentsToFile,
   syncGetKiteInstance
 } from '../../lib/utils';
 
@@ -15,9 +13,7 @@ export default withSession(async (req, res) => {
   }
 
   const kite = syncGetKiteInstance(user);
-  const instrumentsFilename = await saveInstrumentsToFile();
-  const sourceData = await csv().fromFile(instrumentsFilename);
-
+  const sourceData = await getIndexInstruments();
   const response = await getTradingSymbolsByOptionPrice({
     sourceData,
     nfoSymbol: 'BANKNIFTY',

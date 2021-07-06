@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { pick } from 'lodash';
+import { nanoid } from 'nanoid';
 
 import { tradingQueue } from '../../lib/queue';
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
@@ -9,7 +10,7 @@ import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { isMarketOpen, withoutFwdSlash } from '../../lib/utils';
+import { isMarketOpen, premiumAuthCheck, withoutFwdSlash } from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
 
@@ -29,8 +30,27 @@ async function createJob({ jobData, user }) {
     expireIfUnsuccessfulInMins
   } = jobData;
 
-  if (STRATEGIES_DETAILS[strategy].premium && !process.env.SIGNALX_API_KEY?.length) {
-    return Promise.reject('You need SignalX Premium to use this strategy.');
+  if (STRATEGIES_DETAILS[strategy].premium) {
+    if (!process.env.SIGNALX_API_KEY?.length) {
+      return Promise.reject('You need SignalX Premium to use this strategy.');
+    }
+
+    try {
+      // multifold objective
+      // 1. stop the non premium members trying this out super early
+      // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
+      const res = await premiumAuthCheck();
+      if (!res) {
+        return Promise.reject('You need SignalX Premium to use this strategy.');
+      }
+    } catch (e) {
+      if (e.isAxiosError) {
+        if (e.response.status === 401) {
+          return Promise.reject('You need SignalX Premium to use this strategy.');
+        }
+        return Promise.reject(e.response.data);
+      }
+    }
   }
 
   if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
@@ -93,10 +113,16 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'POST') {
     let data;
+    const orderTag = nanoid(8);
     try {
+      // for every new job, first create a db entry
+      const postData = {
+        ...req.body,
+        orderTag
+      };
       const response = await axios[req.method.toLowerCase()](
         endpoint,
-        req.body,
+        postData,
         SIGNALX_AXIOS_DB_AUTH
       );
       data = response.data;
@@ -105,10 +131,12 @@ export default withSession(async (req, res) => {
     }
 
     try {
+      // then create the queue entry
       const qRes = await createJob({
         jobData: data,
         user
       });
+      // then patch the db entry with queue entry
       await axios.put(
         `${endpoint}/${data._id}`,
         {
@@ -118,6 +146,7 @@ export default withSession(async (req, res) => {
         },
         SIGNALX_AXIOS_DB_AUTH
       );
+      // done!
       return res.json(data);
     } catch (e) {
       await axios.put(

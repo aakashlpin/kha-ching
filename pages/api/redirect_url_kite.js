@@ -1,7 +1,7 @@
 import { KiteConnect } from 'kiteconnect';
 
 import withSession from '../../lib/session';
-import { storeAccessTokenRemotely } from '../../lib/utils';
+import { getIndexInstruments, premiumAuthCheck, storeAccessTokenRemotely } from '../../lib/utils';
 
 const apiKey = process.env.KITE_API_KEY;
 const kiteSecret = process.env.KITE_API_SECRET;
@@ -22,9 +22,15 @@ export default withSession(async (req, res) => {
     req.session.set('user', user);
     await req.session.save();
 
+    // prepare the day
+    // fire and forget
+    premiumAuthCheck();
+    getIndexInstruments();
+
     // store access token remotely for other services to use it
     storeAccessTokenRemotely(user.session.access_token);
 
+    // then redirect
     res.redirect('/dashboard');
   } catch (error) {
     const { response: fetchResponse } = error;
