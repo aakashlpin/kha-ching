@@ -19,7 +19,7 @@ const WrapperComponent = (props) => {
   const isJobPastScheduledTime = props.runNow || dayjs().isAfter(props.runAt);
   const Heading = () => {
     if (!jobWasQueued) {
-      if (props.status_message) {
+      if (typeof props.status_message === 'string') {
         return (
           <>
             <Typography component="p" color="error">
@@ -30,9 +30,12 @@ const WrapperComponent = (props) => {
         );
       } else {
         return (
-          <Typography component="p" color="error">
-            Something went wrong!
-          </Typography>
+          <>
+            <Typography component="p" color="error">
+              FAILED: Unknown Error
+            </Typography>
+            <Typography component="p">{strategyDetails.heading}</Typography>
+          </>
         );
       }
     }
