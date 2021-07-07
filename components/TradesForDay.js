@@ -8,15 +8,18 @@ import useSWR, { mutate } from 'swr';
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants';
 import BrokerOrders from './lib/brokerOrders';
+import PnLComponent from './lib/pnlComponent';
 import TradeDetails from './lib/tradeDetails';
 
 const WrapperComponent = (props) => {
   const jobWasQueued = props.status !== 'REJECT' && props.queue?.id;
   const { data: jobDetails } = useSWR(jobWasQueued ? `/api/get_job?id=${props.queue.id}` : null);
 
-  const { data: jobOrders, error } = useSWR(
+  const { data: jobOrders } = useSWR(
     props.orderTag ? `/api/get_orders?order_tag=${props.orderTag}` : null
   );
+
+  const { data: pnlData } = useSWR(props.orderTag ? `/api/pnl?order_tag=${props.orderTag}` : null);
 
   const strategyDetails = STRATEGIES_DETAILS[props.strategy];
   const isJobPastScheduledTime = props.runNow || dayjs().isAfter(props.runAt);
@@ -73,10 +76,13 @@ const WrapperComponent = (props) => {
 
       {jobWasQueued ? (
         <div style={{ marginBottom: 8 }}>
-          <Typography variant="subtitle2">
-            Live status —{' '}
-            {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
-          </Typography>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="subtitle2">
+              Live status —{' '}
+              {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
+            </Typography>
+            {pnlData?.pnl ? <PnLComponent pnl={pnlData.pnl} /> : null}
+          </Box>
           {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state) ? (
             <Grid item style={{ marginTop: 16 }}>
               <Button

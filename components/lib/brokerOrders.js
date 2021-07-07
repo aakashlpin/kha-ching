@@ -19,7 +19,7 @@ export default function BrokerOrders({ orders }) {
       </Typography>
       {orders.map((order, idx) => {
         return (
-          <div key={order.id}>
+          <div key={order._id}>
             <Divider style={idx === 0 ? { margin: '0 0 12px 0' } : { margin: '12px 0' }} />
             <Box display="flex" justifyContent="space-between">
               <Box

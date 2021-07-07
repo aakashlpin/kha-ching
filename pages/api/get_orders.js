@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { uniqBy } from 'lodash';
 const advancedFormat = require('dayjs/plugin/advancedFormat');
 dayjs.extend(advancedFormat);
 
@@ -30,8 +31,9 @@ export default withSession(async (req, res) => {
 
     const kite = syncGetKiteInstance(user);
     const rawOrders = ordersInDB?.length ? ordersInDB : await kite.getOrders();
+    const uniqueOrders = uniqBy(rawOrders, (order) => order.order_id);
 
-    const orders = rawOrders
+    const orders = uniqueOrders
       .filter((order) => order.tag === orderTag)
       .sort((a, b) =>
         dayjs(a.order_timestamp).isSame(b.order_timestamp)

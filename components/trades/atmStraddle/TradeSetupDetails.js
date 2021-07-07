@@ -12,6 +12,7 @@ const Details = ({
   slmPercent,
   runNow,
   runAt,
+  expireIfUnsuccessfulInMins,
   _createdOn
 }) => {
   const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
@@ -25,7 +26,8 @@ const Details = ({
         [{ value: 'Skew %' }, { value: maxSkewPercent }],
         [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
         [{ value: 'SLM %' }, { value: slmPercent }],
-        [{ value: scheduleString }, { value: humanTime }]
+        [{ value: scheduleString }, { value: humanTime }],
+        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }]
       ]}
     />
   );
