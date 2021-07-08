@@ -51,11 +51,15 @@ export default withSession(async (req, res) => {
 
     const getHumanTradingSymbol = ({ tradingsymbol }) => {
       const instrumentType = tradingsymbol.substr(tradingsymbol.length - 2, 2);
-      const { expiry, name, strike } = getCurrentExpiryTradingSymbol({
+      const expiryData = getCurrentExpiryTradingSymbol({
         sourceData,
         tradingsymbol,
         instrumentType
       });
+      if (!expiryData) {
+        return null;
+      }
+      const { expiry, name, strike } = expiryData;
       const dateString = dayjs(expiry)
         .format('Do MMM')
         .split(' ')
