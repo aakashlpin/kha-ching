@@ -11,6 +11,7 @@ const Details = ({
   slmPercent,
   runNow,
   runAt,
+  strikeByPrice,
   _createdAt
 }) => {
   const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
@@ -20,6 +21,7 @@ const Details = ({
     <OrdersTable
       rows={[
         [{ value: 'Instrument' }, { value: instrument }],
+        [{ value: 'Strike price' }, { value: strikeByPrice || 'ST Strike' }],
         [{ value: 'Initial lots' }, { value: lots }],
         [{ value: 'Martingale lots' }, { value: martingaleIncrementSize }],
         [{ value: 'Maximum trades' }, { value: maxTrades }],
