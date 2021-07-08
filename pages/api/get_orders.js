@@ -37,7 +37,9 @@ export default withSession(async (req, res) => {
       .filter((order) => order.tag === orderTag)
       .sort((a, b) =>
         dayjs(a.order_timestamp).isSame(b.order_timestamp)
-          ? a.transaction_type === 'BUY'
+          ? a.status === 'TRIGGER PENDING'
+            ? 1
+            : a.transaction_type === 'BUY'
             ? 1
             : -1
           : dayjs(a.order_timestamp).isBefore(b.order_timestamp)

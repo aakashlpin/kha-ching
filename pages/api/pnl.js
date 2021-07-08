@@ -25,7 +25,7 @@ export default withSession(async (req, res) => {
     );
 
     if (!orders.length) {
-      return res.status(400).json({ error: 'PnL not ready yet!' });
+      return res.json({ error: 'PnL not ready yet!' });
     }
 
     const uniqueOrders = uniqBy(orders, (order) => order.order_id);
