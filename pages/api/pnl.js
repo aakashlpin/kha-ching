@@ -40,7 +40,7 @@ export default withSession(async (req, res) => {
       return accum + transactedAmount;
     }, 0);
 
-    res.json({ pnl });
+    res.json({ pnl: pnl.toFixed(2) });
   } catch (e) {
     res.status(500).send(e);
   }

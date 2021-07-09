@@ -77,7 +77,9 @@ export default function BrokerOrders({ orders }) {
                     <Typography variant="body2" className={classes.greyColor}>
                       {order.average_price ? 'Avg.' : order.trigger_price ? 'SL Trigger' : null}
                     </Typography>
-                    <Typography>{order.average_price || order.trigger_price || ''}</Typography>
+                    <Typography>
+                      {order.average_price?.toFixed(2) || order.trigger_price || ''}
+                    </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
                     <Typography variant="body2" className={classes.greyColor}>
