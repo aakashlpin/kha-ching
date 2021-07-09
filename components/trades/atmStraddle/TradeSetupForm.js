@@ -86,23 +86,58 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
               label="# Lots (in multiples of 3 for 1:2 trade)"
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextField
               fullWidth
               name="maxSkewPercent"
               value={state.maxSkewPercent}
               onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
-              label="Acceptable premium skew %"
+              label="Ideal skew %"
             />
           </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              name="thresholdSkewPercent"
+              value={state.thresholdSkewPercent}
+              onChange={(e) => onChange({ thresholdSkewPercent: e.target.value || '' })}
+              label="Threshold skew %"
+            />
+          </Grid>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               name="expireIfUnsuccessfulInMins"
               value={state.expireIfUnsuccessfulInMins}
               onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
-              label="Enter trade irrespective skew after (in mins)"
+              label="Run skew checker for (in mins)"
             />
+          </Grid>
+
+          <Grid item xs={12} style={{ marginBottom: 16 }}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Once skew checker has expired</FormLabel>
+              <RadioGroup
+                aria-label="takeTradeIrrespectiveSkew"
+                name="takeTradeIrrespectiveSkew"
+                value={state.takeTradeIrrespectiveSkew}
+                onChange={(e) =>
+                  onChange({ takeTradeIrrespectiveSkew: !state.takeTradeIrrespectiveSkew })
+                }>
+                <FormControlLabel
+                  value={false}
+                  control={<Radio size="small" />}
+                  label={
+                    <Typography variant="body2">Reject trade as skew never converged</Typography>
+                  }
+                />
+                <FormControlLabel
+                  value={true}
+                  control={<Radio size="small" />}
+                  label={<Typography variant="body2">Enter trade irrespective of skew</Typography>}
+                />
+              </RadioGroup>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12}>
@@ -117,9 +152,9 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
                   <FormControlLabel
                     key={exitStrategy}
                     value={exitStrategy}
-                    control={<Radio />}
+                    control={<Radio size="small" />}
                     label={
-                      <Typography style={{ fontSize: '14px' }}>
+                      <Typography variant="body2">
                         {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
                       </Typography>
                     }
