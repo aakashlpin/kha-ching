@@ -245,6 +245,10 @@ const Plan = () => {
     setStratState({
       ...stratState,
       [strategy]: {
+        // spread the default state so as to future proof new properties getting added in the base strategy
+        // note that the plan will need to be backwards compatible with new props that
+        // newly exist in defaultFormState but don't exist in stratConfig
+        ...STRATEGIES_DETAILS[strategy].defaultFormState,
         ...stratConfig,
         instruments: { [stratConfig.instrument]: true },
         disableInstrumentChange: true

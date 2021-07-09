@@ -15,6 +15,18 @@ export default class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
           />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                var beamer_config = {
+                  product_id : "aMuOMEAg34072" //DO NOT CHANGE: This is your product code on Beamer
+                };
+              `
+            }}></script>
+          <script
+            type="text/javascript"
+            src="https://app.getbeamer.com/js/beamer-embed.js"
+            defer="defer"></script>
         </Head>
         <body>
           <Main />
