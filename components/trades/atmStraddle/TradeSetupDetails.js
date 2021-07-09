@@ -7,12 +7,14 @@ import OrdersTable from '../../lib/ordersTable';
 const Details = ({
   lots,
   maxSkewPercent,
+  thresholdSkewPercent,
   instrument,
   exitStrategy,
   slmPercent,
   runNow,
   runAt,
   expireIfUnsuccessfulInMins,
+  takeTradeIrrespectiveSkew,
   _createdOn
 }) => {
   const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
@@ -23,11 +25,18 @@ const Details = ({
       rows={[
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
-        [{ value: 'Skew %' }, { value: maxSkewPercent }],
+        [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],
+        [{ value: 'Threshold Skew' }, { value: `${thresholdSkewPercent}%` }],
         [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
-        [{ value: 'SLM %' }, { value: slmPercent }],
-        [{ value: scheduleString }, { value: humanTime }],
-        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }]
+        [{ value: 'SL' }, { value: `${slmPercent}%` }],
+        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }],
+        [
+          { value: 'After checker' },
+          {
+            value: takeTradeIrrespectiveSkew ? 'Enter irrespective skew' : 'Reject trade'
+          }
+        ],
+        [{ value: scheduleString }, { value: humanTime }]
       ]}
     />
   );
