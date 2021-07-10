@@ -64,5 +64,6 @@
     "./**/*.{js,jsx,ts,tsx}": [
       "eslint --fix"
     ]
-  }
+  },
+  "cacheDirectories": [".next/cache"]
 }
