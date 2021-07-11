@@ -65,5 +65,7 @@
       "eslint --fix"
     ]
   },
-  "cacheDirectories": [".next/cache"]
+  "cacheDirectories": [
+    ".next/cache"
+  ]
 }
