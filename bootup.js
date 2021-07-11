@@ -2,7 +2,7 @@ var http = require('http');
 
 var options = {
   host: 'localhost',
-  port: '3000',
+  port: '8080',
   path: '/api/user',
   timeout: 5000
 };
