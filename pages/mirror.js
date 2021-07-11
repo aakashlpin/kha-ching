@@ -5,7 +5,7 @@ import { omit } from 'lodash';
 import useSWR, { mutate } from 'swr';
 
 import StratLayout from '../components/StratLayout';
-import useUser from '../lib/useUser';
+import { useUser } from '../lib/customHooks';
 
 const Mirror = () => {
   const { data: mirrorDetails, mirrorApiError } = useSWR('/api/mirror');

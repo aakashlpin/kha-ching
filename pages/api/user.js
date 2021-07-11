@@ -20,6 +20,7 @@ export default withSession(async (req, res) => {
 
       res.json({
         isLoggedIn: true,
+        isClubMember: process.env.CLUB_MEMBER === "true" ? true : false,
         ...user
       });
     } catch (e) {

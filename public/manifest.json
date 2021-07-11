@@ -1,0 +1,12 @@
+{
+    "name": "SignalX trade and club app",
+    "short_name": "SignalX PWA",
+    "theme_color": "#ffffff",
+    "background_color": "#0F3262",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [],
+    "splash_pages": null
+}
