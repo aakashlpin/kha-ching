@@ -6,7 +6,7 @@
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080} & npm run bootup",
-    "bootup": ". /workspace/bootup.sh",
+    "bootup": ". ./bootup.sh",
     "lint": "eslint --fix .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
