@@ -66,6 +66,7 @@ import ATM_Straddle_TradeForm from '../components/trades/atmStraddle/TradeSetupF
 import DOS_TradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm';
 import { getSchedulingStateProps } from '../lib/browserUtils';
 import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants';
+import { useUser } from '../lib/customHooks';
 
 /**
  *
@@ -75,6 +76,8 @@ import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/const
  */
 
 const Plan = () => {
+  const { user } = useUser({ redirectTo: '/' });
+
   const [dayState, setDayState] = useState({
     monday: {
       heading: 'Monday',
@@ -320,6 +323,14 @@ const Plan = () => {
     fn();
   }, []);
 
+  if (!user || user.isLoggedIn === false) {
+    return <Layout>loading...</Layout>;
+  }
+
+  if (user && user.isClubMember) {
+    return Router.push("/dashbaord");
+  }
+
   return (
     <Layout>
       <Typography variant="h5" component="h1" style={{ marginBottom: 16 }}>
@@ -348,9 +359,8 @@ const Plan = () => {
                         <Chip
                           color="secondary"
                           key={`${dayOfWeek}_${strategyKey}`}
-                          label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
-                            INSTRUMENT_DETAILS[config.instrument].displayName
-                          }`}
+                          label={`${STRATEGIES_DETAILS[config.strategy].heading}/${INSTRUMENT_DETAILS[config.instrument].displayName
+                            }`}
                           onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
                           onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
                         />
