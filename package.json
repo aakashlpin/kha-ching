@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
-    "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080} && echo $NEXT_PUBLIC_APP_URL",
+    "start": "TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080}",
+    "poststart": "echo ${NEXT_PUBLIC_APP_URL}",
     "lint": "eslint --fix .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
