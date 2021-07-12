@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
 import fetchJson from '../lib/fetchJson';
-import useUser from '../lib/useUser';
+import { useUser } from '../lib/customHooks';
 
 const APP_GIT_HASH = process.env.NEXT_PUBLIC_GIT_HASH;
 
@@ -42,6 +42,7 @@ const Header = () => {
   }, [recentGitHash]);
 
   const router = useRouter();
+
   return (
     <header style={{ marginBottom: 24 }}>
       <nav>
@@ -51,11 +52,16 @@ const Header = () => {
               <a>Dashboard</a>
             </Link>
           </li>
-          <li>
+          {user?.isClubMember ? null : <li>
+            <Link href="/new-trade">
+              <a>New Trade</a>
+            </Link>
+          </li>}
+          {user?.isClubMember ? null : <li>
             <Link href="/plan">
               <a>Trade Plan</a>
             </Link>
-          </li>
+          </li>}
           {!user?.isLoggedIn && (
             <li>
               <Link href="/">
@@ -96,7 +102,7 @@ const Header = () => {
           {isUpdateAvailable ? (
             <li>
               <a href="https://cloud.digitalocean.com/apps" title="App update available">
-                <NotificationsActiveIcon color="default" />
+                <NotificationsActiveIcon />
               </a>
             </li>
           ) : null}

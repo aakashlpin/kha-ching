@@ -1,5 +1,5 @@
 import Layout from '../components/Layout';
-import useUser from '../lib/useUser';
+import { useUser } from '../lib/customHooks';
 
 const Profile = () => {
   const { user } = useUser({ redirectTo: '/' });

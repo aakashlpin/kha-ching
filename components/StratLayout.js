@@ -1,6 +1,6 @@
 import React from 'react';
 
-import useUser from '../lib/useUser';
+import { useUser } from '../lib/customHooks';
 import Footer from './Footer';
 import Layout from './Layout';
 
