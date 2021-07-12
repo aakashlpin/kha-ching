@@ -72,15 +72,17 @@ const TRADE_STATUS_DISPLAY_CONFIG = {
 
 // NOTE: status logic based on pnl
 // i.e. if each of the trade has pnl data available that means trade is complete
-
+// TODO: @Aakash have a look at this logic to show trade status to club members
 export default function TradeStatus({ trades, handleTradeComplete }) {
     if (!trades || trades.length < 1) return null;
 
+    /* NOTE: current assumption is that if trade is found then by default
+    show active to user until and unless all trades return with pnl data */
     const [tradeStatus, setTradeStatus] = useState("active");
     const { trades: tradesWithPnl, isLoading } = usePnL(trades.filter(trade => trade.status !== 'REJECT' && trade.queue?.id))
 
     useEffect(() => {
-        if (!isLoading && Array.isArray(tradesWithPnl)) {
+        if (!isLoading && Array.isArray(tradesWithPnl) && tradesWithPnl.length) {
             const isCompleted = tradesWithPnl.every(trade => trade.pnl);
             if (isCompleted) {
                 setTradeStatus("completed");

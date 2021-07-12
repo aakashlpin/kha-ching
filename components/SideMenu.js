@@ -43,14 +43,14 @@ export default function SideMenu({ isOpen, handleClose }) {
 
     return (
         <Drawer open={isOpen} onClose={() => handleClose(false)} className={classes.drawer}>
-            <Box display="flex" className={classes.nameContainer}>
+            <Box display="flex" alignItems="center" className={classes.nameContainer}>
                 {user?.session?.avatar_url && (
                     <img
                         alt={user.session.user_shortname}
                         src={user.session.avatar_url}
-                        stle={{ marginRight: "8px" }}
-                        width={20}
-                        height={20}
+                        style={{ marginRight: "8px", borderRadius: "50%" }}
+                        width={30}
+                        height={30}
                     />
                 )}
                 <Typography variant="h6">
