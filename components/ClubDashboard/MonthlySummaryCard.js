@@ -5,6 +5,8 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 export default function MonthlySummaryCard() {
+
+    // TODO: @Aakash Integrate with real api
     const { data: monthlySummary } = useSWR("/api/monthly_summary", () => {
         return {
             month: "July",

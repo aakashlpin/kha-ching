@@ -46,7 +46,7 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
     }
 
     const todaysPlanAggregatedMeta = todaysPlans.reduce((accm, plan) => {
-        // NOTE: Remove this once meta data starts coming in plan and trade api
+        // TODO: @Aakash Remove this once meta data starts coming in plan and trade api
         plan.meta = {
             tradingAmount: 1000000,
             optionsTraded: ["NIFTY", "BANK NIFTY"],
@@ -89,7 +89,7 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
                     {title}
                 </Typography>
                 <Box>
-                    {isTradeCompleted && completedTrade && completedTrade.orderTag ?
+                    {isTradeCompleted && completedTradesWithPnl && completedTradesWithPnl.length ?
                         <TradeCompletedInfo completedTradesWithPnl={completedTradesWithPnl} />
                         :
                         planInfoToDisplay.map(info =>
