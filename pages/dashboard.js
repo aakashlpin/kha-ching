@@ -1,12 +1,12 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import { Box, Link, Typography } from '@material-ui/core';
-import Skeleton from '@material-ui/lab/Skeleton';
 import Alert from '@material-ui/lab/Alert';
+import Skeleton from '@material-ui/lab/Skeleton';
 import dayjs from 'dayjs';
 
+import ClubDashboardLayout from '../components/ClubDashboard/ClubDashboardLayout';
 import Footer from '../components/Footer';
 import Layout from '../components/Layout';
-import ClubDashboardLayout from '../components/ClubDashboard/ClubDashboardLayout';
 import TradesDashboardLayout from '../components/TradesDashboard/TradesDashboardLayout';
 import { useUser } from '../lib/customHooks';
 
@@ -16,18 +16,16 @@ const Dashboard = ({ hasDbSetup }) => {
   if (!user || user.isLoggedIn === false) {
     return (
       <>
-        <Skeleton variant="rect" width={"100%"} height={40} style={{ marginBottom: "16px" }} />
-        <Skeleton variant="rect" width={"100%"} height={200} />
+        <Skeleton variant="rect" width={'100%'} height={40} style={{ marginBottom: '16px' }} />
+        <Skeleton variant="rect" width={'100%'} height={200} />
       </>
-    )
+    );
   }
 
   return (
     <Layout>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb="24px">
-        <Typography variant="h5">
-          Hello, {user?.session?.user_shortname}
-        </Typography>
+        <Typography variant="h5">Hello, {user?.session?.user_shortname}</Typography>
         <Typography variant="subtitle2">
           {dayjs().format('dddd')} / {dayjs().format('DD MMM YYYY')}
         </Typography>
@@ -43,9 +41,14 @@ const Dashboard = ({ hasDbSetup }) => {
         </Alert>
       ) : null}
 
-      {
-        user?.isClubMember ? <ClubDashboardLayout /> : <><TradesDashboardLayout /><Footer /></>
-      }
+      {user?.isClubMember ? (
+        <ClubDashboardLayout />
+      ) : (
+        <>
+          <TradesDashboardLayout />
+          <Footer />
+        </>
+      )}
     </Layout>
   );
 };
@@ -58,7 +61,7 @@ export async function getStaticProps(context) {
   const hasDbSetup = !!(DATABASE_HOST_URL && DATABASE_USER_KEY && DATABASE_API_KEY);
   return {
     props: {
-      hasDbSetup,
+      hasDbSetup
     } // will be passed to the page component as props
   };
 }
