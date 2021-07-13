@@ -1,9 +1,10 @@
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import { isLengthyArray } from '../../lib/uiHelpers';
 
 export default function TradeCompletedInfo({ completedTradesWithPnl }) {
 
-    if (!Array.isArray(completedTradesWithPnl) || !completedTradesWithPnl.length) {
+    if (!isLengthyArray(completedTradesWithPnl)) {
         return null;
     }
 

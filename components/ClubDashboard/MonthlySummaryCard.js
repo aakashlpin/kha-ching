@@ -3,32 +3,25 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import useSWR from 'swr';
+import { inrFormatter } from '../../lib/uiHelpers';
 
 export default function MonthlySummaryCard() {
   // TODO: @Aakash Integrate with real api
-  const { data: monthlySummary } = useSWR('/api/monthly_summary', () => {
+  const { data: monthlySummary } = useSWR("/api/monthly_summary", () => {
     return {
-      month: 'July',
-      totalPL: '-5800',
+      month: "July",
+      totalPL: -5800,
       maxDayLoss: 3700,
       maxDayProfit: 2300
-    };
-  });
+    }
+  })
 
   if (monthlySummary && monthlySummary.month) {
     const summaryLineItems = [
-      {
-        label: `total P/L for ${monthlySummary.month}`,
-        value: monthlySummary.totalPL,
-        valueColor: monthlySummary.totalPL >= 0 ? 'success' : 'error'
-      },
-      { label: `max loss in a day`, value: monthlySummary.maxDayLoss, valueColor: 'error' },
-      {
-        label: `highest profit in a day`,
-        value: monthlySummary.maxDayProfit,
-        valueColor: 'success'
-      }
-    ];
+      { label: `total P/L for ${monthlySummary.month}`, value: inrFormatter.format(monthlySummary.totalPL), valueColor: monthlySummary.totalPL >= 0 ? "success" : "error" },
+      { label: `max loss in a day`, value: inrFormatter.format(monthlySummary.maxDayLoss), valueColor: "error" },
+      { label: `highest profit in a day`, value: inrFormatter.format(monthlySummary.maxDayProfit), valueColor: "success" }
+    ]
 
     return (
       <Card>

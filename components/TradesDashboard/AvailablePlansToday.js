@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 
 import { STRATEGIES_DETAILS } from '../../lib/constants';
 import TradeDetails from '../lib/tradeDetails';
+import { isLengthyArray } from "../../lib/uiHelpers";
 
 export default function AvailablePlansToday({ plan, scheduleableTrades, pendingTrades }) {
   async function handleScheduleJob(plan) {
@@ -21,7 +22,7 @@ export default function AvailablePlansToday({ plan, scheduleableTrades, pendingT
     // this condition will never be reached as we don't show the button in the UI
     // if there's nothing to schedule
     // but keeping it just in case
-    if (!(Array.isArray(scheduleableTrades) && scheduleableTrades.length)) {
+    if (!isLengthyArray(scheduleableTrades)) {
       return;
     }
     await Promise.all(scheduleableTrades.map(handleScheduleJob));

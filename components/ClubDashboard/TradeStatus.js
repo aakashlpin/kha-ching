@@ -4,6 +4,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { useEffect, useState } from 'react';
 
 import { usePnL } from '../../lib/customHooks';
+import { isLengthyArray } from '../../lib/uiHelpers';
 
 // NOTE: How to handle all these cases and what to show to club user? @Aakash
 const TRADE_STATUS_DISPLAY_CONFIG = {
@@ -78,20 +79,19 @@ export default function TradeStatus({ trades, handleTradeComplete }) {
 
   /* NOTE: current assumption is that if trade is found then by default
     show active to user until and unless all trades return with pnl data */
-  const [tradeStatus, setTradeStatus] = useState('active');
-  const { trades: tradesWithPnl, isLoading } = usePnL(
-    trades.filter((trade) => trade.status !== 'REJECT' && trade.queue?.id)
-  );
+  const [tradeStatus, setTradeStatus] = useState("active");
+  const { trades: tradesWithPnl, isLoading } = usePnL(trades.filter(trade => trade.status !== 'REJECT' && trade.queue?.id))
 
   useEffect(() => {
-    if (!isLoading && Array.isArray(tradesWithPnl) && tradesWithPnl.length) {
-      const isCompleted = tradesWithPnl.every((trade) => trade.pnl);
+    if (!isLoading && isLengthyArray(tradesWithPnl)) {
+      const isCompleted = tradesWithPnl.every(trade => trade.pnl);
       if (isCompleted) {
-        setTradeStatus('completed');
+        setTradeStatus("completed");
         handleTradeComplete(tradesWithPnl);
       }
     }
-  }, [tradesWithPnl, isLoading]);
+  }, [tradesWithPnl, isLoading])
+
 
   return (
     <>

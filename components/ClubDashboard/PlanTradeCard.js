@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react';
 
 import TradeCompletedInfo from './TradeCompletedInfo';
 import TradeStatus from './TradeStatus';
+import { inrFormatter, isLengthyArray } from '../../lib/uiHelpers';
 
 /**
  * Assumption: If a club user has trade for the day, then he/she must have plan too
@@ -25,15 +26,17 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
     setCompletedTradesWithPnl(tradesWithPnl);
   });
 
-  if (!todaysPlans || todaysPlans.length < 1) {
+  if (!isLengthyArray(todaysPlans)) {
     return (
-      <Card style={{ backgroundColor: '#FFE68F', padding: '16px' }}>
+      <Card style={{ backgroundColor: "#FFE68F", padding: "16px" }}>
         <Typography variant="body2">
           You don&apos;t have any plan for {dayOfWeekHuman} yet.
-        </Typography>
+                    </Typography>
       </Card>
-    );
+    )
   }
+
+  const hasTradeStarted = tradesDay && tradesDay.length;
 
   async function handleScheduleJob(plan) {
     const { runAt } = plan;
@@ -43,6 +46,17 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
       plan_ref: plan._id,
       runNow
     });
+    mutate('/api/trades_day');
+  }
+
+  async function handleScheduleEverything() {
+    // this condition will never be reached as we don't show the button in the UI
+    // if there's nothing to schedule
+    // but keeping it just in case
+    if (!isLengthyArray(todaysPlans) || hasTradeStarted) {
+      return;
+    }
+    await Promise.all(todaysPlans.map(handleScheduleJob));
     mutate('/api/trades_day');
   }
 
@@ -73,26 +87,12 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
     }
   );
 
-  const hasTradeStarted = tradesDay && tradesDay.length;
-
   const planInfoToDisplay = [
-    {
-      label: 'Trading Amount',
-      value: `upto ₹ ${todaysPlanAggregatedMeta.tradingAmount}`,
-      valueColor: 'primary'
-    },
-    {
-      label: 'Options traded',
-      value: [...new Set(todaysPlanAggregatedMeta.optionsTraded)].join(', '),
-      valueColor: 'primary'
-    },
-    { label: 'Max loss possible', value: todaysPlanAggregatedMeta.maxLoss, valueColor: 'error' },
-    { label: 'Average profit', value: todaysPlanAggregatedMeta.avgProfit, valueColor: 'success' },
-    {
-      label: 'Chances of positive returns',
-      value: `${todaysPlanAggregatedMeta.successChance}/10`,
-      valueColor: 'primary'
-    }
+    { label: "Trading Amount", value: `upto ${inrFormatter.format(todaysPlanAggregatedMeta.tradingAmount)}`, valueColor: "primary" },
+    { label: "Options traded", value: [... new Set(todaysPlanAggregatedMeta.optionsTraded)].join(', '), valueColor: "primary" },
+    { label: "Max loss possible", value: inrFormatter.format(todaysPlanAggregatedMeta.maxLoss), valueColor: "error" },
+    { label: "Average profit", value: inrFormatter.format(todaysPlanAggregatedMeta.avgProfit), valueColor: "success" },
+    { label: "Chances of positive returns", value: `${todaysPlanAggregatedMeta.successChance}/10`, valueColor: "primary" },
   ];
 
   const title = hasTradeStarted ? "Today's trade" : 'Your plan for the day';
@@ -131,7 +131,7 @@ export default function PlanTradeCard({ tradesDay, todaysPlans }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => handleScheduleJob(plan)}
+            onClick={() => handleScheduleEverything()}
             fullWidth>
             schedule trade
           </Button>
