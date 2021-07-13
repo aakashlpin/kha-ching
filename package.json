@@ -27,6 +27,7 @@
     "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",
     "lodash": "^4.17.21",
+    "memoizee": "^0.4.15",
     "nanoid": "^3.1.23",
     "next": "10.0.7",
     "next-iron-session": "^4.1.11",
