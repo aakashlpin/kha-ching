@@ -1,16 +1,53 @@
-import { Box, Divider, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import ScheduleIcon from '@material-ui/icons/Schedule';
+import axios from 'axios';
 import dayjs from 'dayjs';
 import React from 'react';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2)
+  },
   greyColor: { color: '#636363' }
-});
+}));
 
-export default function BrokerOrders({ orders }) {
+export default function BrokerOrders({ orders, trades, dbOrders }) {
   const classes = useStyles();
+
+  console.log(dbOrders);
+
+  const handleChange = async ({ orderId, orderTag }) => {
+    await axios.put('/api/reconcile', {
+      orderId,
+      orderTag
+    });
+  };
+
+  const tradeMapByOrderTag = trades.reduce(
+    (accum, trade) => ({
+      ...accum,
+      [trade.orderTag]: {
+        ...trade,
+        selectDisplayName: `${trade.strategy} / ${trade.instrument} / ${
+          trade.exitStrategy
+        } / ${dayjs(trade.runAt).format('hh:mm A')}`
+      }
+    }),
+    {}
+  );
+
+  const allTags = Object.keys(tradeMapByOrderTag);
 
   return (
     <>
@@ -89,6 +126,38 @@ export default function BrokerOrders({ orders }) {
                   </Box>
                 </Box>
               </Box>
+            </Box>
+            <Box>
+              <Grid item xs={6}>
+                <FormControl className={classes.formControl}>
+                  <InputLabel id={`tag_${idx}`}>Broker Tag</InputLabel>
+                  <Select
+                    style={{ fontSize: '12px' }}
+                    labelId={`tag_${idx}`}
+                    id={`tag_${idx}`}
+                    value={order.tag}
+                    onChange={(e) =>
+                      handleChange({
+                        orderId: order.order_id,
+                        orderTag: e.target.value
+                      })
+                    }>
+                    <MenuItem key={`tag_${idx}_null`} value={null}>
+                      Delete tag
+                    </MenuItem>
+                    {allTags.map((tag) => (
+                      <MenuItem key={`tag_${idx}_${tag}`} value={tag}>
+                        {tradeMapByOrderTag[tag]?.selectDisplayName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography>
+                  System tag: {dbOrders.find((dbOrder) => dbOrder.order_id === order.order_id)?.tag}
+                </Typography>
+              </Grid>
             </Box>
           </div>
         );

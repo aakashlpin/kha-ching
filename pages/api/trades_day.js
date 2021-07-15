@@ -10,15 +10,14 @@ import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { isMarketOpen, premiumAuthCheck, withoutFwdSlash } from '../../lib/utils';
+import {
+  isMarketOpen,
+  premiumAuthCheck,
+  SIGNALX_AXIOS_DB_AUTH,
+  withoutFwdSlash
+} from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
-
-const SIGNALX_AXIOS_DB_AUTH = {
-  headers: {
-    'x-api-key': DATABASE_API_KEY
-  }
-};
 
 async function createJob({ jobData, user }) {
   const {
