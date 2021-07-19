@@ -25,8 +25,6 @@ const useStyles = makeStyles((theme) => ({
 export default function BrokerOrders({ orders, trades, dbOrders }) {
   const classes = useStyles();
 
-  console.log(dbOrders);
-
   const handleChange = async ({ orderId, orderTag }) => {
     await axios.put('/api/reconcile', {
       orderId,
