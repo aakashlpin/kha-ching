@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Typography } from '@material-ui/core';
+import { Box, Button, Divider, Grid, Typography } from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -10,6 +10,8 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -24,6 +26,30 @@ const useStyles = makeStyles((theme) => ({
 
 export default function BrokerOrders({ orders, trades, dbOrders }) {
   const classes = useStyles();
+  const [tradeMapByOrderTag, setTradeMapByOrderTag] = useState({});
+  const [allTags, setAllTags] = useState([]);
+
+  useEffect(() => {
+    if (!trades?.length) {
+      return;
+    }
+
+    const reducedTags = trades.reduce(
+      (accum, trade) => ({
+        ...accum,
+        [trade.orderTag]: {
+          ...trade,
+          selectDisplayName: `${trade.strategy} / ${trade.instrument} / ${
+            trade.exitStrategy
+          } / ${dayjs(trade.runAt).format('hh:mm A')}`
+        }
+      }),
+      {}
+    );
+
+    setTradeMapByOrderTag(reducedTags);
+    setAllTags(Object.keys(reducedTags));
+  }, [trades]);
 
   const handleChange = async ({ orderId, orderTag }) => {
     await axios.put('/api/reconcile', {
@@ -31,21 +57,6 @@ export default function BrokerOrders({ orders, trades, dbOrders }) {
       orderTag
     });
   };
-
-  const tradeMapByOrderTag = trades.reduce(
-    (accum, trade) => ({
-      ...accum,
-      [trade.orderTag]: {
-        ...trade,
-        selectDisplayName: `${trade.strategy} / ${trade.instrument} / ${
-          trade.exitStrategy
-        } / ${dayjs(trade.runAt).format('hh:mm A')}`
-      }
-    }),
-    {}
-  );
-
-  const allTags = Object.keys(tradeMapByOrderTag);
 
   return (
     <>
@@ -125,38 +136,54 @@ export default function BrokerOrders({ orders, trades, dbOrders }) {
                 </Box>
               </Box>
             </Box>
-            <Box>
-              <Grid item xs={6}>
-                <FormControl className={classes.formControl}>
-                  <InputLabel id={`tag_${idx}`}>Broker Tag</InputLabel>
-                  <Select
-                    style={{ fontSize: '12px' }}
-                    labelId={`tag_${idx}`}
-                    id={`tag_${idx}`}
-                    value={order.tag}
-                    onChange={(e) =>
-                      handleChange({
-                        orderId: order.order_id,
-                        orderTag: e.target.value
-                      })
-                    }>
-                    <MenuItem key={`tag_${idx}_null`} value={null}>
-                      Delete tag
-                    </MenuItem>
-                    {allTags.map((tag) => (
-                      <MenuItem key={`tag_${idx}_${tag}`} value={tag}>
-                        {tradeMapByOrderTag[tag]?.selectDisplayName}
+            {trades ? (
+              <Box>
+                <Grid item xs={6}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id={`tag_${idx}`}>Broker Tag</InputLabel>
+                    <Select
+                      style={{ fontSize: '12px' }}
+                      labelId={`tag_${idx}`}
+                      id={`tag_${idx}`}
+                      value={order.tag}
+                      onChange={(e) =>
+                        handleChange({
+                          orderId: order.order_id,
+                          orderTag: e.target.value
+                        })
+                      }>
+                      <MenuItem key={`tag_${idx}_null`} value={null}>
+                        Delete tag
                       </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography>
-                  System tag: {dbOrders.find((dbOrder) => dbOrder.order_id === order.order_id)?.tag}
-                </Typography>
-              </Grid>
-            </Box>
+                      {allTags.map((tag) => (
+                        <MenuItem key={`tag_${idx}_${tag}`} value={tag}>
+                          ({tag}) {tradeMapByOrderTag[tag]?.selectDisplayName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2">
+                    System tag:{' '}
+                    {dbOrders.find((dbOrder) => dbOrder.order_id === order.order_id)?.tag ||
+                      'Untagged'}
+                    {order.tag ? (
+                      <Button
+                        variant="contained"
+                        onClick={() =>
+                          handleChange({
+                            orderTag: order.tag,
+                            orderId: order.order_id
+                          })
+                        }>
+                        Copy broker tag
+                      </Button>
+                    ) : null}
+                  </Typography>
+                </Grid>
+              </Box>
+            ) : null}
           </div>
         );
       })}
