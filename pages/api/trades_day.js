@@ -1,7 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { pick } from 'lodash';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
 import { tradingQueue } from '../../lib/queue';
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
@@ -10,15 +10,16 @@ import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants';
 import console from '../../lib/logging';
 import { addToNextQueue, TRADING_Q_NAME } from '../../lib/queue';
 import withSession from '../../lib/session';
-import { isMarketOpen, premiumAuthCheck, withoutFwdSlash } from '../../lib/utils';
+import {
+  isMarketOpen,
+  premiumAuthCheck,
+  SIGNALX_AXIOS_DB_AUTH,
+  withoutFwdSlash
+} from '../../lib/utils';
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false;
 
-const SIGNALX_AXIOS_DB_AUTH = {
-  headers: {
-    'x-api-key': DATABASE_API_KEY
-  }
-};
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8);
 
 async function createJob({ jobData, user }) {
   const {
@@ -113,7 +114,7 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'POST') {
     let data;
-    const orderTag = nanoid(8);
+    const orderTag = nanoid();
     try {
       // for every new job, first create a db entry
       const postData = {
