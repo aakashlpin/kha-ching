@@ -1,3 +1,7 @@
+/**
+ * [WIP]
+ */
+
 import axios from 'axios';
 
 import { STRATEGIES } from '../../lib/constants';
@@ -34,6 +38,7 @@ export default async function getRisk(req, res) {
     const { strategy, instrument, lots, slmPercent } = plan;
     switch (strategy) {
       case STRATEGIES.ATM_STRADDLE: {
+        return res.json(plan);
       }
     }
 

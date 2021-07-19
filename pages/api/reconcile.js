@@ -2,26 +2,12 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { uniq } from 'lodash';
 
-import { STRATEGIES } from '../../lib/constants';
 import withSession from '../../lib/session';
 import { SIGNALX_AXIOS_DB_AUTH, syncGetKiteInstance, withoutFwdSlash } from '../../lib/utils';
 
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env;
 
-/**
- *
- * this api can accept plan id or internal order id
- *
- * and should be able to return {
- *    margin: 1000000,
- *    loss_range: [34000,54000],
- *    win_range: [1000,20000],
- *    pop: 6.5,
- * }
- */
-
 export default withSession(async (req, res) => {
-  // https://db.signalx.trade/day_kt3d3p6gel2j3i17/15072021
   const date = dayjs().format('DDMMYYYY');
   const user = req.session.get('user');
 
