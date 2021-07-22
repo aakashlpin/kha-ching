@@ -1,5 +1,7 @@
 import { ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
 
+jest.setTimeout(ms(60))
+
 test('should retry failed remote response', async () => {
   const remoteFn = jest.fn()
     .mockResolvedValue(true)
@@ -66,8 +68,6 @@ test('should retry 3 times for orders that after punching continue to not exist,
 })
 
 test('should return false when order history api check times out', async () => {
-  jest.setTimeout(ms(15))
-
   let kite = syncGetKiteInstance(user)
   kite = {
     ...kite,
@@ -84,8 +84,10 @@ test('should return false when order history api check times out', async () => {
   const ensured = await remoteOrderSuccessEnsurer({
     __kite: kite,
     orderProps: {},
+    ensureOrderState: kite.STATUS_COMPLETE,
     retryEveryMs: ms(1),
-    retryAttempts: 5,
+    retryAttempts: 2,
+    orderStatusCheckTimeout: ms(5),
     user
   })
 
