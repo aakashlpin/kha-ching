@@ -27,14 +27,15 @@ test('should return true for successful order', async () => {
   jest.setTimeout(ms(60))
 
   const kite = syncGetKiteInstance(user)
-  // expect(kite).toBeDefined()
+  expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '210722202324435'
+    order_id: '210722200439620'
   })
 
   const ensured = await remoteOrderSuccessEnsurer({
     __kite: kite,
+    ensureOrderState: kite.STATUS_COMPLETE,
     orderProps: {},
     retryEveryMs: ms(1),
     retryAttempts: 5,
@@ -44,28 +45,30 @@ test('should return true for successful order', async () => {
   expect(ensured).toBe(true)
 })
 
-test('should return REJECTED for order that does not exist ', async () => {
+test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
 
   const kite = syncGetKiteInstance(user)
-  // expect(kite).toBeDefined()
+  expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '21072220232443'
+    order_id: '21172220232443'
   })
 
   await expect(remoteOrderSuccessEnsurer({
     __kite: kite,
+    ensureOrderState: kite.STATUS_COMPLETE,
     orderProps: {},
     retryEveryMs: ms(1),
-    retryAttempts: 5,
+    retryAttempts: 3,
     user
   })).rejects.toThrow('TIMEDOUT')
 })
 
-let kite
-beforeEach(() => {
-  kite = syncGetKiteInstance(user)
+test('should return false when order history api check times out', async () => {
+  jest.setTimeout(ms(15))
+
+  let kite = syncGetKiteInstance(user)
   kite = {
     ...kite,
     placeOrder: jest.fn().mockResolvedValue({
@@ -75,10 +78,6 @@ beforeEach(() => {
       status: 'VALIDATION PENDING'
     }]))
   }
-})
-
-test('should return false when order history api does not return COMPLETED', async () => {
-  jest.setTimeout(ms(15))
 
   expect(kite).toBeDefined()
 
