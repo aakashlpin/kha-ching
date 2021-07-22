@@ -1,14 +1,14 @@
-import React from 'react';
+import React from 'react'
 
-import useUser from '../lib/useUser';
-import Footer from './Footer';
-import Layout from './Layout';
+import useUser from '../lib/useUser'
+import Footer from './Footer'
+import Layout from './Layout'
 
 const StratLayout = ({ children }) => {
-  const { user } = useUser({ redirectTo: '/' });
+  const { user } = useUser({ redirectTo: '/' })
 
   if (!user || user.isLoggedIn === false) {
-    return <Layout>loading...</Layout>;
+    return <Layout>loading...</Layout>
   }
 
   return (
@@ -16,7 +16,7 @@ const StratLayout = ({ children }) => {
       {children}
       <Footer />
     </Layout>
-  );
-};
+  )
+}
 
-export default StratLayout;
+export default StratLayout

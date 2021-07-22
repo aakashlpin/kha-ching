@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
-import { STRATEGIES } from '../../lib/constants';
-import ATM_StraddleDetails from '../trades/atmStraddle/TradeSetupDetails';
-import DOS_Details from '../trades/directionalOptionSelling/TradeSetupDetails';
+import { STRATEGIES } from '../../lib/constants'
+import ATM_StraddleDetails from '../trades/atmStraddle/TradeSetupDetails'
+import DOS_Details from '../trades/directionalOptionSelling/TradeSetupDetails'
 
 const TradeDetails = ({ strategy, tradeDetails, jobDetails }) => {
   return (
@@ -13,7 +13,7 @@ const TradeDetails = ({ strategy, tradeDetails, jobDetails }) => {
         <DOS_Details {...tradeDetails} {...jobDetails} />
       ) : null}
     </>
-  );
-};
+  )
+}
 
-export default TradeDetails;
+export default TradeDetails

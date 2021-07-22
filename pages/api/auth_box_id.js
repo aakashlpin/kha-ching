@@ -1,7 +1,7 @@
-import axios from 'axios';
-import dayjs from 'dayjs';
-const isSameOrBefore = require('dayjs/plugin/isSameOrBefore');
-dayjs.extend(isSameOrBefore);
+import axios from 'axios'
+import dayjs from 'dayjs'
+const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
+dayjs.extend(isSameOrBefore)
 
 export default async (req, res) => {
   try {
@@ -14,30 +14,30 @@ export default async (req, res) => {
           Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
         }
       }
-    );
+    )
 
-    const { records = [] } = data;
+    const { records = [] } = data
     if (!records.length) {
       return res.json({
         allowed: false,
         message: 'User not found.'
-      });
+      })
     }
 
-    const [user] = records;
+    const [user] = records
     const {
       fields: { Expires }
-    } = user;
+    } = user
 
     return res.json({
       expireOn: Expires,
       allowed: dayjs().isSameOrBefore(dayjs(Expires, 'YYYY-MM-DD'), 'day')
-    });
+    })
   } catch (e) {
-    console.log('[auth_box_id] error', e);
+    console.log('[auth_box_id] error', e)
     return res.json({
       allowed: false,
       message: 'Remote error'
-    });
+    })
   }
-};
+}

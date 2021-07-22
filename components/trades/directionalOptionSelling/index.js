@@ -1,20 +1,20 @@
-import axios from 'axios';
-import { omit } from 'lodash';
-import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import axios from 'axios'
+import { omit } from 'lodash'
+import { useRouter } from 'next/router'
+import React, { useEffect, useState } from 'react'
 
 import {
   commonOnChangeHandler,
   formatFormDataForApi,
   getSchedulingStateProps
-} from '../../../lib/browserUtils';
+} from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
   INSTRUMENTS,
   STRATEGIES,
   STRATEGIES_DETAILS
-} from '../../../lib/constants';
-import Form from './TradeSetupForm';
+} from '../../../lib/constants'
+import Form from './TradeSetupForm'
 
 const DirectionTradeSetup = ({
   strategy = STRATEGIES.DIRECTIONAL_OPTION_SELLING,
@@ -25,29 +25,29 @@ const DirectionTradeSetup = ({
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
   ]
 }) => {
-  const router = useRouter();
-  const { heading } = STRATEGIES_DETAILS[strategy];
+  const router = useRouter()
+  const { heading } = STRATEGIES_DETAILS[strategy]
   const getDefaultState = () => ({
     ...STRATEGIES_DETAILS[strategy].defaultFormState,
     ...getSchedulingStateProps(strategy)
-  });
+  })
 
-  const [state, setState] = useState(getDefaultState());
+  const [state, setState] = useState(getDefaultState())
 
   const onSubmit = async (formattedStateForApiProps = {}) => {
     if (state.runNow) {
-      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?');
+      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?')
       if (!yes) {
         setState({
           ...state,
           runNow: false
-        });
-        return;
+        })
+        return
       }
     }
 
-    function handleSyncJob(props) {
-      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }));
+    function handleSyncJob (props) {
+      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }))
     }
 
     try {
@@ -61,23 +61,23 @@ const DirectionTradeSetup = ({
               strategy
             })
           )
-      );
+      )
 
-      setState(getDefaultState());
+      setState(getDefaultState())
 
-      router.push('/dashboard?tabId=0');
+      router.push('/dashboard?tabId=0')
     } catch (e) {
-      console.error(e);
+      console.error(e)
     }
-  };
+  }
 
-  const onChange = (props) => commonOnChangeHandler(props, state, setState);
+  const onChange = (props) => commonOnChangeHandler(props, state, setState)
 
   useEffect(() => {
     if (state.runNow) {
-      onSubmit();
+      onSubmit()
     }
-  }, [state.runNow]);
+  }, [state.runNow])
 
   return (
     <div style={{ marginBottom: '60px' }}>
@@ -91,7 +91,7 @@ const DirectionTradeSetup = ({
         entryStrategies={entryStrategies}
       />
     </div>
-  );
-};
+  )
+}
 
-export default DirectionTradeSetup;
+export default DirectionTradeSetup

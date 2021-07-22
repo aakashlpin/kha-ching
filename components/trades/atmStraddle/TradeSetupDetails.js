@@ -1,8 +1,8 @@
-import dayjs from 'dayjs';
-import React from 'react';
+import dayjs from 'dayjs'
+import React from 'react'
 
-import { EXIT_STRATEGIES_DETAILS } from '../../../lib/constants';
-import OrdersTable from '../../lib/ordersTable';
+import { EXIT_STRATEGIES_DETAILS } from '../../../lib/constants'
+import OrdersTable from '../../lib/ordersTable'
 
 const Details = ({
   lots,
@@ -17,8 +17,8 @@ const Details = ({
   takeTradeIrrespectiveSkew,
   _createdOn
 }) => {
-  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA';
-  const humanTime = dayjs(runNow ? _createdOn : runAt).format('hh:mma');
+  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA'
+  const humanTime = dayjs(runNow ? _createdOn : runAt).format('hh:mma')
 
   return (
     <OrdersTable
@@ -39,7 +39,7 @@ const Details = ({
         [{ value: scheduleString }, { value: humanTime }]
       ]}
     />
-  );
-};
+  )
+}
 
-export default Details;
+export default Details
