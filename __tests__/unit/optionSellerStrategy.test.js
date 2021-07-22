@@ -5,9 +5,8 @@ import { COMPLETED_ORDER_RESPONSE } from '../../lib/strategies/mockData/orderRes
 import optionSellerStrategy from '../../lib/strategies/optionSellerStrategy'
 import { syncGetKiteInstance } from '../../lib/utils'
 
+const user = JSON.parse(process.env.USER_SESSION)
 // jest.mock('kite')
-
-const user = { isLoggedIn: true, session: { user_type: 'individual', email: 'aakash.lpin@gmail.com', user_name: 'Aakash Goel', user_shortname: 'Aakash', broker: 'ZERODHA', exchanges: ['NSE', 'NFO', 'MF', 'BFO', 'CDS', 'BSE'], products: ['CNC', 'NRML', 'MIS', 'BO', 'CO'], order_types: ['MARKET', 'LIMIT', 'SL', 'SL-M'], avatar_url: 'https://s3.ap-south-1.amazonaws.com/zerodha-kite-blobs/avatars/KPlpxkWu8FAmNPpRuVeVkXnj0ZwvTfXt.png', user_id: 'ZX9591', api_key: 'qq1ok72p4s2ujtbv', access_token: '1aFb877Cpy0IQWp6ovwS8EqiDVW4ge3O', public_token: 'tn68OgaAai60FzG6JhXFB5gg8DTYdUIB', enctoken: 'adMYRZnK6kZuFkz8w5tZA00+oNl9UlH1CPCWeBSl15G5P1HUXtQ3CyLqelFpJBCP2C1MkOx0ZzHnPQMY+Qmg5iUbDUXaRvKgaAe0e8LjxiTUcrSuwRnxQFO/LWEiB/U=', refresh_token: '', silo: '', login_time: '2021-07-21T04:31:59.000Z', meta: { demat_consent: 'physical' } } }
 
 test('Should fetch 15 min data', async () => {
   // const optionInstruments = await optionSellerStrategy({ instrument: INSTRUMENTS.NIFTY })
@@ -15,8 +14,7 @@ test('Should fetch 15 min data', async () => {
 
   // const optionEvaluation = await Promise.all(optionInstruments.map(optionInstrument => optionSellerOptionEntry({ optionStrike: optionInstrument, initialJobData: { user, lots: 1, orderTag: 'dsasdad', instrument: INSTRUMENTS.NIFTY } })))
 
-  const kite = syncGetKiteInstance(
-    user)
+  const kite = syncGetKiteInstance(user)
 
   // console.log({ optionEvaluation })
 
