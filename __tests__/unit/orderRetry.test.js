@@ -148,3 +148,46 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
 
   expect(ensured).toBe(true)
 })
+
+test('should handle `placeOrder` NetworkException, and then successfully retry when no such order exists with broker', async () => {
+  let kite = syncGetKiteInstance(user)
+  kite = {
+    ...kite,
+    placeOrder: jest.fn(() => Promise.resolve({
+      order_id: '210722200262556'
+    })).mockRejectedValueOnce({
+      status: 'error',
+      error_type: 'NetworkException'
+    }),
+    getOrders: jest.fn(() => Promise.resolve([])).mockImplementationOnce(() => Promise.reject(new Error({
+      status: 'error',
+      error_type: 'NetworkException'
+    }))),
+    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
+      status: 'COMPLETE'
+    }]))
+  }
+
+  expect(kite).toBeDefined()
+
+  const ensured = await remoteOrderSuccessEnsurer({
+    __kite: kite,
+    orderProps: {
+      orderTag: 'X0uE0cKR',
+      tradingsymbol: 'BANKNIFTY2172234500PE',
+      quantity: 250,
+      product: 'MIS',
+      transaction_type: 'SELL',
+      exchange: 'NFO'
+    },
+    ensureOrderState: kite.STATUS_COMPLETE,
+    retryEveryMs: ms(1),
+    retryAttempts: 2,
+    orderStatusCheckTimeout: ms(5),
+    user
+  })
+
+  console.log({ ensured })
+
+  expect(ensured).toBe(true)
+})
