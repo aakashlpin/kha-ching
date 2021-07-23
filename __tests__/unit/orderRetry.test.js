@@ -34,36 +34,51 @@ test('should return true for successful order', async () => {
     order_id: '210722200439620'
   })
 
+  kite.getOrderHistory = jest.fn().mockImplementation(() => Promise.resolve([{
+    status: kite.STATUS_COMPLETE
+  }]))
+
   const ensured = await remoteOrderSuccessEnsurer({
     __kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
     orderProps: {},
     retryEveryMs: ms(1),
     retryAttempts: 5,
+    orderStatusCheckTimeout: ms(5),
+    remoteRetryTimeout: ms(5),
     user
   })
 
   expect(ensured).toBe(true)
 })
-
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
 
-  const kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user)
+  kite = {
+    ...kite,
+    placeOrder: jest.fn().mockRejectedValue({
+      status: 'error',
+      error_type: 'NetworkException'
+    }),
+    getOrders: jest.fn().mockResolvedValue([])
+  }
+
   expect(kite).toBeDefined()
-
-  kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '21172220232443'
-  })
-
-  await expect(remoteOrderSuccessEnsurer({
-    __kite: kite,
-    ensureOrderState: kite.STATUS_COMPLETE,
-    orderProps: {},
-    retryEveryMs: ms(1),
-    retryAttempts: 3,
-    user
-  })).rejects.toThrow('TIMEDOUT')
+  try {
+    remoteOrderSuccessEnsurer({
+      __kite: kite,
+      ensureOrderState: kite.STATUS_COMPLETE,
+      orderProps: {},
+      retryEveryMs: ms(5),
+      retryAttempts: 3,
+      orderStatusCheckTimeout: ms(5),
+      remoteRetryTimeout: ms(5),
+      user
+    })
+  } catch (error) {
+    expect(error).toBe(Promise.TimeoutError)
+  }
 })
 
 test('should return false when order history api check times out', async () => {
