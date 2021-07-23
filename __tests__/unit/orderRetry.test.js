@@ -15,9 +15,9 @@ test('should retry failed remote response', async () => {
 test('should fail after 2 seconds', async () => {
   const remoteFn = jest.fn()
     .mockResolvedValue(true)
-    .mockRejectedValueOnce(new Error('Async error'))
-    .mockRejectedValueOnce(new Error('Async error'))
-    .mockRejectedValueOnce(new Error('Async error'))
+    .mockRejectedValueOnce(new Error('2 sec error'))
+    .mockRejectedValueOnce(new Error('2 sec error'))
+    .mockRejectedValueOnce(new Error('2 sec error'))
 
   await expect(withRemoteRetry(remoteFn, ms(2))).rejects.toThrow(Promise.TimeoutError)
 })
@@ -42,14 +42,14 @@ test('should return true for successful order', async () => {
     __kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
     orderProps: {},
-    retryEveryMs: ms(1),
+    onFailureRetryAfterMs: ms(1),
     retryAttempts: 5,
     orderStatusCheckTimeout: ms(5),
     remoteRetryTimeout: ms(5),
     user
   })
 
-  expect(ensured).toBe(true)
+  expect(ensured).toStrictEqual({ response: { status: kite.STATUS_COMPLETE }, successful: true })
 })
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
@@ -70,7 +70,7 @@ test('should retry 3 times for orders that after punching continue to not exist,
       __kite: kite,
       ensureOrderState: kite.STATUS_COMPLETE,
       orderProps: {},
-      retryEveryMs: ms(5),
+      onFailureRetryAfterMs: ms(5),
       retryAttempts: 3,
       orderStatusCheckTimeout: ms(5),
       remoteRetryTimeout: ms(5),
@@ -99,7 +99,7 @@ test('should return false when order history api check times out', async () => {
     __kite: kite,
     orderProps: {},
     ensureOrderState: kite.STATUS_COMPLETE,
-    retryEveryMs: ms(1),
+    onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
     user
@@ -107,7 +107,7 @@ test('should return false when order history api check times out', async () => {
 
   console.log({ ensured })
 
-  expect(ensured).toBe(false)
+  expect(ensured).toStrictEqual({ response: { order_id: '21072220232443' }, successful: false })
 })
 
 test('should handle `placeOrder` NetworkException and then find an existing completed order in broker system', async () => {
@@ -152,7 +152,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
       exchange: 'NFO'
     },
     ensureOrderState: kite.STATUS_COMPLETE,
-    retryEveryMs: ms(1),
+    onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
     user
@@ -160,7 +160,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
 
   console.log({ ensured })
 
-  expect(ensured).toBe(true)
+  expect(ensured).toStrictEqual({ status: 'COMPLETE' })
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry when no such order exists with broker', async () => {
@@ -195,7 +195,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
       exchange: 'NFO'
     },
     ensureOrderState: kite.STATUS_COMPLETE,
-    retryEveryMs: ms(1),
+    onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
     user
@@ -203,7 +203,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
 
   console.log({ ensured })
 
-  expect(ensured).toBe(true)
+  expect(ensured).toStrictEqual({ response: { status: 'COMPLETE' }, successful: true })
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry an existing REJECTED order', async () => {
@@ -261,7 +261,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
       exchange: 'NFO'
     },
     ensureOrderState: kite.STATUS_COMPLETE,
-    retryEveryMs: ms(1),
+    onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
     user
@@ -269,5 +269,5 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
 
   console.log({ ensured })
 
-  expect(ensured).toBe(true)
+  expect(ensured).toStrictEqual({ response: { status: 'COMPLETE' }, successful: true })
 })
