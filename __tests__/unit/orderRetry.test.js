@@ -151,6 +151,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
       transaction_type: 'SELL',
       exchange: 'NFO'
     },
+    remoteRetryTimeout: ms(15),
     ensureOrderState: kite.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
@@ -158,9 +159,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
     user
   })
 
-  console.log({ ensured })
-
-  expect(ensured).toStrictEqual({ status: 'COMPLETE' })
+  expect(ensured).toStrictEqual({ successful: true, response: { status: 'COMPLETE' } })
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry when no such order exists with broker', async () => {
