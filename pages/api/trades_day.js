@@ -11,13 +11,12 @@ import console from '../../lib/logging'
 import withSession from '../../lib/session'
 import {
   isMarketOpen,
+  isMockOrder,
   premiumAuthCheck,
   SIGNALX_AXIOS_DB_AUTH,
   withoutFwdSlash
 } from '../../lib/utils'
-const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env
-
-const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
+const { DATABASE_HOST_URL, DATABASE_USER_KEY } = process.env
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8)
 
@@ -33,7 +32,7 @@ async function createJob ({ jobData, user }) {
 
   if (STRATEGIES_DETAILS[strategy].premium) {
     if (!process.env.SIGNALX_API_KEY?.length) {
-      return Promise.reject('You need SignalX Premium to use this strategy.')
+      return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
     }
 
     try {
@@ -42,24 +41,24 @@ async function createJob ({ jobData, user }) {
       // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
       const res = await premiumAuthCheck()
       if (!res) {
-        return Promise.reject('You need SignalX Premium to use this strategy.')
+        return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
       }
     } catch (e) {
       if (e.isAxiosError) {
         if (e.response.status === 401) {
-          return Promise.reject('You need SignalX Premium to use this strategy.')
+          return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
         }
-        return Promise.reject(e.response.data)
+        return Promise.reject(new Error(e.response.data))
       }
     }
   }
 
-  if (!MOCK_ORDERS && runNow && !isMarketOpen()) {
-    return Promise.reject('Exchange is offline right now.')
+  if (!isMockOrder() && runNow && !isMarketOpen()) {
+    return Promise.reject(new Error('Exchange is offline right now.'))
   }
 
-  if (!MOCK_ORDERS && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
-    return Promise.reject('Exchange would be offline at the scheduled time.')
+  if (!isMockOrder() && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
+    return Promise.reject(new Error('Exchange would be offline at the scheduled time.'))
   }
 
   const qRes = addToNextQueue(
