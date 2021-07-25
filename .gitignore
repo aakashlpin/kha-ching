@@ -34,3 +34,5 @@ yarn-error.log*
 # vercel
 .vercel
 instrument_*.csv
+backtests
+__tests/unit/backtests
