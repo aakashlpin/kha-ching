@@ -76,15 +76,16 @@ const Dashboard = ({ hasDbSetup }) => {
         {dayjs().format('dddd')} / {dayjs().format('DD MMM YYYY')}
       </Typography>
 
-      {!hasDbSetup ? (
-        <Alert variant='outlined' severity='error' style={{ marginBottom: 24 }}>
-          [IMP] Your app no longer works. Follow upgrade instruction{' '}
-          <Link href='https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2'>
-            here
-          </Link>
-          .
-        </Alert>
-      ) : null}
+      {!hasDbSetup
+        ? (
+          <Alert variant='outlined' severity='error' style={{ marginBottom: 24 }}>
+            [IMP] Your app no longer works. Follow upgrade instruction{' '}
+            <Link href='https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2'>
+              here
+            </Link>
+            .
+          </Alert>)
+        : null}
 
       <AppBar position='static' color='default'>
         <Tabs
@@ -112,8 +113,8 @@ const Dashboard = ({ hasDbSetup }) => {
               </Link>
             </ListItem>
             <ListItem>
-              <Link href='/strat/straddle1x-strangle2x'>
-                {STRATEGIES_DETAILS[STRATEGIES.CM_WED_THURS].heading}
+              <Link href='/strat/strangle'>
+                {STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE].heading}
               </Link>
             </ListItem>
             <ListItem>

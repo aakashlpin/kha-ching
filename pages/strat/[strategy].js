@@ -1,12 +1,12 @@
 import { Link } from '@material-ui/core'
 import { useRouter } from 'next/router'
 
-import Layout from '../../components/Layout'
 import StratLayout from '../../components/StratLayout'
 import AtmStraddleSetup from '../../components/trades/atmStraddle'
+import AtmStrangleSetup from '../../components/trades/atmStrangle'
 import DirectionalOptionSellingTradeSetup from '../../components/trades/directionalOptionSelling'
 import OptionBuyingStrategyTradeSetup from '../../components/trades/optionBuyingStrategy'
-import { EXIT_STRATEGIES, INSTRUMENTS, STRATEGIES } from '../../lib/constants'
+import { EXIT_STRATEGIES, INSTRUMENTS } from '../../lib/constants'
 
 const Strategy = () => {
   const router = useRouter()
@@ -17,7 +17,6 @@ const Strategy = () => {
       return (
         <StratLayout>
           <AtmStraddleSetup
-            strategy={STRATEGIES.ATM_STRADDLE}
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]}
             exitStrategies={[
               EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -27,13 +26,14 @@ const Strategy = () => {
         </StratLayout>
       )
     }
-    case 'straddle1x-strangle2x': {
+    case 'strangle': {
       return (
         <StratLayout>
-          <AtmStraddleSetup
-            strategy={STRATEGIES.CM_WED_THURS}
+          <AtmStrangleSetup
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
-            exitStrategies={[EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]}
+            exitStrategies={[
+              EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X
+            ]}
           />
         </StratLayout>
       )

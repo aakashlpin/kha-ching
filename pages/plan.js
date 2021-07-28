@@ -6,7 +6,6 @@ import Button from '@material-ui/core/Button'
 import Chip from '@material-ui/core/Chip'
 import Fade from '@material-ui/core/Fade'
 import FormControl from '@material-ui/core/FormControl'
-import FormHelperText from '@material-ui/core/FormHelperText'
 import Grid from '@material-ui/core/Grid'
 import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -14,14 +13,14 @@ import Modal from '@material-ui/core/Modal'
 import Select from '@material-ui/core/Select'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import DoneIcon from '@material-ui/icons/Done'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import axios from 'axios'
 import { omit } from 'lodash'
 import React, { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
-import ATM_Straddle_TradeForm from '../components/trades/atmStraddle/TradeSetupForm'
-import DOS_TradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm'
+import ATMStraddleTradeForm from '../components/trades/atmStraddle/TradeSetupForm'
+import ATMStrangleTradeForm from '../components/trades/atmStrangle/TradeSetupForm'
+import DOSTradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm'
 import { getSchedulingStateProps } from '../lib/browserUtils'
 import { INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants'
 
@@ -134,7 +133,7 @@ const Plan = () => {
   const resetDefaultStratState = () =>
     [
       STRATEGIES.ATM_STRADDLE,
-      STRATEGIES.CM_WED_THURS,
+      STRATEGIES.ATM_STRANGLE,
       STRATEGIES.DIRECTIONAL_OPTION_SELLING
     ].reduce(
       (accum, strat) => ({
@@ -337,29 +336,33 @@ const Plan = () => {
               <Typography className={classes.heading}>{dayProps.heading}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.flexVertical}>
-              {Object.keys(dayProps.strategies).length ? (
-                <>
-                  <Typography component='p' variant='subtitle1'>
-                    Saved trades — (click to edit, or cross to delete)
-                  </Typography>
-                  <div className={classes.pillsContainer}>
-                    {Object.keys(dayProps.strategies).map((strategyKey) => {
-                      const config = dayProps.strategies[strategyKey]
-                      return (
-                        <Chip
-                          color='secondary'
-                          key={`${dayOfWeek}_${strategyKey}`}
-                          label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
-                            INSTRUMENT_DETAILS[config.instrument].displayName
-                          }`}
-                          onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
-                          onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
-                        />
-                      )
-                    })}
-                  </div>
-                </>
-              ) : null}
+              {Object.keys(dayProps.strategies).length
+                ? (
+                  <>
+                    <Typography component='p' variant='subtitle1'>
+                      Saved trades — (click to edit, or cross to delete)
+                    </Typography>
+                    <div className={classes.pillsContainer}>
+                      {Object.keys(dayProps.strategies)
+                        .filter(strategyKey => dayProps.strategies[strategyKey].strategy in stratState)
+                        .map((strategyKey) => {
+                          const config = dayProps.strategies[strategyKey]
+                          return (
+                            <Chip
+                              color='secondary'
+                              key={`${dayOfWeek}_${strategyKey}`}
+                              label={`${STRATEGIES_DETAILS[config.strategy].heading}/${
+                                INSTRUMENT_DETAILS[config.instrument].displayName
+                              }`}
+                              onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
+                              onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
+                            />
+                          )
+                        })}
+                    </div>
+                  </>
+                  )
+                : null}
               <Grid container alignItems='flex-start' spacing={2}>
                 <FormControl className={classes.formControl}>
                   <InputLabel id={`${dayOfWeek}_label`}>Select trade here</InputLabel>
@@ -373,7 +376,7 @@ const Plan = () => {
                   >
                     {[
                       STRATEGIES.ATM_STRADDLE,
-                      STRATEGIES.CM_WED_THURS,
+                      STRATEGIES.ATM_STRANGLE,
                       STRATEGIES.DIRECTIONAL_OPTION_SELLING
                     ].map((strategyKey) => (
                       <MenuItem value={strategyKey} key={`${dayOfWeek}_${strategyKey}`}>
@@ -401,59 +404,65 @@ const Plan = () => {
           </Accordion>
         )
       })}
-      {currentEditStrategy ? (
-        <Modal
-          aria-labelledby='transition-modal-title'
-          aria-describedby='transition-modal-description'
-          className={classes.modal}
-          open={open}
-          onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500
-          }}
-        >
-          <Fade in={open}>
-            <div className={classes.paper}>
-              <h2 id='transition-modal-title'>
-                {dayState[currentEditDay].heading} |{' '}
-                {STRATEGIES_DETAILS[currentEditStrategy].heading}
-              </h2>
-              {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING ? (
-                <DOS_TradeForm
-                  state={stratState[STRATEGIES.DIRECTIONAL_OPTION_SELLING]}
-                  onChange={(changedProps) =>
-                    stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)}
-                  onSubmit={commonOnSubmitHandler}
-                  onCancel={commonOnCancelHandler}
-                  isRunnable={false}
-                />
-              ) : currentEditStrategy === STRATEGIES.ATM_STRADDLE ? (
-                <ATM_Straddle_TradeForm
-                  strategy={STRATEGIES.ATM_STRADDLE}
-                  state={stratState[STRATEGIES.ATM_STRADDLE]}
-                  onChange={(changedProps) =>
-                    stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)}
-                  onSubmit={commonOnSubmitHandler}
-                  onCancel={commonOnCancelHandler}
-                  isRunnable={false}
-                />
-              ) : currentEditStrategy === STRATEGIES.CM_WED_THURS ? (
-                <ATM_Straddle_TradeForm
-                  strategy={STRATEGIES.CM_WED_THURS}
-                  state={stratState[STRATEGIES.CM_WED_THURS]}
-                  onChange={(changedProps) =>
-                    stratOnChangeHandler(changedProps, STRATEGIES.CM_WED_THURS)}
-                  onSubmit={commonOnSubmitHandler}
-                  onCancel={commonOnCancelHandler}
-                  isRunnable={false}
-                />
-              ) : null}
-            </div>
-          </Fade>
-        </Modal>
-      ) : null}
+      {currentEditStrategy
+        ? (
+          <Modal
+            aria-labelledby='transition-modal-title'
+            aria-describedby='transition-modal-description'
+            className={classes.modal}
+            open={open}
+            onClose={handleClose}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500
+            }}
+          >
+            <Fade in={open}>
+              <div className={classes.paper}>
+                <h2 id='transition-modal-title'>
+                  {dayState[currentEditDay].heading} |{' '}
+                  {STRATEGIES_DETAILS[currentEditStrategy].heading}
+                </h2>
+                {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING
+                  ? (
+                    <DOSTradeForm
+                      state={stratState[STRATEGIES.DIRECTIONAL_OPTION_SELLING]}
+                      onChange={(changedProps) =>
+                        stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)}
+                      onSubmit={commonOnSubmitHandler}
+                      onCancel={commonOnCancelHandler}
+                      isRunnable={false}
+                    />
+                    )
+                  : currentEditStrategy === STRATEGIES.ATM_STRADDLE
+                    ? (
+                      <ATMStraddleTradeForm
+                        state={stratState[STRATEGIES.ATM_STRADDLE]}
+                        onChange={(changedProps) =>
+                          stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)}
+                        onSubmit={commonOnSubmitHandler}
+                        onCancel={commonOnCancelHandler}
+                        isRunnable={false}
+                      />
+                      )
+                    : currentEditStrategy === STRATEGIES.ATM_STRANGLE
+                      ? (
+                        <ATMStrangleTradeForm
+                          state={stratState[STRATEGIES.ATM_STRANGLE]}
+                          onChange={(changedProps) =>
+                            stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRANGLE)}
+                          onSubmit={commonOnSubmitHandler}
+                          onCancel={commonOnCancelHandler}
+                          isRunnable={false}
+                        />
+                        )
+                      : null}
+              </div>
+            </Fade>
+          </Modal>
+          )
+        : null}
     </Layout>
   )
 }

@@ -11,7 +11,7 @@ import {
 import { STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants'
 import Form from './TradeSetupForm'
 
-const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
+const AtmStrangle = ({ strategy = STRATEGIES.ATM_STRANGLE }) => {
   const router = useRouter()
   const { heading } = STRATEGIES_DETAILS[strategy]
 
@@ -72,5 +72,4 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
     </div>
   )
 }
-
-export default AtmStraddle
+export default AtmStrangle

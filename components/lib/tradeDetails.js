@@ -7,7 +7,7 @@ import DOS_Details from '../trades/directionalOptionSelling/TradeSetupDetails'
 const TradeDetails = ({ strategy, tradeDetails, jobDetails }) => {
   return (
     <>
-      {strategy === STRATEGIES.ATM_STRADDLE || strategy === STRATEGIES.CM_WED_THURS ? (
+      {strategy === STRATEGIES.ATM_STRADDLE || strategy === STRATEGIES.ATM_STRANGLE ? (
         <ATM_StraddleDetails {...tradeDetails} {...jobDetails} />
       ) : strategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING ? (
         <DOS_Details {...tradeDetails} {...jobDetails} />
