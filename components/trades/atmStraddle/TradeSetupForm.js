@@ -24,9 +24,9 @@ import {
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
-  STRATEGIES,
-  ROLLBACK_KEY_MAP
+  STRATEGIES
 } from '../../../lib/constants'
+import RollbackComponent from '../../lib/RollbackComponent'
 
 const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
   const isSchedulingDisabled = false
@@ -45,13 +45,6 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
     e.preventDefault()
     onSubmit(formatFormDataForApi({ strategy, data: state }))
   }
-
-  const getIsSomeRollbackOptionEnabled = () => !!Object.keys(state.rollback).find(key => state.rollback[key])
-  const [isSomeRollbackOptionEnabled, setIsSomeRollbackOptionEnabled] = useState(() => getIsSomeRollbackOptionEnabled())
-
-  useEffect(() => {
-    setIsSomeRollbackOptionEnabled(getIsSomeRollbackOptionEnabled())
-  }, [state.rollback])
 
   return (
     <form noValidate>
@@ -219,50 +212,8 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
             </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup column>
-                <FormControlLabel
-                  key='rollback'
-                  label='Rollback trades (BETA)'
-                  control={
-                    <Checkbox
-                      checked={isSomeRollbackOptionEnabled}
-                      onChange={() =>
-                        onChange({
-                          rollback: Object.keys(state.rollback).reduce((accum, key) => ({
-                            ...accum,
-                            [key]: !isSomeRollbackOptionEnabled
-                          }), {})
-                        })}
-                    />
-                  }
-                />
-                <FormGroup style={{ marginLeft: 24 }}>
-                  {Object.keys(state.rollback).map((rollbackKey) => (
-                    <FormControlLabel
-                      key={rollbackKey}
-                      label={ROLLBACK_KEY_MAP[rollbackKey]}
-                      control={
-                        <Checkbox
-                          name='instruments'
-                          checked={state.rollback[rollbackKey]}
-                          onChange={() => {
-                            onChange({
-                              rollback: {
-                                ...state.rollback,
-                                [rollbackKey]: !state.rollback[rollbackKey]
-                              }
-                            })
-                          }}
-                        />
-                        }
-                    />
-                  ))}
-                </FormGroup>
-              </FormGroup>
-            </FormControl>
-          </Grid>
+          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+
           {isRunnable
             ? (
               <Grid item xs={12}>

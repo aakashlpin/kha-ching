@@ -25,6 +25,7 @@ import {
   INSTRUMENTS,
   STRATEGIES
 } from '../../../lib/constants'
+import RollbackComponent from '../../lib/RollbackComponent'
 
 const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
   const isSchedulingDisabled = false
@@ -168,6 +169,9 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+
           {isRunnable
             ? (
               <Grid item xs={12}>

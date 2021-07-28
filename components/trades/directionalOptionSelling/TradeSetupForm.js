@@ -32,6 +32,7 @@ import {
   STRATEGIES,
   STRATEGIES_DETAILS
 } from '../../../lib/constants'
+import RollbackComponent from '../../lib/RollbackComponent'
 
 const TradeSetupForm = ({
   state,
@@ -244,6 +245,9 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+
           {isRunnable ? (
             <Grid item xs={12}>
               <Button
