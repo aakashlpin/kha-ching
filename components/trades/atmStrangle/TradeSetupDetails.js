@@ -22,7 +22,7 @@ const Details = ({
       rows={[
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
-        [{ value: 'Inverted Strangle' }, { value: inverted ? 'Yes' : 'No' }],
+        [{ value: 'Strangle Type' }, { value: inverted ? 'Inverted' : 'Regular' }],
         [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
         [{ value: 'SL' }, { value: `${slmPercent}%` }],
         [{ value: scheduleString }, { value: humanTime }]

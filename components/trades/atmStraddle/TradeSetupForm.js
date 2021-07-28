@@ -16,7 +16,7 @@ import {
 import Box from '@material-ui/core/Box'
 import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import dayjs from 'dayjs'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
@@ -24,7 +24,8 @@ import {
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
-  STRATEGIES
+  STRATEGIES,
+  ROLLBACK_KEY_MAP
 } from '../../../lib/constants'
 
 const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
@@ -44,6 +45,13 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
     e.preventDefault()
     onSubmit(formatFormDataForApi({ strategy, data: state }))
   }
+
+  const getIsSomeRollbackOptionEnabled = () => !!Object.keys(state.rollback).find(key => state.rollback[key])
+  const [isSomeRollbackOptionEnabled, setIsSomeRollbackOptionEnabled] = useState(() => getIsSomeRollbackOptionEnabled())
+
+  useEffect(() => {
+    setIsSomeRollbackOptionEnabled(getIsSomeRollbackOptionEnabled())
+  }, [state.rollback])
 
   return (
     <form noValidate>
@@ -207,6 +215,51 @@ const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunna
                     </MuiPickersUtilsProvider>
                     )
                   : null}
+              </FormGroup>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControl component='fieldset'>
+              <FormGroup column>
+                <FormControlLabel
+                  key='rollback'
+                  label='Rollback trades (BETA)'
+                  control={
+                    <Checkbox
+                      checked={isSomeRollbackOptionEnabled}
+                      onChange={() =>
+                        onChange({
+                          rollback: Object.keys(state.rollback).reduce((accum, key) => ({
+                            ...accum,
+                            [key]: !isSomeRollbackOptionEnabled
+                          }), {})
+                        })}
+                    />
+                  }
+                />
+                <FormGroup style={{ marginLeft: 24 }}>
+                  {Object.keys(state.rollback).map((rollbackKey) => (
+                    <FormControlLabel
+                      key={rollbackKey}
+                      label={ROLLBACK_KEY_MAP[rollbackKey]}
+                      control={
+                        <Checkbox
+                          name='instruments'
+                          checked={state.rollback[rollbackKey]}
+                          onChange={() => {
+                            onChange({
+                              rollback: {
+                                ...state.rollback,
+                                [rollbackKey]: !state.rollback[rollbackKey]
+                              }
+                            })
+                          }}
+                        />
+                        }
+                    />
+                  ))}
+                </FormGroup>
               </FormGroup>
             </FormControl>
           </Grid>

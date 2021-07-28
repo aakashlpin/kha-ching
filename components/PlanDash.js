@@ -2,16 +2,15 @@ import { Typography, Link, Button, Grid, Paper } from '@material-ui/core'
 
 import axios from 'axios'
 import dayjs from 'dayjs'
-import router from 'next/router'
 import React, { useEffect, useState } from 'react'
 import useSWR, { mutate } from 'swr'
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants'
+import { STRATEGIES_DETAILS } from '../lib/constants'
 import TradeDetails from './lib/tradeDetails'
 
 const PlanDash = () => {
   const [plans, setPlans] = useState({})
-  const { data: tradesDay, error } = useSWR('/api/trades_day')
+  const { data: tradesDay } = useSWR('/api/trades_day')
   const dayOfWeekHuman = dayjs().format('dddd')
   const dayOfWeek = dayOfWeekHuman.toLowerCase()
   // const dayOfWeek = 'monday';
@@ -116,17 +115,19 @@ const PlanDash = () => {
 
   return (
     <div>
-      {plans[dayOfWeek] && scheduleableTrades ? (
-        <Button
-          style={{ marginBottom: 18 }}
-          variant='contained'
-          color='primary'
-          type='button'
-          onClick={handleScheduleEverything}
-        >
-          Schedule all trades
-        </Button>
-      ) : null}
+      {plans[dayOfWeek] && scheduleableTrades
+        ? (
+          <Button
+            style={{ marginBottom: 18 }}
+            variant='contained'
+            color='primary'
+            type='button'
+            onClick={handleScheduleEverything}
+          >
+            Schedule all trades
+          </Button>
+          )
+        : null}
 
       {pendingTrades.map((plan, idx) => {
         return (

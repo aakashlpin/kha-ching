@@ -14,7 +14,7 @@ const Details = ({
   runNow,
   runAt,
   expireIfUnsuccessfulInMins,
-  takeTradeIrrespectiveSkew,
+  takeTradeIrrespectiveSkew = true,
   _createdOn
 }) => {
   const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA'
@@ -26,7 +26,7 @@ const Details = ({
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
         [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],
-        [{ value: 'Threshold Skew' }, { value: `${thresholdSkewPercent}%` }],
+        [{ value: 'Threshold Skew' }, { value: thresholdSkewPercent ? `${thresholdSkewPercent}%` : '-' }],
         [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
         [{ value: 'SL' }, { value: `${slmPercent}%` }],
         [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }],
