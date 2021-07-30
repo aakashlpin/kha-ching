@@ -28,7 +28,7 @@ import {
 } from '../../../lib/constants'
 import RollbackComponent from '../../lib/RollbackComponent'
 
-const TradeSetupForm = ({ strategy, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
+const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments =
