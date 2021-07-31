@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { KiteConnect } from 'kiteconnect';
+import axios from 'axios'
+import { KiteConnect } from 'kiteconnect'
 
-import withSession from '../../lib/session';
-import { useKiteTicker } from '../../lib/socket/ticker';
-const apiKey = process.env.KITE_API_KEY;
+import withSession from '../../lib/session'
+import { useKiteTicker } from '../../lib/socket/ticker'
+const apiKey = process.env.KITE_API_KEY
 
 // Giveaway to the publisher
 // 1. SIGNALX_MIRROR_URL=SHARED_PRIVATE_URL
@@ -15,14 +15,14 @@ const apiKey = process.env.KITE_API_KEY;
 // 2. TRADES_HOST_URL - the trades actually punched on his account
 // 3. SIGNALX_MIRROR_USER_TYPE=CONSUMER
 
-const { SIGNALX_MIRROR_URL, TRADES_HOST_URL, SIGNALX_MIRROR_USER_TYPE } = process.env;
+const { SIGNALX_MIRROR_URL, TRADES_HOST_URL, SIGNALX_MIRROR_USER_TYPE } = process.env
 
-async function updateStatus(statusCode, ...params) {
-  console.log(statusCode, ...params);
+async function updateStatus (statusCode, ...params) {
+  console.log(statusCode, ...params)
   try {
     const {
       data: { status_history = [], ...props }
-    } = await axios(SIGNALX_MIRROR_URL);
+    } = await axios(SIGNALX_MIRROR_URL)
 
     await axios.put(SIGNALX_MIRROR_URL, {
       ...props,
@@ -35,25 +35,25 @@ async function updateStatus(statusCode, ...params) {
         },
         ...status_history
       ]
-    });
+    })
   } catch (e) {
-    console.log('[updateStatus] error', e);
+    console.log('[updateStatus] error', e)
   }
 }
 
-async function orderUpdate(trade, isTestTrade = false) {
-  console.log('[mirror new orderUpdate]', trade, isTestTrade);
+async function orderUpdate (trade, isTestTrade = false) {
+  console.log('[mirror new orderUpdate]', trade, isTestTrade)
   try {
     if (!isTestTrade) {
-      axios.post(TRADES_HOST_URL, trade);
+      axios.post(TRADES_HOST_URL, trade)
     }
 
     if (SIGNALX_MIRROR_USER_TYPE !== 'PUBLISHER') {
-      return;
+      return
     }
 
-    const { data: subscribersDetails } = await axios(SIGNALX_MIRROR_URL);
-    const { api_key: subscriberApiKey, access_token: subscriberAccessToken } = subscribersDetails;
+    const { data: subscribersDetails } = await axios(SIGNALX_MIRROR_URL)
+    const { api_key: subscriberApiKey, access_token: subscriberAccessToken } = subscribersDetails
 
     const kc =
       subscriberApiKey && subscriberAccessToken
@@ -61,10 +61,10 @@ async function orderUpdate(trade, isTestTrade = false) {
             api_key: subscriberApiKey,
             access_token: subscriberAccessToken
           })
-        : null;
+        : null
 
     if (!kc) {
-      return;
+      return
     }
 
     const {
@@ -76,10 +76,10 @@ async function orderUpdate(trade, isTestTrade = false) {
       validity,
       product,
       quantity
-    } = trade;
+    } = trade
 
     if (status !== kc.STATUS_COMPLETE || exchange !== kc.EXCHANGE_NFO) {
-      return;
+      return
     }
 
     const orderRes = await kc.placeOrder(variety, {
@@ -90,19 +90,19 @@ async function orderUpdate(trade, isTestTrade = false) {
       order_type: kc.ORDER_TYPE_MARKET,
       product: product,
       validity
-    });
+    })
 
-    console.log(orderRes);
+    console.log(orderRes)
   } catch (e) {
-    console.log('[orderUpdate] error', e);
+    console.log('[orderUpdate] error', e)
   }
 }
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user');
+  const user = req.session.get('user')
 
   if (!user) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send('Unauthorized')
   }
 
   useKiteTicker({
@@ -115,14 +115,14 @@ export default withSession(async (req, res) => {
     onReconnect: (...args) => updateStatus('reconnect', ...args),
     onNoReconnect: () => updateStatus('noreconnect'),
     onOrderUpdate: (trade) => orderUpdate(trade)
-  });
+  })
 
   if (req.body?.test_trade) {
-    orderUpdate(testPayload, true);
+    orderUpdate(testPayload, true)
   }
 
-  res.json({ mirrorUrl: SIGNALX_MIRROR_URL, userType: SIGNALX_MIRROR_USER_TYPE });
-});
+  res.json({ mirrorUrl: SIGNALX_MIRROR_URL, userType: SIGNALX_MIRROR_USER_TYPE })
+})
 
 const testPayload = {
   unfilled_quantity: 0,
@@ -153,4 +153,4 @@ const testPayload = {
   market_protection: 0,
   tag: null,
   _createdOn: '2021-06-16T04:31:13.195Z'
-};
+}

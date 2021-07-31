@@ -16,14 +16,14 @@ import {
   Select,
   TextField,
   Typography
-} from '@material-ui/core';
-import Box from '@material-ui/core/Box';
-import useSWR from 'swr';
+} from '@material-ui/core'
+import Box from '@material-ui/core/Box'
+import useSWR from 'swr'
 
-import { INSTRUMENT_DETAILS } from '../../../lib/constants';
+import { INSTRUMENT_DETAILS } from '../../../lib/constants'
 
 const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
-  const { error: fyersProfileError } = useSWR(`/api/fyers_profile`);
+  const { error: fyersProfileError } = useSWR('/api/fyers_profile')
 
   return (
     <form noValidate>
@@ -31,18 +31,18 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
         {fyersProfileError ? (
           <>
             <div style={{ marginBottom: '16px' }}>
-              <Typography variant="h6" component="span">
-                <Link href="/api/broker_auth/fyers">&lt;Login with Fyers to trade this&gt;</Link>
+              <Typography variant='h6' component='span'>
+                <Link href='/api/broker_auth/fyers'>&lt;Login with Fyers to trade this&gt;</Link>
               </Typography>
             </div>
             <Divider />
           </>
         ) : null}
         <h3>Setup new trade</h3>
-        <Grid container alignItems="flex-start" spacing={2}>
+        <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Instruments</FormLabel>
+            <FormControl component='fieldset'>
+              <FormLabel component='legend'>Instruments</FormLabel>
               <FormGroup row>
                 {enabledInstruments.map((instrument) => (
                   <FormControlLabel
@@ -50,14 +50,14 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
                     label={INSTRUMENT_DETAILS[instrument].displayName}
                     control={
                       <Checkbox
-                        name="instruments"
+                        name='instruments'
                         checked={state.instruments[instrument]}
                         onChange={() => {
                           onChange({
                             instruments: {
                               [instrument]: !state.instruments[instrument]
                             }
-                          });
+                          })
                         }}
                       />
                     }
@@ -69,26 +69,27 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              name="lots"
+              name='lots'
               value={state.lots}
               onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Lots"
+              label='Lots'
             />
           </Grid>
 
           <Grid item xs={12}>
             <Button
               disabled={fyersProfileError}
-              variant="contained"
-              color="primary"
-              type="button"
-              onClick={() => onSubmit()}>
+              variant='contained'
+              color='primary'
+              type='button'
+              onClick={() => onSubmit()}
+            >
               Let&apos;s go!
             </Button>
           </Grid>
           <Grid item xs={12}>
             <Typography>
-              <Box fontStyle="italic" fontSize={14}>
+              <Box fontStyle='italic' fontSize={14}>
                 <p>Note —</p>
                 <ol>
                   <li>This strategy takes trades between 9.30-11am and 1-3pm.</li>
@@ -106,6 +107,6 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
         </Grid>
       </Paper>
     </form>
-  );
-};
-export default TradeSetupForm;
+  )
+}
+export default TradeSetupForm

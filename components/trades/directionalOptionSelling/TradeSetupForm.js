@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import DateFnsUtils from '@date-io/date-fns';
+import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
@@ -17,13 +17,13 @@ import {
   Select,
   TextField,
   Typography
-} from '@material-ui/core';
-import Box from '@material-ui/core/Box';
-import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
-import dayjs from 'dayjs';
-import React from 'react';
+} from '@material-ui/core'
+import Box from '@material-ui/core/Box'
+import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import dayjs from 'dayjs'
+import React from 'react'
 
-import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils';
+import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS,
@@ -31,7 +31,8 @@ import {
   INSTRUMENTS,
   STRATEGIES,
   STRATEGIES_DETAILS
-} from '../../../lib/constants';
+} from '../../../lib/constants'
+import RollbackComponent from '../../lib/RollbackComponent'
 
 const TradeSetupForm = ({
   state,
@@ -46,23 +47,23 @@ const TradeSetupForm = ({
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
   ]
 }) => {
-  const isSchedulingDisabled = false;
+  const isSchedulingDisabled = false
 
   const handleFormSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     onSubmit(
       formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state })
-    );
-  };
+    )
+  }
 
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
         {isRunnable ? <h3>Setup new trade</h3> : null}
-        <Grid container alignItems="flex-start" spacing={2}>
+        <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Instruments</FormLabel>
+            <FormControl component='fieldset'>
+              <FormLabel component='legend'>Instruments</FormLabel>
               <FormGroup row>
                 {enabledInstruments.map((instrument) => (
                   <FormControlLabel
@@ -70,7 +71,7 @@ const TradeSetupForm = ({
                     label={INSTRUMENT_DETAILS[instrument].displayName}
                     control={
                       <Checkbox
-                        name="instruments"
+                        name='instruments'
                         disabled={state.disableInstrumentChange}
                         checked={state.instruments[instrument]}
                         onChange={() => {
@@ -78,7 +79,7 @@ const TradeSetupForm = ({
                             instruments: {
                               [instrument]: !state.instruments[instrument]
                             }
-                          });
+                          })
                         }}
                       />
                     }
@@ -90,47 +91,48 @@ const TradeSetupForm = ({
           <Grid item xs={12}>
             <TextField
               fullWidth
-              name="lots"
+              name='lots'
               value={state.lots}
               onChange={(e) => onChange({ lots: e.target.value || '' })}
-              label="Initial lots"
+              label='Initial lots'
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
-              name="martingaleIncrementSize"
+              name='martingaleIncrementSize'
               value={state.martingaleIncrementSize}
               onChange={(e) => onChange({ martingaleIncrementSize: e.target.value || '' })}
-              label="⚡️ Martingale additional lots"
+              label='⚡️ Martingale additional lots'
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
-              name="maxTrades"
+              name='maxTrades'
               value={state.maxTrades}
               onChange={(e) => onChange({ maxTrades: e.target.value || '' })}
-              label="⚡️ Maximum trades to take"
+              label='⚡️ Maximum trades to take'
             />
           </Grid>
           <Grid item xs={12} style={{ marginBottom: 16 }}>
             <TextField
               fullWidth
-              name="strikeByPrice"
+              name='strikeByPrice'
               value={state.strikeByPrice}
               onChange={(e) => onChange({ strikeByPrice: e.target.value || '' })}
-              label="(Optional) Select strikes close to price"
+              label='(Optional) Select strikes close to price'
             />
           </Grid>
           <Grid item xs={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Enter trade</FormLabel>
+            <FormControl component='fieldset'>
+              <FormLabel component='legend'>Enter trade</FormLabel>
               <RadioGroup
-                aria-label="entryStrategy"
-                name="entryStrategy"
+                aria-label='entryStrategy'
+                name='entryStrategy'
                 value={state.entryStrategy}
-                onChange={(e) => onChange({ entryStrategy: e.target.value })}>
+                onChange={(e) => onChange({ entryStrategy: e.target.value })}
+              >
                 {entryStrategies.map((entryStrategy) => (
                   <FormControlLabel
                     key={entryStrategy}
@@ -147,13 +149,14 @@ const TradeSetupForm = ({
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Exit Strategy</FormLabel>
+            <FormControl component='fieldset'>
+              <FormLabel component='legend'>Exit Strategy</FormLabel>
               <RadioGroup
-                aria-label="exitStrategy"
-                name="exitStrategy"
+                aria-label='exitStrategy'
+                name='exitStrategy'
                 value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value })}>
+                onChange={(e) => onChange({ exitStrategy: e.target.value })}
+              >
                 {exitStrategies.map((exitStrategy) => (
                   <FormControlLabel
                     key={exitStrategy}
@@ -172,36 +175,35 @@ const TradeSetupForm = ({
           <Grid item xs={12} style={{ marginBottom: 16 }}>
             <TextField
               fullWidth
-              name="slmPercent"
+              name='slmPercent'
               value={state.slmPercent}
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
-              label="SLM %"
+              label='SLM %'
             />
           </Grid>
           <Grid item xs={12}>
-            <FormControl component="fieldset">
+            <FormControl component='fieldset'>
               <FormGroup column>
                 <FormControlLabel
-                  key={'isHedgeEnabled'}
-                  label={'Add an OTM hedge'}
+                  key='isHedgeEnabled'
+                  label='Add an OTM hedge'
                   control={
                     <Checkbox
                       checked={state.isHedgeEnabled}
                       onChange={() =>
                         onChange({
                           isHedgeEnabled: !state.isHedgeEnabled
-                        })
-                      }
+                        })}
                     />
                   }
                 />
                 {state.isHedgeEnabled ? (
                   <TextField
                     fullWidth
-                    name="hedgeDistance"
+                    name='hedgeDistance'
                     value={state.hedgeDistance}
                     onChange={(e) => onChange({ hedgeDistance: e.target.value || '' })}
-                    label="Hedge Distance"
+                    label='Hedge Distance'
                   />
                 ) : null}
               </FormGroup>
@@ -209,31 +211,30 @@ const TradeSetupForm = ({
           </Grid>
 
           <Grid item xs={12}>
-            <FormControl component="fieldset">
+            <FormControl component='fieldset'>
               <FormGroup column>
                 <FormControlLabel
-                  key={'autoSquareOff'}
-                  label={'Auto Square off'}
+                  key='autoSquareOff'
+                  label='Auto Square off'
                   control={
                     <Checkbox
                       checked={state.isAutoSquareOffEnabled}
                       onChange={() =>
                         onChange({
                           isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
-                        })
-                      }
+                        })}
                     />
                   }
                 />
                 {state.isAutoSquareOffEnabled ? (
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardTimePicker
-                      margin="normal"
-                      id="time-picker"
-                      label="Square off time"
+                      margin='normal'
+                      id='time-picker'
+                      label='Square off time'
                       value={state.squareOffTime}
                       onChange={(selectedDate) => {
-                        onChange({ squareOffTime: ensureIST(selectedDate) });
+                        onChange({ squareOffTime: ensureIST(selectedDate) })
                       }}
                       KeyboardButtonProps={{
                         'aria-label': 'change square off time'
@@ -244,15 +245,19 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+
           {isRunnable ? (
             <Grid item xs={12}>
               <Button
-                variant="contained"
-                color="secondary"
-                type="button"
+                variant='contained'
+                color='secondary'
+                type='button'
                 onClick={(e) => {
-                  onChange({ runNow: true });
-                }}>
+                  onChange({ runNow: true })
+                }}
+              >
                 Schedule now
               </Button>
             </Grid>
@@ -261,13 +266,13 @@ const TradeSetupForm = ({
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
               <KeyboardTimePicker
-                margin="normal"
-                id="time-picker"
-                label="Schedule run"
+                margin='normal'
+                id='time-picker'
+                label='Schedule run'
                 value={isSchedulingDisabled ? null : state.runAt}
                 disabled={isSchedulingDisabled}
                 onChange={(selectedDate) => {
-                  onChange({ runAt: ensureIST(selectedDate) });
+                  onChange({ runAt: ensureIST(selectedDate) })
                 }}
                 KeyboardButtonProps={{
                   'aria-label': 'change time'
@@ -278,30 +283,32 @@ const TradeSetupForm = ({
 
           <Grid item xs={12}>
             <Button
-              variant="contained"
-              color="primary"
-              type="button"
+              variant='contained'
+              color='primary'
+              type='button'
               onClick={handleFormSubmit}
-              disabled={isSchedulingDisabled}>
+              disabled={isSchedulingDisabled}
+            >
               {isSchedulingDisabled
-                ? `Schedule run`
+                ? 'Schedule run'
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
             {!isRunnable ? (
               <Button
-                variant="contained"
-                color="default"
-                type="button"
+                variant='contained'
+                color='default'
+                type='button'
                 onClick={onCancel}
                 style={{ marginLeft: 8 }}
-                disabled={isSchedulingDisabled}>
+                disabled={isSchedulingDisabled}
+              >
                 Cancel
               </Button>
             ) : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>
-              <Box fontStyle="italic" fontSize={14}>
+              <Box fontStyle='italic' fontSize={14}>
                 <p>Note —</p>
                 <ol>
                   <li>
@@ -323,6 +330,6 @@ const TradeSetupForm = ({
         </Grid>
       </Paper>
     </form>
-  );
-};
-export default TradeSetupForm;
+  )
+}
+export default TradeSetupForm

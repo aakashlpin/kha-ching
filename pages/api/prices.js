@@ -1,19 +1,19 @@
-import withSession from '../../lib/session';
+import withSession from '../../lib/session'
 import {
   getIndexInstruments,
   getTradingSymbolsByOptionPrice,
   syncGetKiteInstance
-} from '../../lib/utils';
+} from '../../lib/utils'
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user');
+  const user = req.session.get('user')
 
   if (!user) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send('Unauthorized')
   }
 
-  const kite = syncGetKiteInstance(user);
-  const sourceData = await getIndexInstruments();
+  const kite = syncGetKiteInstance(user)
+  const sourceData = await getIndexInstruments()
   const response = await getTradingSymbolsByOptionPrice({
     sourceData,
     nfoSymbol: 'BANKNIFTY',
@@ -21,7 +21,7 @@ export default withSession(async (req, res) => {
     instrumentType: 'CE',
     pivotStrike: 35000,
     user
-  });
+  })
 
-  res.json({ response });
-});
+  res.json({ response })
+})

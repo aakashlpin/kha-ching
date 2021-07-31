@@ -1,47 +1,47 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import { Button, Paper } from '@material-ui/core';
-import axios from 'axios';
-import { omit } from 'lodash';
-import useSWR, { mutate } from 'swr';
+import { Button, Paper } from '@material-ui/core'
+import axios from 'axios'
+import { omit } from 'lodash'
+import useSWR, { mutate } from 'swr'
 
-import StratLayout from '../components/StratLayout';
-import useUser from '../lib/useUser';
+import StratLayout from '../components/StratLayout'
+import useUser from '../lib/useUser'
 
 const Mirror = () => {
-  const { data: mirrorDetails, mirrorApiError } = useSWR('/api/mirror');
+  const { data: mirrorDetails, mirrorApiError } = useSWR('/api/mirror')
 
   const { data: subsDetails, mirrorUrlError } = useSWR(
     mirrorDetails ? mirrorDetails?.mirrorUrl : null
-  );
+  )
 
-  const { user } = useUser({ redirectTo: '/' });
+  const { user } = useUser({ redirectTo: '/' })
 
   if (mirrorApiError || mirrorUrlError) {
-    return <>Something went wrong!</>;
+    return <>Something went wrong!</>
   }
 
-  async function handleStopMirror() {
+  async function handleStopMirror () {
     try {
-      const { data } = await axios(mirrorDetails?.mirrorUrl);
-      const deletedKeys = omit(data, ['api_key', 'access_token']);
-      await axios.put(mirrorDetails?.mirrorUrl, deletedKeys);
-      mutate(mirrorDetails.mirrorUrl);
+      const { data } = await axios(mirrorDetails?.mirrorUrl)
+      const deletedKeys = omit(data, ['api_key', 'access_token'])
+      await axios.put(mirrorDetails?.mirrorUrl, deletedKeys)
+      mutate(mirrorDetails.mirrorUrl)
     } catch (e) {
-      console.log('[mirror handleStopMirror] error', e);
+      console.log('[mirror handleStopMirror] error', e)
     }
   }
 
-  async function handleStartMirror() {
+  async function handleStartMirror () {
     try {
-      const { data } = await axios(mirrorDetails?.mirrorUrl);
+      const { data } = await axios(mirrorDetails?.mirrorUrl)
       await axios.put(mirrorDetails?.mirrorUrl, {
         ...data,
         api_key: user.session.api_key,
         access_token: user.session.access_token
-      });
-      mutate(mirrorDetails.mirrorUrl);
+      })
+      mutate(mirrorDetails.mirrorUrl)
     } catch (e) {
-      console.log('[mirror handleStartMirror] error', e);
+      console.log('[mirror handleStartMirror] error', e)
     }
   }
 
@@ -68,11 +68,12 @@ const Mirror = () => {
         {subsDetails?.access_token ? (
           <>
             <Button
-              variant="contained"
-              color="primary"
-              type="button"
+              variant='contained'
+              color='primary'
+              type='button'
               onClick={handleStopMirror}
-              style={{ marginRight: 8 }}>
+              style={{ marginRight: 8 }}
+            >
               🔴 Stop mirroring
             </Button>
             {/* {mirrorDetails?.userType === 'PUBLISHER' ? (
@@ -82,7 +83,7 @@ const Mirror = () => {
             ) : null} */}
           </>
         ) : mirrorDetails?.userType === 'CONSUMER' ? (
-          <Button variant="contained" color="primary" type="button" onClick={handleStartMirror}>
+          <Button variant='contained' color='primary' type='button' onClick={handleStartMirror}>
             Start mirroring
           </Button>
         ) : mirrorDetails?.userType === 'PUBLISHER' ? (
@@ -103,7 +104,7 @@ const Mirror = () => {
         ) : null} */}
       </Paper>
     </StratLayout>
-  );
-};
+  )
+}
 
-export default Mirror;
+export default Mirror

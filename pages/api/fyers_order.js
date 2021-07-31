@@ -1,14 +1,14 @@
-import withSession from '../../lib/session';
-import { delay, ms } from '../../lib/utils';
+import withSession from '../../lib/session'
+import { delay, ms } from '../../lib/utils'
 // import { storeAccessTokenRemotely } from '../../lib/utils';
 
-const fyers = require('fyers-api');
+const fyers = require('fyers-api')
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user');
+  const user = req.session.get('user')
 
   if (!user) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send('Unauthorized')
   }
 
   if (req.query.type === 'buy') {
@@ -37,15 +37,15 @@ export default withSession(async (req, res) => {
 
     // await delay(ms(5 * 60));
 
-    const buyOrderId = '221061144362';
+    const buyOrderId = '221061144362'
 
     const buyOrderStatus = await fyers.orderStatus({
       token: user.fyers.access_token,
       data: { id: buyOrderId }
-    });
+    })
 
-    console.log('===buyOrderStatus===');
-    console.log(JSON.stringify(buyOrderStatus, null, 2));
+    console.log('===buyOrderStatus===')
+    console.log(JSON.stringify(buyOrderStatus, null, 2))
     // const { status, symbol, qty, tradedPrice } = buyOrderStatus.data.orderDetails;
 
     // if (status !== 2) {
@@ -73,22 +73,22 @@ export default withSession(async (req, res) => {
     //   data: exitOrderProps
     // });
     // console.log(JSON.stringify(exitOrder, null, 2));
-    const exitOrderId = '221061147362';
-    console.log('===exitOrder===');
+    const exitOrderId = '221061147362'
+    console.log('===exitOrder===')
 
     const exitOrderStatus = await fyers.orderStatus({
       token: user.fyers.access_token,
       data: { id: exitOrderId }
-    });
+    })
 
-    console.log(JSON.stringify(exitOrderStatus, null, 2));
+    console.log(JSON.stringify(exitOrderStatus, null, 2))
     res.json({
       // buyOrderRes,
       buyOrderStatus,
       exitOrderStatus
-    });
+    })
   }
-});
+})
 
 /**
  * {

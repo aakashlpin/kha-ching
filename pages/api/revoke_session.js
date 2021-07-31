@@ -1,12 +1,12 @@
-import axios from 'axios';
+import axios from 'axios'
 
-import withSession from '../../lib/session';
+import withSession from '../../lib/session'
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user');
+  const user = req.session.get('user')
 
   if (!user) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send('Unauthorized')
   }
 
   await axios.delete(
@@ -16,7 +16,7 @@ export default withSession(async (req, res) => {
         'X-Kite-Version': 3
       }
     }
-  );
+  )
 
-  res.json({ status: 'ok' });
-});
+  res.json({ status: 'ok' })
+})
