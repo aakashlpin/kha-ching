@@ -1,4 +1,5 @@
-import { ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
+import { finiteStateChecker, ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
+import { Promise } from 'bluebird'
 
 jest.setTimeout(ms(60))
 
@@ -269,4 +270,26 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
   console.log({ ensured })
 
   expect(ensured).toStrictEqual({ response: { status: 'COMPLETE' }, successful: true })
+})
+
+test('finiteStateChecker should work', async () => {
+  const infinitePr = new Promise((resolve, reject, onCancel) => {
+    let cancelled = false
+    const fn = async () => {
+      if (!cancelled) {
+        console.log('hello world')
+        await Promise.delay(ms(2))
+        return fn()
+      }
+    }
+
+    onCancel(() => {
+      cancelled = true
+    })
+
+    fn()
+  })
+
+  const finitePr = finiteStateChecker(infinitePr, ms(10))
+  await expect(finitePr).rejects.toThrow(Promise.TimeoutError)
 })
