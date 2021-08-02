@@ -1,7 +1,8 @@
 import { KiteConnect } from 'kiteconnect'
+import { cleanupQueues } from '../../lib/queue'
 
 import withSession from '../../lib/session'
-import { getIndexInstruments, premiumAuthCheck, storeAccessTokenRemotely } from '../../lib/utils'
+import { getIndexInstruments, premiumAuthCheck, storeAccessTokenRemotely, checkHasSameAccessToken } from '../../lib/utils'
 
 const apiKey = process.env.KITE_API_KEY
 const kiteSecret = process.env.KITE_API_SECRET
@@ -27,8 +28,15 @@ export default withSession(async (req, res) => {
     premiumAuthCheck()
     getIndexInstruments()
 
-    // store access token remotely for other services to use it
-    storeAccessTokenRemotely(user.session.access_token)
+    const existingAccessToken = await checkHasSameAccessToken(user.session.access_token)
+    if (!existingAccessToken) {
+      // first login, or revoked login
+      // cleanup queue in both cases
+      console.log('cleaning up queues...')
+      cleanupQueues()
+      // then store access token remotely for other services to use it
+      storeAccessTokenRemotely(user.session.access_token)
+    }
 
     // then redirect
     res.redirect('/dashboard')
