@@ -5,7 +5,7 @@ import { uniq } from 'lodash'
 import withSession from '../../lib/session'
 import { SIGNALX_AXIOS_DB_AUTH, syncGetKiteInstance, withoutFwdSlash } from '../../lib/utils'
 
-const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env
+const { DATABASE_HOST_URL, DATABASE_USER_KEY } = process.env
 
 export default withSession(async (req, res) => {
   const date = dayjs().format('DDMMYYYY')
@@ -26,31 +26,19 @@ export default withSession(async (req, res) => {
     const { data } = await axios(dbUrl)
     const [order] = data
 
-    if (!order) {
-      // order not associated with existing tagged orders
-      // create a new entry
-
-      const newDbOrder = orders.find((order) => order.order_id === orderId)
-      const { data: updatedRes } = await axios.post(
-        `${withoutFwdSlash(DATABASE_HOST_URL)}/odr_${DATABASE_USER_KEY}/${orderTag}`,
-        {
-          ...newDbOrder,
-          tag: orderTag
-        },
-        SIGNALX_AXIOS_DB_AUTH
-      )
-
-      return res.json(updatedRes)
+    if (order) {
+      await axios.delete(`${withoutFwdSlash(DATABASE_HOST_URL)}/odr_${DATABASE_USER_KEY}/${order._collection}/${order._id}`, SIGNALX_AXIOS_DB_AUTH)
     }
 
-    const updatedOrder = {
-      ...order,
-      tag: orderTag
-    }
+    // create a new entry
 
-    const { data: updatedRes } = await axios.put(
-      `${withoutFwdSlash(DATABASE_HOST_URL)}/odr_${DATABASE_USER_KEY}/${updatedOrder._id}`,
-      updatedOrder,
+    const newDbOrder = orders.find((order) => order.order_id === orderId)
+    const { data: updatedRes } = await axios.post(
+      `${withoutFwdSlash(DATABASE_HOST_URL)}/odr_${DATABASE_USER_KEY}/${orderTag}`,
+      {
+        ...newDbOrder,
+        tag: orderTag
+      },
       SIGNALX_AXIOS_DB_AUTH
     )
 
