@@ -176,6 +176,20 @@ export default withSession(async (req, res) => {
     }
   }
 
+  if (req.method === 'PUT') {
+    try {
+      const { _id, ...props } = req.body
+      const { data } = await axios(`${endpoint}/${_id}`)
+      await axios.put(`${endpoint}/${_id}`, {
+        ...data,
+        ...props
+      }, SIGNALX_AXIOS_DB_AUTH)
+      return res.end()
+    } catch (e) {
+      return res.status(e.response.status).json(e.response.data || {})
+    }
+  }
+
   if (req.method === 'GET') {
     try {
       const { data } = await axios(`${endpoint}?limit=100`)
