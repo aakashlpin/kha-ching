@@ -165,13 +165,38 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               </RadioGroup>
             </FormControl>
           </Grid>
+          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            ? (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name='trailEveryPercentageChangeValue'
+                    value={state.trailEveryPercentageChangeValue}
+                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: e.target.value || '' })}
+                    label='Trail SL everytime combined premium decreases by %'
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name='trailingSlPercent'
+                    value={state.trailingSlPercent}
+                    onChange={(e) => onChange({ trailingSlPercent: e.target.value || '' })}
+                    label='Trailing SL %'
+                  />
+                </Grid>
+              </>
+              )
+            : null}
+
           <Grid item xs={12} style={{ marginBottom: '16px' }}>
             <TextField
               fullWidth
               name='slmPercent'
               value={state.slmPercent}
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
-              label='SLM %'
+              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
             />
           </Grid>
           <Grid item xs={12}>
