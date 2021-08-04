@@ -68,34 +68,60 @@ const WrapperComponent = (props) => {
 
   return (
     <Paper style={{ marginBottom: 24, padding: 16 }}>
-      <Typography variant='subtitle2' style={{ marginBottom: 16 }}>
-        <Heading />
-      </Typography>
+      <Box display='flex' justifyContent='space-between' alignItems='center' style={{ marginBottom: 16 }}>
+        <Typography style={{ marginRight: '8px' }}>
+          <Heading />
+        </Typography>
+        {jobWasQueued
+          ? (
+            <Box>
+              {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state)
+                ? (
+                  <Grid item>
+                    <Button
+                      variant='outlinedPrimary'
+                      type='button'
+                      onClick={() => handleDeleteTrade(props._id)}
+                    >
+                      ❌Delete
+                    </Button>
+                  </Grid>
+                  )
+                : null}
+              {['active', 'completed'].includes(jobDetails?.current_state) && !pnlData?.pnl
+                ? (
+                  <Grid item>
+                    <Button
+                      variant='outlinedPrimary'
+                      color='default'
+                      type='button'
+                      onClick={() => handleDeleteTrade(props._id)}
+                    >
+                      🔴Stop
+                    </Button>
+                  </Grid>
+                  )
+                : null}
+            </Box>
+            )
+          : null}
+      </Box>
 
       <div style={{ marginBottom: 16 }}>{props.detailsComponent(props.strategy, jobDetails)}</div>
 
-      {jobWasQueued ? (
-        <div style={{ marginBottom: 8 }}>
-          <Box display='flex' justifyContent='space-between' alignItems='center'>
-            <Typography variant='subtitle2'>
-              Live status —{' '}
-              {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
-            </Typography>
-            {pnlData?.pnl ? <PnLComponent pnl={pnlData.pnl} /> : null}
-          </Box>
-          {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state) ? (
-            <Grid item style={{ marginTop: 16 }}>
-              <Button
-                variant='contained'
-                type='button'
-                onClick={() => handleDeleteTrade(props._id)}
-              >
-                Delete trade
-              </Button>
-            </Grid>
-          ) : null}
-        </div>
-      ) : null}
+      {jobWasQueued
+        ? (
+          <div style={{ marginBottom: 8 }}>
+            <Box display='flex' justifyContent='space-between' alignItems='center'>
+              <Typography variant='subtitle2'>
+                Live status —{' '}
+                {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
+              </Typography>
+              {pnlData?.pnl ? <PnLComponent pnl={pnlData.pnl} /> : null}
+            </Box>
+          </div>
+          )
+        : null}
 
       {Array.isArray(jobOrders) && jobOrders.length ? <BrokerOrders orders={jobOrders} /> : null}
     </Paper>
