@@ -109,8 +109,6 @@ export default withSession(async (req, res) => {
   const urlDateParam = dayjs().format('DDMMYYYY')
   const endpoint = `${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}/${urlDateParam}`
 
-  console.log({ dailyTradesEndpoint: endpoint })
-
   if (req.method === 'POST') {
     let data
     const orderTag = nanoid()
