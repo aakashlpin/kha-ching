@@ -162,7 +162,7 @@ const WrapperComponent = (props) => {
 }
 
 const TradesForDay = () => {
-  const { data: trades, error } = useSWR('/api/trades_day')
+  const { data: trades, error } = useSWR('/api/trades_day', { refreshInterval: 10000 })
   if (!trades?.length || error) {
     return (
       <Typography variant=''>

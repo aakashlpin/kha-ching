@@ -1,21 +1,16 @@
-import dayjs from 'dayjs'
 import React from 'react'
+import commonDetailsRows from '../../lib/commonDetailsRows'
 
 import OrdersTable from '../../lib/ordersTable'
 
-const Details = ({
-  lots,
-  martingaleIncrementSize,
-  instrument,
-  maxTrades,
-  slmPercent,
-  runNow,
-  runAt,
-  strikeByPrice,
-  _createdAt
-}) => {
-  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA'
-  const humanTime = dayjs(runNow ? _createdAt : runAt).format('hh:mma')
+const Details = (args) => {
+  const {
+    lots,
+    martingaleIncrementSize,
+    instrument,
+    maxTrades,
+    strikeByPrice
+  } = args
 
   return (
     <OrdersTable
@@ -25,8 +20,7 @@ const Details = ({
         [{ value: 'Initial lots' }, { value: lots }],
         [{ value: 'Martingale lots' }, { value: martingaleIncrementSize }],
         [{ value: 'Maximum trades' }, { value: maxTrades }],
-        [{ value: 'SLM %' }, { value: slmPercent }],
-        [{ value: scheduleString }, { value: humanTime }]
+        ...commonDetailsRows(args)
       ]}
     />
   )

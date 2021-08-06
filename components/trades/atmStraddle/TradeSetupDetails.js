@@ -1,24 +1,19 @@
-import dayjs from 'dayjs'
 import React from 'react'
 
-import { EXIT_STRATEGIES_DETAILS } from '../../../lib/constants'
+import commonDetailsRows from '../../lib/commonDetailsRows'
 import OrdersTable from '../../lib/ordersTable'
 
-const Details = ({
-  lots,
-  maxSkewPercent,
-  thresholdSkewPercent,
-  instrument,
-  exitStrategy,
-  slmPercent,
-  runNow,
-  runAt,
-  expireIfUnsuccessfulInMins,
-  takeTradeIrrespectiveSkew = true,
-  _createdOn
-}) => {
-  const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA'
-  const humanTime = dayjs(runNow ? _createdOn : runAt).format('hh:mma')
+const Details = (args) => {
+  const {
+    lots,
+    maxSkewPercent,
+    thresholdSkewPercent,
+    instrument,
+    expireIfUnsuccessfulInMins,
+    takeTradeIrrespectiveSkew = true
+  } = args
+
+  const afterCheckerString = takeTradeIrrespectiveSkew ? 'Enter irrespective skew' : 'Reject trade'
 
   return (
     <OrdersTable
@@ -27,16 +22,9 @@ const Details = ({
         [{ value: 'Lots' }, { value: lots }],
         [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],
         [{ value: 'Threshold Skew' }, { value: thresholdSkewPercent ? `${thresholdSkewPercent}%` : '-' }],
-        [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
-        [{ value: 'SL' }, { value: `${slmPercent}%` }],
         [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }],
-        [
-          { value: 'After checker' },
-          {
-            value: takeTradeIrrespectiveSkew ? 'Enter irrespective skew' : 'Reject trade'
-          }
-        ],
-        [{ value: scheduleString }, { value: humanTime }]
+        [{ value: 'After checker' }, { value: afterCheckerString }],
+        ...commonDetailsRows(args)
       ]}
     />
   )
