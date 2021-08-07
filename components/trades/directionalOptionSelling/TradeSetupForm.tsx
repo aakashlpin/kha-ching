@@ -30,9 +30,22 @@ import {
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
   STRATEGIES,
-  STRATEGIES_DETAILS
+  STRATEGIES_DETAILS,
+  DOS_ENTRY_STRATEGIES
 } from '../../../lib/constants'
+import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
+
+interface DOSTradeSetupFormProps {
+  state: DIRECTIONAL_OPTION_SELLING_CONFIG;
+  isRunnable?: boolean;
+  onChange: (changedProps: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => void;
+  onCancel: () => void;
+  onSubmit: (data: DIRECTIONAL_OPTION_SELLING_CONFIG | null) => void;
+  enabledInstruments?: Array<INSTRUMENTS>;
+  exitStrategies?: Array<EXIT_STRATEGIES>;
+  entryStrategies?: Array<DOS_ENTRY_STRATEGIES>
+}
 
 const TradeSetupForm = ({
   state,
@@ -46,7 +59,7 @@ const TradeSetupForm = ({
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
     STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
   ]
-}) => {
+}: DOSTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const handleFormSubmit = (e) => {
@@ -78,7 +91,7 @@ const TradeSetupForm = ({
                           onChange({
                             instruments: {
                               [instrument]: !state.instruments[instrument]
-                            }
+                            } as Record<INSTRUMENTS, boolean>
                           })
                         }}
                       />
@@ -93,7 +106,7 @@ const TradeSetupForm = ({
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: e.target.value || '' })}
+              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
               label='Initial lots'
             />
           </Grid>
@@ -102,7 +115,7 @@ const TradeSetupForm = ({
               fullWidth
               name='martingaleIncrementSize'
               value={state.martingaleIncrementSize}
-              onChange={(e) => onChange({ martingaleIncrementSize: e.target.value || '' })}
+              onChange={(e) => onChange({ martingaleIncrementSize: +e.target.value || undefined })}
               label='⚡️ Martingale additional lots'
             />
           </Grid>
@@ -111,7 +124,7 @@ const TradeSetupForm = ({
               fullWidth
               name='maxTrades'
               value={state.maxTrades}
-              onChange={(e) => onChange({ maxTrades: e.target.value || '' })}
+              onChange={(e) => onChange({ maxTrades: +e.target.value || undefined })}
               label='⚡️ Maximum trades to take'
             />
           </Grid>
@@ -120,7 +133,7 @@ const TradeSetupForm = ({
               fullWidth
               name='strikeByPrice'
               value={state.strikeByPrice}
-              onChange={(e) => onChange({ strikeByPrice: e.target.value || '' })}
+              onChange={(e) => onChange({ strikeByPrice: +e.target.value || undefined })}
               label='(Optional) Select strikes close to price'
             />
           </Grid>
@@ -131,7 +144,7 @@ const TradeSetupForm = ({
                 aria-label='entryStrategy'
                 name='entryStrategy'
                 value={state.entryStrategy}
-                onChange={(e) => onChange({ entryStrategy: e.target.value })}
+                onChange={(e) => onChange({ entryStrategy: e.target.value as DOS_ENTRY_STRATEGIES })}
               >
                 {entryStrategies.map((entryStrategy) => (
                   <FormControlLabel
@@ -155,7 +168,7 @@ const TradeSetupForm = ({
                 aria-label='exitStrategy'
                 name='exitStrategy'
                 value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value })}
+                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
               >
                 {exitStrategies.map((exitStrategy) => (
                   <FormControlLabel
@@ -177,13 +190,13 @@ const TradeSetupForm = ({
               fullWidth
               name='slmPercent'
               value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
+              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
               label='SLM %'
             />
           </Grid>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
-              <FormGroup column>
+              <FormGroup>
                 <FormControlLabel
                   key='isHedgeEnabled'
                   label='Add an OTM hedge'
@@ -202,7 +215,7 @@ const TradeSetupForm = ({
                     fullWidth
                     name='hedgeDistance'
                     value={state.hedgeDistance}
-                    onChange={(e) => onChange({ hedgeDistance: e.target.value || '' })}
+                    onChange={(e) => onChange({ hedgeDistance: +e.target.value || undefined })}
                     label='Hedge Distance'
                   />
                 ) : null}
@@ -212,7 +225,7 @@ const TradeSetupForm = ({
 
           <Grid item xs={12}>
             <FormControl component='fieldset'>
-              <FormGroup column>
+              <FormGroup>
                 <FormControlLabel
                   key='autoSquareOff'
                   label='Auto Square off'

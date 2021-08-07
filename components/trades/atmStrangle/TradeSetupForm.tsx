@@ -25,9 +25,19 @@ import {
   INSTRUMENTS,
   STRATEGIES
 } from '../../../lib/constants'
+import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
 
-const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
+interface ATMStrangleTradeSetupFormProps {
+  strategy: STRATEGIES;
+  state: ATM_STRANGLE_CONFIG;
+  isRunnable?: boolean;
+  onChange: (changedProps: Partial<ATM_STRANGLE_CONFIG>) => void;
+  onCancel: () => void;
+  onSubmit: (data: AvailablePlansConfig | null) => void;
+}
+
+const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStrangleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
@@ -60,7 +70,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
                           onChange({
                             instruments: {
                               [instrument]: !state.instruments[instrument]
-                            }
+                            } as Record<INSTRUMENTS, boolean>
                           })
                         }}
                       />
@@ -93,7 +103,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: e.target.value || '' })}
+              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
               label='# Lots'
             />
           </Grid>
@@ -105,7 +115,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
                 aria-label='exitStrategy'
                 name='exitStrategy'
                 value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value })}
+                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
               >
                 {exitStrategies.map((exitStrategy) => (
                   <FormControlLabel
@@ -128,13 +138,13 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               fullWidth
               name='slmPercent'
               value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
+              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
               label='SLM %'
             />
           </Grid>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
-              <FormGroup column>
+              <FormGroup>
                 <FormControlLabel
                   key='autoSquareOff'
                   label='Auto Square off'
@@ -164,7 +174,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
                         }}
                       />
                     </MuiPickersUtilsProvider>
-                    )
+                  )
                   : null}
               </FormGroup>
             </FormControl>
@@ -186,7 +196,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
                   Schedule now
                 </Button>
               </Grid>
-              )
+            )
             : null}
 
           <Grid item xs={12}>
@@ -230,7 +240,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
                 >
                   Cancel
                 </Button>
-                )
+              )
               : null}
           </Grid>
         </Grid>

@@ -7,8 +7,14 @@ import {
   Grid
 } from '@material-ui/core'
 import { ROLLBACK_KEY_MAP } from '../../lib/constants'
+import { AvailableRollbackConfig } from '../../types/plans'
 
-const RollbackComponent = ({ rollback, onChange }) => {
+interface RollbackComponentProps {
+  rollback: AvailableRollbackConfig;
+  onChange: ({ rollback: AvailableRollbackConfig }) => void
+}
+
+const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {
   const getIsSomeRollbackOptionEnabled = () => !!Object.keys(rollback).find(key => rollback[key])
   const [isSomeRollbackOptionEnabled, setIsSomeRollbackOptionEnabled] = useState(() => getIsSomeRollbackOptionEnabled())
 
@@ -19,7 +25,7 @@ const RollbackComponent = ({ rollback, onChange }) => {
   return (
     <Grid item xs={12}>
       <FormControl component='fieldset'>
-        <FormGroup column>
+        <FormGroup>
           <FormControlLabel
             key='rollback'
             label='Rollback trades (BETA)'
@@ -34,7 +40,7 @@ const RollbackComponent = ({ rollback, onChange }) => {
                     }), {})
                   })}
               />
-          }
+            }
           />
           <FormGroup style={{ marginLeft: 24 }}>
             {Object.keys(rollback).map((rollbackKey) => (

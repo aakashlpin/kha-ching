@@ -13,10 +13,9 @@ import {
   TextField,
   Typography
 } from '@material-ui/core'
-import Box from '@material-ui/core/Box'
 import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import dayjs from 'dayjs'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
@@ -26,9 +25,19 @@ import {
   INSTRUMENTS,
   STRATEGIES
 } from '../../../lib/constants'
+import { ATM_STRADDLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
 
-const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }) => {
+interface ATMStraddleTradeSetupFormProps {
+  strategy: STRATEGIES;
+  state: ATM_STRADDLE_CONFIG;
+  isRunnable?: boolean;
+  onChange: (changedProps: Partial<ATM_STRADDLE_CONFIG>) => void;
+  onCancel: () => void;
+  onSubmit: (data: AvailablePlansConfig | null) => void;
+}
+
+const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStraddleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments =
@@ -68,7 +77,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                           onChange({
                             instruments: {
                               [instrument]: !state.instruments[instrument]
-                            }
+                            } as Record<INSTRUMENTS, boolean>
                           })
                         }}
                       />
@@ -83,7 +92,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: e.target.value || '' })}
+              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
               label='# Lots'
             />
           </Grid>
@@ -92,7 +101,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               fullWidth
               name='maxSkewPercent'
               value={state.maxSkewPercent}
-              onChange={(e) => onChange({ maxSkewPercent: e.target.value || '' })}
+              onChange={(e) => onChange({ maxSkewPercent: +e.target.value || undefined })}
               label='Ideal skew %'
             />
           </Grid>
@@ -101,7 +110,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               fullWidth
               name='thresholdSkewPercent'
               value={state.thresholdSkewPercent}
-              onChange={(e) => onChange({ thresholdSkewPercent: e.target.value || '' })}
+              onChange={(e) => onChange({ thresholdSkewPercent: +e.target.value || undefined })}
               label='Threshold skew %'
             />
           </Grid>
@@ -110,7 +119,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               fullWidth
               name='expireIfUnsuccessfulInMins'
               value={state.expireIfUnsuccessfulInMins}
-              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: e.target.value || '' })}
+              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: +e.target.value || undefined })}
               label='Run skew checker for (in mins)'
             />
           </Grid>
@@ -148,7 +157,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                 aria-label='exitStrategy'
                 name='exitStrategy'
                 value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value })}
+                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
               >
                 {exitStrategies.map((exitStrategy) => (
                   <FormControlLabel
@@ -170,13 +179,13 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               fullWidth
               name='slmPercent'
               value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
+              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
               label='SLM %'
             />
           </Grid>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
-              <FormGroup column>
+              <FormGroup>
                 <FormControlLabel
                   key='autoSquareOff'
                   label='Auto Square off'
@@ -206,7 +215,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                         }}
                       />
                     </MuiPickersUtilsProvider>
-                    )
+                  )
                   : null}
               </FormGroup>
             </FormControl>
@@ -228,7 +237,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                   Schedule now
                 </Button>
               </Grid>
-              )
+            )
             : null}
 
           <Grid item xs={12}>
@@ -272,7 +281,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                 >
                   Cancel
                 </Button>
-                )
+              )
               : null}
           </Grid>
         </Grid>
