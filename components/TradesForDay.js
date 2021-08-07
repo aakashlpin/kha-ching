@@ -1,12 +1,13 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
 import { Box, Button, Grid, Link, Paper, Typography } from '@material-ui/core'
+import { DeleteForever, Stop } from '@material-ui/icons'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import router from 'next/router'
 import React from 'react'
 import useSWR, { mutate } from 'swr'
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../lib/constants'
+import { STRATEGIES_DETAILS, USER_OVERRIDE } from '../lib/constants'
+import ActionButtonOrLoader from './lib/ActionButtonOrLoader'
 import BrokerOrders from './lib/brokerOrders'
 import PnLComponent from './lib/pnlComponent'
 import TradeDetails from './lib/tradeDetails'
@@ -60,42 +61,100 @@ const WrapperComponent = (props) => {
           _id: tradeId
         }
       })
-      mutate('/api/trades_day')
+      await mutate('/api/trades_day')
     } catch (e) {
       console.log('error deleting job', e)
     }
   }
 
+  const userOverrideAborted = props.user_override && props.user_override === USER_OVERRIDE.ABORT
+
+  const handleAbortTrade = async (tradeId) => {
+    try {
+      await axios.put('/api/trades_day', {
+        _id: tradeId,
+        user_override: USER_OVERRIDE.ABORT
+      })
+      await mutate('/api/trades_day')
+    } catch (e) {
+      console.log('error stopping job', e)
+    }
+  }
+
   return (
     <Paper style={{ marginBottom: 24, padding: 16 }}>
-      <Typography variant='subtitle2' style={{ marginBottom: 16 }}>
-        <Heading />
-      </Typography>
+      <Box display='flex' justifyContent='space-between' alignItems='center' style={{ marginBottom: 16, minHeight: 36 }}>
+        <Typography style={{ marginRight: '8px' }}>
+          <Heading />
+        </Typography>
+        {jobWasQueued
+          ? (
+            <Box>
+              {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state)
+                ? (
+                  <Grid item>
+                    <ActionButtonOrLoader>
+                      {({ setLoading }) =>
+                        <Button
+                          variant='outlined'
+                          type='button'
+                          onClick={async () => {
+                            setLoading(true)
+                            await handleDeleteTrade(props._id)
+                            setLoading(false)
+                          }}
+                        >
+                          <DeleteForever />Delete
+                        </Button>}
+                    </ActionButtonOrLoader>
+                  </Grid>
+                  )
+                : null}
+              {['active', 'completed'].includes(jobDetails?.current_state) && !pnlData?.pnl
+                ? (
+                  <Grid item>
+                    <ActionButtonOrLoader>
+                      {({ setLoading }) =>
+                        <Button
+                          variant='outlined'
+                          color='default'
+                          type='button'
+                          onClick={async () => {
+                            setLoading(true)
+                            if (!userOverrideAborted) {
+                              await handleAbortTrade(props._id)
+                            } else {
+                              await handleDeleteTrade(props._id)
+                            }
+                            setLoading(false)
+                          }}
+                        >
+                          {userOverrideAborted ? <><DeleteForever /> Delete</> : <><Stop /> Stop</>}
+                        </Button>}
+                    </ActionButtonOrLoader>
+                  </Grid>
+                  )
+                : null}
+            </Box>
+            )
+          : null}
+      </Box>
 
       <div style={{ marginBottom: 16 }}>{props.detailsComponent(props.strategy, jobDetails)}</div>
 
-      {jobWasQueued ? (
-        <div style={{ marginBottom: 8 }}>
-          <Box display='flex' justifyContent='space-between' alignItems='center'>
-            <Typography variant='subtitle2'>
-              Live status —{' '}
-              {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
-            </Typography>
-            {pnlData?.pnl ? <PnLComponent pnl={pnlData.pnl} /> : null}
-          </Box>
-          {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state) ? (
-            <Grid item style={{ marginTop: 16 }}>
-              <Button
-                variant='contained'
-                type='button'
-                onClick={() => handleDeleteTrade(props._id)}
-              >
-                Delete trade
-              </Button>
-            </Grid>
-          ) : null}
-        </div>
-      ) : null}
+      {jobWasQueued
+        ? (
+          <div style={{ marginBottom: 8 }}>
+            <Box display='flex' justifyContent='space-between' alignItems='center'>
+              <Typography variant='subtitle2'>
+                Live status —{' '}
+                {jobDetails?.current_state?.toUpperCase() || jobDetails?.error || 'Loading...'}
+              </Typography>
+              {pnlData?.pnl ? <PnLComponent pnl={pnlData.pnl} /> : null}
+            </Box>
+          </div>
+          )
+        : null}
 
       {Array.isArray(jobOrders) && jobOrders.length ? <BrokerOrders orders={jobOrders} /> : null}
     </Paper>
@@ -103,7 +162,7 @@ const WrapperComponent = (props) => {
 }
 
 const TradesForDay = () => {
-  const { data: trades, error } = useSWR('/api/trades_day')
+  const { data: trades, error } = useSWR('/api/trades_day', { refreshInterval: 10000 })
   if (!trades?.length || error) {
     return (
       <Typography variant=''>
@@ -154,7 +213,7 @@ const TradesForDay = () => {
             router.push('/')
           }}
         >
-          🔴 Kill Switch (no further trades)
+          <Stop /> Kill Switch
         </Button>
       </Box>
     </>

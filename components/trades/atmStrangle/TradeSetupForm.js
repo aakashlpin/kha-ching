@@ -31,7 +31,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
   const isSchedulingDisabled = false
 
   const enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
-  const exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
+  const exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
@@ -122,6 +122,30 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               </RadioGroup>
             </FormControl>
           </Grid>
+          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            ? (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name='trailEveryPercentageChangeValue'
+                    value={state.trailEveryPercentageChangeValue}
+                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: e.target.value || '' })}
+                    label='Trail SL everytime combined premium decreases by %'
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name='trailingSlPercent'
+                    value={state.trailingSlPercent}
+                    onChange={(e) => onChange({ trailingSlPercent: e.target.value || '' })}
+                    label='Trailing SL %'
+                  />
+                </Grid>
+              </>
+              )
+            : null}
 
           <Grid item xs={12} style={{ marginBottom: '16px' }}>
             <TextField
@@ -129,7 +153,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               name='slmPercent'
               value={state.slmPercent}
               onChange={(e) => onChange({ slmPercent: e.target.value || '' })}
-              label='SLM %'
+              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
             />
           </Grid>
           <Grid item xs={12}>
