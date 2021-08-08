@@ -16,7 +16,7 @@ export type INSTRUMENT_PROPERTIES = {
   nfoSymbol: string;
   exchange: string;
   strikeStepSize: number;
-}
+};
 
 export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
   [INSTRUMENTS.NIFTY]: {
