@@ -13,6 +13,7 @@ export default function Home () {
       </Head>
 
       <main className={styles.main}>
+        {/* eslint-disable */}
         <img src='/logo.png' width='300' alt='SignalX' />
 
         <p className={styles.description}>

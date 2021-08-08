@@ -35,13 +35,15 @@ const Details = ({ job, strategy, onDeleteJob }) => {
   const Heading = () => (
     <>
       #{job.id} · {strategyDetails.heading}{' '}
-      {runNow ? (
+      {runNow
+        ? (
         <>
           was run <TimeAgo date={new Date(job.timestamp)} />.
         </>
-      ) : (
+          )
+        : (
         <>is scheduled to run at {humanTime}.</>
-      )}
+          )}
     </>
   )
 
@@ -83,9 +85,11 @@ const Details = ({ job, strategy, onDeleteJob }) => {
         >
           Cleanup Job
         </Button>
-        {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer ? (
+        {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer
+          ? (
           <p>{deleteDisclaimer}</p>
-        ) : null}
+            )
+          : null}
       </Grid>
     </Paper>
   )

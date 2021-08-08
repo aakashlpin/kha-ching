@@ -75,19 +75,19 @@ const useStyles = makeStyles((theme) => ({
  * https://api.signalx.trade/key_16_digit_api_key/dayOfWeek
  */
 
-type StrategySelection = { dayOfWeek: DailyPlansDayKey, selectedStrategy: STRATEGIES };
+interface StrategySelection { dayOfWeek: DailyPlansDayKey, selectedStrategy: STRATEGIES }
 
 const getDefaultState = (strategy: STRATEGIES): AvailablePlansConfig => ({
   ...STRATEGIES_DETAILS[strategy].defaultFormState,
   ...getSchedulingStateProps(strategy)
-} as AvailablePlansConfig);
+} as AvailablePlansConfig)
 
 const resetDefaultStratState = (): Record<STRATEGIES, AvailablePlansConfig> => {
   return {
     [STRATEGIES.ATM_STRADDLE]: getDefaultState(STRATEGIES.ATM_STRADDLE),
     [STRATEGIES.ATM_STRANGLE]: getDefaultState(STRATEGIES.ATM_STRANGLE),
-    [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: getDefaultState(STRATEGIES.DIRECTIONAL_OPTION_SELLING),
-  } as Record<STRATEGIES, AvailablePlansConfig>;
+    [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: getDefaultState(STRATEGIES.DIRECTIONAL_OPTION_SELLING)
+  } as Record<STRATEGIES, AvailablePlansConfig>
 }
 
 const Plan = () => {
@@ -119,8 +119,8 @@ const Plan = () => {
     }
   })
   const [open, setOpen] = useState(false)
-  const [currentEditDay, setCurrentEditDay] = useState<DailyPlansDayKey>();
-  const [currentEditStrategy, setCurrentEditStrategy] = useState<STRATEGIES>();
+  const [currentEditDay, setCurrentEditDay] = useState<DailyPlansDayKey>()
+  const [currentEditStrategy, setCurrentEditStrategy] = useState<STRATEGIES>()
 
   const [stratState, setStratState] = useState(resetDefaultStratState)
 
@@ -144,7 +144,6 @@ const Plan = () => {
     })
   }
 
-
   const onClickConfigureStrategy = ({ dayOfWeek, selectedStrategy }: StrategySelection) => {
     setCurrentEditDay(dayOfWeek)
     setCurrentEditStrategy(selectedStrategy)
@@ -153,7 +152,7 @@ const Plan = () => {
   }
 
   const stratOnChangeHandler = (changedProps: Partial<AvailablePlansConfig>, strategy: STRATEGIES) => {
-    if (changedProps.instruments) {
+    if (changedProps.instruments != null) {
       setStratState({
         ...stratState,
         [strategy]: {
@@ -289,7 +288,7 @@ const Plan = () => {
   // }, [dayState]);
 
   useEffect(() => {
-    async function fn() {
+    async function fn () {
       const { data } = await axios('/api/plan')
       const dayWiseData = data.reduce((accum, config) => {
         if (accum[config._collection]) {
@@ -336,7 +335,7 @@ const Plan = () => {
               <Typography className={classes.heading}>{dayProps.heading}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.flexVertical}>
-              {Object.keys(dayProps.strategies).length
+              {(Object.keys(dayProps.strategies).length > 0)
                 ? (
                   <>
                     <Typography component='p' variant='subtitle1'>
@@ -354,13 +353,13 @@ const Plan = () => {
                               label={`${STRATEGIES_DETAILS[config.strategy].heading}/${INSTRUMENT_DETAILS[config.instrument].displayName
                                 }`}
                               onClick={() => handleEditStrategyConfig({ dayOfWeek, strategyKey })}
-                              onDelete={() => handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
+                              onDelete={async () => await handleDeleteStrategyConfig({ dayOfWeek, strategyKey })}
                             />
                           )
                         })}
                     </div>
                   </>
-                )
+                  )
                 : null}
               <Grid container alignItems='flex-start' spacing={2}>
                 <FormControl className={classes.formControl}>
@@ -433,7 +432,7 @@ const Plan = () => {
                       onCancel={commonOnCancelHandler}
                       isRunnable={false}
                     />
-                  )
+                    )
                   : currentEditStrategy === STRATEGIES.ATM_STRADDLE
                     ? (
                       <ATMStraddleTradeForm
@@ -445,7 +444,7 @@ const Plan = () => {
                         isRunnable={false}
                         strategy={STRATEGIES.ATM_STRADDLE}
                       />
-                    )
+                      )
                     : currentEditStrategy === STRATEGIES.ATM_STRANGLE
                       ? (
                         <ATMStrangleTradeForm
@@ -457,12 +456,12 @@ const Plan = () => {
                           isRunnable={false}
                           strategy={STRATEGIES.ATM_STRANGLE}
                         />
-                      )
+                        )
                       : null}
               </div>
             </Fade>
           </Modal>
-        )
+          )
         : null}
     </Layout>
   )

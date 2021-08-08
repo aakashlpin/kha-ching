@@ -1,9 +1,9 @@
+import React from 'react'
 import '../styles/globals.css'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import Head from 'next/head'
-import React from 'react'
 import { SWRConfig } from 'swr'
 
 import fetch from '../lib/fetchJson'
@@ -14,7 +14,7 @@ function MyApp ({ Component, pageProps }) {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side')
     if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles)
+      jssStyles?.parentElement?.removeChild(jssStyles)
     }
   }, [])
   return (

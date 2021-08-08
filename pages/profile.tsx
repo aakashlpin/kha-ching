@@ -1,10 +1,11 @@
 import Layout from '../components/Layout'
 import useUser from '../lib/useUser'
+import React from 'react'
 
 const Profile = () => {
   const { user } = useUser({ redirectTo: '/' })
 
-  if (!user || user.isLoggedIn === false) {
+  if (!user.isLoggedIn) {
     return <Layout>loading...</Layout>
   }
 

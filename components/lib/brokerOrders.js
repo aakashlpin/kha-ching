@@ -137,7 +137,8 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                 </Box>
               </Box>
             </Box>
-            {trades ? (
+            {trades
+              ? (
               <Box>
                 <Grid item xs={6}>
                   <FormControl className={classes.formControl}>
@@ -169,7 +170,8 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                     System tag:{' '}
                     {dbOrders.find((dbOrder) => dbOrder.order_id === order.order_id)?.tag ||
                       'Untagged'}
-                    {order.tag ? (
+                    {order.tag
+                      ? (
                       <Button
                         variant='contained'
                         onClick={() =>
@@ -180,11 +182,13 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                       >
                         Copy broker tag
                       </Button>
-                    ) : null}
+                        )
+                      : null}
                   </Typography>
                 </Grid>
               </Box>
-            ) : null}
+                )
+              : null}
           </div>
         )
       })}

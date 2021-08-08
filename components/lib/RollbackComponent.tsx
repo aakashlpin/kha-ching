@@ -10,7 +10,7 @@ import { ROLLBACK_KEY_MAP } from '../../lib/constants'
 import { AvailableRollbackConfig } from '../../types/plans'
 
 interface RollbackComponentProps {
-  rollback: AvailableRollbackConfig;
+  rollback: AvailableRollbackConfig
   onChange: ({ rollback: AvailableRollbackConfig }) => void
 }
 

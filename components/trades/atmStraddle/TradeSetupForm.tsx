@@ -29,12 +29,12 @@ import { ATM_STRADDLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface ATMStraddleTradeSetupFormProps {
-  strategy: STRATEGIES;
-  state: ATM_STRADDLE_CONFIG;
-  isRunnable?: boolean;
-  onChange: (changedProps: Partial<ATM_STRADDLE_CONFIG>) => void;
-  onCancel: () => void;
-  onSubmit: (data: AvailablePlansConfig | null) => void;
+  strategy: STRATEGIES
+  state: ATM_STRADDLE_CONFIG
+  isRunnable?: boolean
+  onChange: (changedProps: Partial<ATM_STRADDLE_CONFIG>) => void
+  onCancel: () => void
+  onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
 const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStraddleTradeSetupFormProps) => {
@@ -240,7 +240,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                         }}
                       />
                     </MuiPickersUtilsProvider>
-                  )
+                    )
                   : null}
               </FormGroup>
             </FormControl>
@@ -262,7 +262,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                   Schedule now
                 </Button>
               </Grid>
-            )
+              )
             : null}
 
           <Grid item xs={12}>
@@ -306,7 +306,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                 >
                   Cancel
                 </Button>
-              )
+                )
               : null}
           </Grid>
         </Grid>

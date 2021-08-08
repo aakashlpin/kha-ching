@@ -51,7 +51,7 @@ const OptionBuyingStrategy = ({
   const [db, setDb] = useState(() => {
     const existingDb =
       typeof window !== 'undefined' && localStorage.getItem(LOCALSTORAGE_KEY)
-        ? JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY))
+        ? JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY)!)
         : null
 
     if (!existingDb) {
@@ -91,10 +91,10 @@ const OptionBuyingStrategy = ({
     }
 
     fn()
-  }, [db])
+  }, [db, LOCALSTORAGE_KEY])
 
-  const onSubmit = async (e) => {
-    e && e.preventDefault()
+  const onSubmit = async (e?) => {
+    e?.preventDefault()
 
     const { lots, exitStrategy, instruments } = state
 
@@ -165,7 +165,7 @@ const OptionBuyingStrategy = ({
 
     try {
       const responses = await Promise.all(jobs)
-      const data = responses.reduce((accum, res) => [...accum, ...res.data], [])
+      const data = responses.reduce((accum, res) => [...accum, ...res?.data], [])
       setDb((exDb) => ({
         queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
       }))
@@ -200,7 +200,7 @@ const OptionBuyingStrategy = ({
     }
   }
 
-  const onDeleteJob = async ({ jobId } = {}) => {
+  const onDeleteJob = async ({ jobId }) => {
     if (!jobId) {
       throw new Error('onDeleteJob called without jobId')
     }
@@ -232,14 +232,13 @@ const OptionBuyingStrategy = ({
       {db.queue?.length
         ? db.queue.map((job) => (
           <Details key={job.name} job={job} strategy={strategy} onDeleteJob={onDeleteJob} />
-          ))
+        ))
         : null}
       <Form
         state={state}
         onChange={onChange}
         onSubmit={onSubmit}
         enabledInstruments={enabledInstruments}
-        exitStrategies={exitStrategies}
       />
       <ToastContainer
         position='bottom-center'

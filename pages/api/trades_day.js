@@ -73,8 +73,8 @@ async function createJob ({ jobData, user }) {
         : null,
       expiresAt: expireIfUnsuccessfulInMins
         ? dayjs(runNow ? new Date() : runAt)
-            .add(expireIfUnsuccessfulInMins, 'minutes')
-            .format()
+          .add(expireIfUnsuccessfulInMins, 'minutes')
+          .format()
         : null
     },
     {

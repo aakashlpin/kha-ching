@@ -37,14 +37,14 @@ import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface DOSTradeSetupFormProps {
-  state: DIRECTIONAL_OPTION_SELLING_CONFIG;
-  isRunnable?: boolean;
-  onChange: (changedProps: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => void;
-  onCancel: () => void;
-  onSubmit: (data: DIRECTIONAL_OPTION_SELLING_CONFIG | null) => void;
-  enabledInstruments?: Array<INSTRUMENTS>;
-  exitStrategies?: Array<EXIT_STRATEGIES>;
-  entryStrategies?: Array<DOS_ENTRY_STRATEGIES>
+  state: DIRECTIONAL_OPTION_SELLING_CONFIG
+  isRunnable?: boolean
+  onChange: (changedProps: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => void
+  onCancel: () => void
+  onSubmit: (data: DIRECTIONAL_OPTION_SELLING_CONFIG | null) => void
+  enabledInstruments?: INSTRUMENTS[]
+  exitStrategies?: EXIT_STRATEGIES[]
+  entryStrategies?: DOS_ENTRY_STRATEGIES[]
 }
 
 const TradeSetupForm = ({
@@ -210,7 +210,8 @@ const TradeSetupForm = ({
                     />
                   }
                 />
-                {state.isHedgeEnabled ? (
+                {state.isHedgeEnabled
+                  ? (
                   <TextField
                     fullWidth
                     name='hedgeDistance'
@@ -218,7 +219,8 @@ const TradeSetupForm = ({
                     onChange={(e) => onChange({ hedgeDistance: +e.target.value || undefined })}
                     label='Hedge Distance'
                   />
-                ) : null}
+                    )
+                  : null}
               </FormGroup>
             </FormControl>
           </Grid>
@@ -239,7 +241,8 @@ const TradeSetupForm = ({
                     />
                   }
                 />
-                {state.isAutoSquareOffEnabled ? (
+                {state.isAutoSquareOffEnabled
+                  ? (
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardTimePicker
                       margin='normal'
@@ -254,14 +257,16 @@ const TradeSetupForm = ({
                       }}
                     />
                   </MuiPickersUtilsProvider>
-                ) : null}
+                    )
+                  : null}
               </FormGroup>
             </FormControl>
           </Grid>
 
           <RollbackComponent rollback={state.rollback} onChange={onChange} />
 
-          {isRunnable ? (
+          {isRunnable
+            ? (
             <Grid item xs={12}>
               <Button
                 variant='contained'
@@ -274,7 +279,8 @@ const TradeSetupForm = ({
                 Schedule now
               </Button>
             </Grid>
-          ) : null}
+              )
+            : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -306,7 +312,8 @@ const TradeSetupForm = ({
                 ? 'Schedule run'
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
-            {!isRunnable ? (
+            {!isRunnable
+              ? (
               <Button
                 variant='contained'
                 color='default'
@@ -317,7 +324,8 @@ const TradeSetupForm = ({
               >
                 Cancel
               </Button>
-            ) : null}
+                )
+              : null}
           </Grid>
           <Grid item xs={12}>
             <Typography>
@@ -333,9 +341,11 @@ const TradeSetupForm = ({
                     ⚡️ Maximum trades to take — it&apos;s recommended to NOT trade more than 3
                     Supertrend changes per day. Set it to 1 if you wish to take only 1 trade/day.
                   </li>
-                  {isRunnable ? (
+                  {isRunnable
+                    ? (
                     <li>You can delete the task until scheduled time on the next step.</li>
-                  ) : null}
+                      )
+                    : null}
                 </ol>
               </Box>
             </Typography>

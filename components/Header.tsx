@@ -94,13 +94,15 @@ const Header = () => {
               </li>
             </>
           )}
-          {isUpdateAvailable ? (
+          {isUpdateAvailable
+            ? (
             <li>
               <a href='https://cloud.digitalocean.com/apps' title='App update available'>
                 <NotificationsActiveIcon color='default' />
               </a>
             </li>
-          ) : null}
+              )
+            : null}
         </ul>
       </nav>
       <style jsx>{`

@@ -92,71 +92,71 @@ export default withSession(async (req, res) => {
 
 /**
  * {
-	buyOrderStatus: {
-		code: 200,
-		data: {
-			orderDetails: {
-				status: 2,
-				symbol: "NSE:BANKNIFTY2161734900PE",
-				qty: 25,
-				orderNumStatus: "221061144362:2",
-				dqQtyRem: 0,
-				orderDateTime: "11-Jun-2021 11:24:17",
-				orderValidity: "DAY",
-				fyToken: "101121061751059",
-				slNo: 4,
-				message: "TRADE CONFIRMED",
-				segment: "D",
-				id: "221061144362",
-				stopPrice: 0,
-				instrument: "OPTIDX",
-				exchOrdId: "1600000022524649",
-				remainingQuantity: 0,
-				filledQty: 25,
-				limitPrice: 0,
-				offlineOrder: false,
-				source: "ITS",
-				productType: "INTRADAY",
-				type: 2,
-				side: 1,
-				tradedPrice: 290.45,
-				discloseQty: 0
-			}
-		},
-		message: ""
-	},
-	exitOrderStatus: {
-		code: 200,
-		data: {
-			orderDetails: {
-				status: 6,
-				symbol: "NSE:BANKNIFTY2161734900PE",
-				qty: 25,
-				orderNumStatus: "221061147362:6",
-				dqQtyRem: 0,
-				orderDateTime: "11-Jun-2021 11:32:39",
-				orderValidity: "DAY",
-				fyToken: "101121061751059",
-				slNo: 1,
-				message: "CONFIRMED",
-				segment: "D",
-				id: "221061147362",
-				stopPrice: 203,
-				instrument: "OPTIDX",
-				exchOrdId: "1600000024313430",
-				remainingQuantity: 25,
-				filledQty: 0,
-				limitPrice: 0,
-				offlineOrder: false,
-				source: "ITS",
-				productType: "INTRADAY",
-				type: 3,
-				side: -1,
-				tradedPrice: 0,
-				discloseQty: 0
-			}
-		},
-		message: ""
-	}
+  buyOrderStatus: {
+    code: 200,
+    data: {
+      orderDetails: {
+        status: 2,
+        symbol: "NSE:BANKNIFTY2161734900PE",
+        qty: 25,
+        orderNumStatus: "221061144362:2",
+        dqQtyRem: 0,
+        orderDateTime: "11-Jun-2021 11:24:17",
+        orderValidity: "DAY",
+        fyToken: "101121061751059",
+        slNo: 4,
+        message: "TRADE CONFIRMED",
+        segment: "D",
+        id: "221061144362",
+        stopPrice: 0,
+        instrument: "OPTIDX",
+        exchOrdId: "1600000022524649",
+        remainingQuantity: 0,
+        filledQty: 25,
+        limitPrice: 0,
+        offlineOrder: false,
+        source: "ITS",
+        productType: "INTRADAY",
+        type: 2,
+        side: 1,
+        tradedPrice: 290.45,
+        discloseQty: 0
+      }
+    },
+    message: ""
+  },
+  exitOrderStatus: {
+    code: 200,
+    data: {
+      orderDetails: {
+        status: 6,
+        symbol: "NSE:BANKNIFTY2161734900PE",
+        qty: 25,
+        orderNumStatus: "221061147362:6",
+        dqQtyRem: 0,
+        orderDateTime: "11-Jun-2021 11:32:39",
+        orderValidity: "DAY",
+        fyToken: "101121061751059",
+        slNo: 1,
+        message: "CONFIRMED",
+        segment: "D",
+        id: "221061147362",
+        stopPrice: 203,
+        instrument: "OPTIDX",
+        exchOrdId: "1600000024313430",
+        remainingQuantity: 25,
+        filledQty: 0,
+        limitPrice: 0,
+        offlineOrder: false,
+        source: "ITS",
+        productType: "INTRADAY",
+        type: 3,
+        side: -1,
+        tradedPrice: 0,
+        discloseQty: 0
+      }
+    },
+    message: ""
+  }
 }
  */

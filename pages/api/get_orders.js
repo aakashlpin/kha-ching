@@ -38,10 +38,10 @@ export default withSession(async (req, res) => {
       .sort((a, b) =>
         dayjs(a.order_timestamp).isSame(b.order_timestamp)
           ? a.status === 'TRIGGER PENDING'
+            ? 1
+            : a.transaction_type === 'BUY'
               ? 1
-              : a.transaction_type === 'BUY'
-                ? 1
-                : -1
+              : -1
           : dayjs(a.order_timestamp).isBefore(b.order_timestamp)
             ? 1
             : -1
