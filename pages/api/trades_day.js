@@ -109,8 +109,6 @@ export default withSession(async (req, res) => {
   const urlDateParam = dayjs().format('DDMMYYYY')
   const endpoint = `${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}/${urlDateParam}`
 
-  console.log({ dailyTradesEndpoint: endpoint })
-
   if (req.method === 'POST') {
     let data
     const orderTag = nanoid()
@@ -170,6 +168,20 @@ export default withSession(async (req, res) => {
         await deleteJob(data.queue.id)
       }
       await axios.delete(`${endpoint}/${req.body._id}`, SIGNALX_AXIOS_DB_AUTH)
+      return res.end()
+    } catch (e) {
+      return res.status(e.response.status).json(e.response.data || {})
+    }
+  }
+
+  if (req.method === 'PUT') {
+    try {
+      const { _id, ...props } = req.body
+      const { data } = await axios(`${endpoint}/${_id}`)
+      await axios.put(`${endpoint}/${_id}`, {
+        ...data,
+        ...props
+      }, SIGNALX_AXIOS_DB_AUTH)
       return res.end()
     } catch (e) {
       return res.status(e.response.status).json(e.response.data || {})

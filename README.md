@@ -16,9 +16,10 @@ Once you've gone through the Notion doc above, come back here for instructions t
     - Ignore the `Redirect URL` and `Postback URL` fields for now.
     - Copy `API Key` and `API Secret` fields and keep them handy somewhere.
 
-3. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account. Name your application and you'd land on a section that looks like this. ![redislabs](https://i.imgur.com/k9sZScs.jpg)
+3. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account.
 
-    - Copy the `Endpoint` and `Default User Password` fields to construct the following Redis URL - `redis://:{Default User Password}@{Endpoint}`. Keep this handy. (remove the curly brackets)
+    - Activate your database and name it `signalx`
+    - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
 
 ## 1-click Installation
 

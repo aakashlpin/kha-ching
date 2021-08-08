@@ -37,3 +37,4 @@ instrument_*.csv
 backtests
 __tests/unit/backtests
 dos*.csv
+oss*.csv
