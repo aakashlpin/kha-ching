@@ -7,11 +7,11 @@ import {
   Grid
 } from '@material-ui/core'
 import { ROLLBACK_KEY_MAP } from '../../lib/constants'
-import { AvailableRollbackConfig } from '../../types/plans'
+import { ROLLBACK_TYPE } from '../../types/plans'
 
 interface RollbackComponentProps {
-  rollback: AvailableRollbackConfig
-  onChange: ({ rollback: AvailableRollbackConfig }) => void
+  rollback: ROLLBACK_TYPE
+  onChange: ({ rollback: ROLLBACK_TYPE }) => void
 }
 
 const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {

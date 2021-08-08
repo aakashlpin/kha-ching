@@ -162,6 +162,7 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.OPTION_BUYING_STRATEGY]: {
     premium: true,
     heading: 'Option Buying Strategy',
+    defaultRunAt: dayjs().set('hour', 9).set('minutes', 30).set('seconds', 0).format(),
     schedule: [
       {
         afterTime: () =>

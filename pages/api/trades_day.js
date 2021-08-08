@@ -24,10 +24,7 @@ async function createJob ({ jobData, user }) {
   const {
     runAt,
     runNow,
-    strategy,
-    exitStrategy,
-    squareOffTime,
-    expireIfUnsuccessfulInMins
+    strategy
   } = jobData
 
   if (STRATEGIES_DETAILS[strategy].premium) {
@@ -64,18 +61,7 @@ async function createJob ({ jobData, user }) {
   const qRes = addToNextQueue(
     {
       ...jobData,
-      user,
-      autoSquareOffProps: squareOffTime
-        ? {
-            time: squareOffTime,
-            deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-          }
-        : null,
-      expiresAt: expireIfUnsuccessfulInMins
-        ? dayjs(runNow ? new Date() : runAt)
-          .add(expireIfUnsuccessfulInMins, 'minutes')
-          .format()
-        : null
+      user
     },
     {
       __nextTradingQueue: TRADING_Q_NAME

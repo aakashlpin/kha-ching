@@ -40,7 +40,7 @@ test('should return true for successful order', async () => {
   }]))
 
   const ensured = await remoteOrderSuccessEnsurer({
-    __kite: kite,
+    _kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
     orderProps: {},
     onFailureRetryAfterMs: ms(1),
@@ -68,7 +68,7 @@ test('should retry 3 times for orders that after punching continue to not exist,
   expect(kite).toBeDefined()
   try {
     remoteOrderSuccessEnsurer({
-      __kite: kite,
+      _kite: kite,
       ensureOrderState: kite.STATUS_COMPLETE,
       orderProps: {},
       onFailureRetryAfterMs: ms(5),
@@ -97,7 +97,7 @@ test('should return false when order history api check times out', async () => {
   expect(kite).toBeDefined()
 
   const ensured = await remoteOrderSuccessEnsurer({
-    __kite: kite,
+    _kite: kite,
     orderProps: {},
     ensureOrderState: kite.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
@@ -143,7 +143,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
   expect(kite).toBeDefined()
 
   const ensured = await remoteOrderSuccessEnsurer({
-    __kite: kite,
+    _kite: kite,
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
@@ -185,7 +185,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
   expect(kite).toBeDefined()
 
   const ensured = await remoteOrderSuccessEnsurer({
-    __kite: kite,
+    _kite: kite,
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
@@ -251,7 +251,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
   expect(kite).toBeDefined()
 
   const ensured = await remoteOrderSuccessEnsurer({
-    __kite: kite,
+    _kite: kite,
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',

@@ -20,3 +20,9 @@ export interface SignalXUser {
   session: KiteProfile
   isLoggedIn: boolean
 }
+
+export interface DBMeta {
+  _id?: string
+  _createdOn?: string
+  _updatedOn?: string
+}

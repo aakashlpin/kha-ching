@@ -1,6 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
+import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../types/plans'
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
@@ -28,7 +29,7 @@ import {
   withRemoteRetry
 } from '../utils'
 
-const SIGNALX_URL = process.env.SIGNALX_URL || 'https://indicator.signalx.trade'
+const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
 // grab the instrument id of the most recent expiry of banknifty
 // get the supertrend value (10,3)
@@ -59,7 +60,7 @@ async function fetchSuperTrend ({ instrument_token, from_date, to_date, ...other
   return data
 }
 
-export default async (initialJobData) => {
+export default async function directionalOptionSelling (initialJobData) {
   try {
     const {
       instrument,
@@ -71,7 +72,7 @@ export default async (initialJobData) => {
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
-      return `🟢 [dos] Terminating DOS trade. ${maxTrades} attempts left but less than 40 mins in market closing.`
+      return `🟢 [dos] Terminating DOS trade. ${(maxTrades as number).toString()} attempts left but less than 40 mins in market closing.`
     }
 
     const { nfoSymbol } = INSTRUMENT_DETAILS[instrument]
@@ -107,7 +108,7 @@ export default async (initialJobData) => {
       }
       const compareWithTrendValue = lastTrend || lastTrendAsPerST
       if (compareWithTrendValue === currentTrendAsPerST) {
-        const error = `[dos] no change in ST ("${currentTrendAsPerST}")`
+        const error = `[dos] no change in ST ("${currentTrendAsPerST as string}")`
         return Promise.reject(new Error(error))
       }
     }
@@ -140,21 +141,21 @@ export default async (initialJobData) => {
   }
 }
 
-async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
+async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_CONFIG, superTrend, instrumentsRawData) {
   const {
-    __kite,
+    _kite,
     instrument,
     user,
     lots,
     isAutoSquareOffEnabled,
     strikeByPrice,
     orderTag,
-    rollback = {},
+    rollback,
     isHedgeEnabled = false,
     hedgeDistance = 1700
   } = initialJobData
   const strikeByPriceNumber = strikeByPrice ? Number(strikeByPrice) : null
-  const kite = __kite || syncGetKiteInstance(user)
+  const kite = _kite || syncGetKiteInstance(user)
   const { nfoSymbol, strikeStepSize, lotSize } = INSTRUMENT_DETAILS[instrument]
 
   const { close, ST_10_3 } = superTrend
@@ -217,7 +218,7 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
 
       try {
         const { successful, response } = await remoteOrderSuccessEnsurer({
-          __kite: kite,
+          _kite: kite,
           orderProps: hedgeOrder,
           ensureOrderState: kite.STATUS_COMPLETE,
           user
@@ -231,7 +232,7 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
           throw new Error(error)
         }
       } catch (e) {
-        if (rollback.onBrokenHedgeOrders) {
+        if (rollback?.onBrokenHedgeOrders) {
           await doSquareOffPositions([hedgeOrderResponse], kite, initialJobData)
         }
         throw e
@@ -253,7 +254,7 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
   let rawKiteOrderResponse
   try {
     const { successful, response } = await remoteOrderSuccessEnsurer({
-      __kite: kite,
+      _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,
       user
@@ -270,7 +271,7 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
   } catch (e) {
     // squaring off the hedge if this times out
     console.log(e)
-    if (rollback.onBrokenPrimaryOrders) {
+    if (rollback?.onBrokenPrimaryOrders) {
       await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o), kite, initialJobData)
     }
     throw e
@@ -279,19 +280,19 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
   let exitOrder
   try {
     [exitOrder] = await individualLegExitOrders({
-      __kite: kite,
+      _kite: kite,
       initialJobData,
       rawKiteOrdersResponse: [rawKiteOrderResponse]
     })
   } catch (e) {
     // if this throws, then the initial SL order for the sold option is not in system
-    if (rollback.onBrokenExitOrders) {
+    if (rollback?.onBrokenExitOrders) {
       await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o))
     }
     throw e
   }
 
-  const nextQueueData = omit(initialJobData, '__kite')
+  const nextQueueData = omit(initialJobData, '_kite')
 
   const queueRes = await addToNextQueue(nextQueueData, {
     __nextTradingQueue: EXIT_TRADING_Q_NAME,
@@ -305,7 +306,7 @@ async function punchOrders (initialJobData, superTrend, instrumentsRawData) {
     rawKiteOrderResponse: exitOrder
   })
 
-  const { id, name, data } = queueRes
+  const { id, name, data } = queueRes!
   console.log('🟢 [directionalOptionSelling] trailing SL now..', { id, name, data })
 
   if (isAutoSquareOffEnabled) {

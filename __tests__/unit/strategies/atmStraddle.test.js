@@ -26,7 +26,7 @@ test('it should work when everything is okay', async () => {
 
   // const orderTag = nanoid()
   const res = await atmStraddle({
-    __kite: kite,
+    _kite: kite,
     instrument: INSTRUMENTS.NIFTY,
     lots: 1,
     user,

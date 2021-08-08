@@ -1,4 +1,4 @@
-import { Queue, QueueScheduler } from 'bullmq'
+import { Queue, QueueScheduler, JobsOptions, Job } from 'bullmq'
 import dayjs from 'dayjs'
 import IORedis from 'ioredis'
 import { v4 as uuidv4 } from 'uuid'
@@ -49,14 +49,14 @@ const allQueues = [
   ancillaryQueue
 ]
 
-export async function addToNextQueue (jobData, jobResponse) {
+export async function addToNextQueue (jobData, jobResponse): Promise<Job | undefined> {
   try {
     switch (jobResponse.__nextTradingQueue) {
       case ANCILLARY_Q_NAME: {
         // console.log('Adding job to ancillary queue', jobData, jobResponse)
         const marketClosing = dayjs().set('hours', 15).set('minutes', 30).set('seconds', 0)
         return ancillaryQueue.add(
-          `${ANCILLARY_Q_NAME}_${uuidv4()}`,
+          `${ANCILLARY_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
             jobResponse
@@ -70,7 +70,7 @@ export async function addToNextQueue (jobData, jobResponse) {
       case WATCHER_Q_NAME: {
         // console.log('Adding job to watcher queue', jobData, jobResponse)
         return watcherQueue.add(
-          `${WATCHER_Q_NAME}_${uuidv4()}`,
+          `${WATCHER_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
             jobResponse
@@ -89,7 +89,7 @@ export async function addToNextQueue (jobData, jobResponse) {
         // console.log('Adding job to exit trade queue', jobData)
         const queueOptions = getQueueOptionsForExitStrategy(jobData.exitStrategy)
         return exitTradesQueue.add(
-          `${EXIT_TRADING_Q_NAME}_${uuidv4()}`,
+          `${EXIT_TRADING_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
             jobResponse
@@ -98,7 +98,7 @@ export async function addToNextQueue (jobData, jobResponse) {
         )
       }
       case TRADING_Q_NAME: {
-        const queueOptions = {}
+        const queueOptions: JobsOptions = {}
         const { strategy, runNow, runAt } = jobData
         const maxEntryAttempts = getEntryAttemptsCount({ strategy })
         if (maxEntryAttempts) {
@@ -114,7 +114,7 @@ export async function addToNextQueue (jobData, jobResponse) {
           queueOptions.delay = delay
         }
 
-        return tradingQueue.add(`${TRADING_Q_NAME}_${uuidv4()}`, jobData, queueOptions)
+        return tradingQueue.add(`${TRADING_Q_NAME}_${uuidv4() as string}`, jobData, queueOptions)
       }
 
       default: {
@@ -142,7 +142,7 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   const delay = dayjs(runAtTime).diff(dayjs())
   // console.log(`>>> auto square off scheduled for ${Math.ceil(delay / 60000)} minutes from now`)
   return autoSquareOffQueue.add(
-    `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4()}`,
+    `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
     {
       rawKiteOrdersResponse,
       deletePendingOrders,
@@ -154,4 +154,4 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   )
 }
 
-export const cleanupQueues = () => Promise.all(allQueues.map(queue => queue.obliterate()))
+export const cleanupQueues = async () => await Promise.all(allQueues.map(async queue => await queue.obliterate()))

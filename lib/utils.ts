@@ -82,6 +82,12 @@ export const getCurrentExpiryTradingSymbol = ({
   strike,
   instrumentType,
   tradingsymbol
+}: {
+  sourceData: any[]
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  tradingsymbol?: string
 }) => {
   const rows = sourceData
     .filter(
@@ -669,7 +675,7 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
  */
 export const remoteOrderSuccessEnsurer = async (args) => {
   const {
-    __kite,
+    _kite,
     ensureOrderState,
     orderProps,
     onFailureRetryAfterMs = ms(15),
@@ -691,7 +697,7 @@ export const remoteOrderSuccessEnsurer = async (args) => {
   }
 
   const { data: [tradeSettings] } = await withRemoteRetry(
-    () => axios(`${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}?q=orderTag:${orderProps.tag}`)
+    async () => axios(`${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}?q=orderTag:${orderProps.tag}`)
   )
   const { user_override: userOverride } = tradeSettings
   if (userOverride === USER_OVERRIDE.ABORT) {
@@ -699,7 +705,7 @@ export const remoteOrderSuccessEnsurer = async (args) => {
     throw USER_OVERRIDE.ABORT
   }
 
-  const kite = __kite || syncGetKiteInstance(user)
+  const kite = _kite || syncGetKiteInstance(user)
 
   try {
     const orderAckResponse = isMockOrder() ? { order_id: '' } : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)

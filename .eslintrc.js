@@ -32,6 +32,7 @@ module.exports = {
     '@typescript-eslint/consistent-type-assertions': 'off',
     '@typescript-eslint/strict-boolean-expressions': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
+    '@typescript-eslint/return-await': 'off',
     'camelcase': 'off',
     'no-unused-vars': [
       'warn',

@@ -1,4 +1,7 @@
 import dayjs from 'dayjs'
+import { Dispatch } from 'react'
+import { ATM_STRADDLE_CONFIG, ATM_STRANGLE_CONFIG, AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../types/plans'
+import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../types/trade'
 
 import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from './constants'
 
@@ -13,7 +16,7 @@ export const ensureIST = (date) => {
   return datetimeInIST
 }
 
-export function getScheduleableTradeTime (strategy) {
+export function getScheduleableTradeTime (strategy: STRATEGIES) {
   const defaultDate = dayjs(STRATEGIES_DETAILS[strategy].defaultRunAt).format()
 
   if (dayjs().isAfter(dayjs(defaultDate))) {
@@ -25,16 +28,16 @@ export function getScheduleableTradeTime (strategy) {
 
 export function getDefaultSquareOffTime () {
   try {
-    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
+    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME ?? '15:20').split(
       ':'
     )
-    return dayjs().set('hours', hours).set('minutes', minutes).format()
+    return dayjs().set('hours', +hours).set('minutes', +minutes).format()
   } catch (e) {
     return null
   }
 }
 
-export function getSchedulingStateProps (strategy) {
+export function getSchedulingStateProps (strategy: STRATEGIES) {
   return {
     runNow: false,
     isAutoSquareOffEnabled: true,
@@ -43,7 +46,7 @@ export function getSchedulingStateProps (strategy) {
   }
 }
 
-export function commonOnChangeHandler (changedProps, state, setState) {
+export function commonOnChangeHandler (changedProps: Partial<AvailablePlansConfig>, state: AvailablePlansConfig, setState: Dispatch<AvailablePlansConfig>) {
   if (changedProps.instruments) {
     setState({
       ...state,
@@ -56,11 +59,11 @@ export function commonOnChangeHandler (changedProps, state, setState) {
     setState({
       ...state,
       ...changedProps
-    })
+    } as AvailablePlansConfig)
   }
 }
 
-export const formatFormDataForApi = ({ strategy, data }) => {
+export const formatFormDataForApi = ({ strategy, data }: { strategy: string, data: AvailablePlansConfig }): SUPPORTED_TRADE_CONFIG | null => {
   if (!strategy || !data) {
     throw new Error('[formatFormDataForApi] args missing')
   }
@@ -78,11 +81,12 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         strikeByPrice,
         slmPercent,
         isHedgeEnabled,
-        hedgeDistance
-      } = data
+        hedgeDistance,
+        exitStrategy
+      } = data as DIRECTIONAL_OPTION_SELLING_CONFIG
 
-      const apiProps = {
-        ...data,
+      const apiProps: DIRECTIONAL_OPTION_SELLING_TRADE = {
+        ...(data as DIRECTIONAL_OPTION_SELLING_CONFIG),
         lots: Number(lots),
         martingaleIncrementSize: Number(martingaleIncrementSize),
         slmPercent: Number(slmPercent),
@@ -91,9 +95,15 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
         squareOffTime: isAutoSquareOffEnabled
           ? dayjs(squareOffTime).set('seconds', 0).format()
-          : null,
+          : undefined,
         isHedgeEnabled,
-        hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : null
+        hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : null,
+        autoSquareOffProps: squareOffTime
+          ? {
+              time: squareOffTime,
+              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            }
+          : undefined
       }
 
       return apiProps
@@ -113,10 +123,10 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         trailEveryPercentageChangeValue,
         trailingSlPercent,
         exitStrategy
-      } = data
+      } = data as ATM_STRADDLE_CONFIG
 
-      const apiProps = {
-        ...data,
+      const apiProps: ATM_STRADDLE_TRADE = {
+        ...(data as ATM_STRADDLE_CONFIG),
         lots: Number(lots),
         slmPercent: Number(slmPercent),
         trailEveryPercentageChangeValue: Number(trailEveryPercentageChangeValue),
@@ -128,7 +138,18 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         runAt: runNow ? dayjs().format() : runAt,
         squareOffTime: isAutoSquareOffEnabled
           ? dayjs(squareOffTime).set('seconds', 0).format()
-          : null
+          : undefined,
+        autoSquareOffProps: squareOffTime
+          ? {
+              time: squareOffTime,
+              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            }
+          : undefined,
+        expiresAt: expireIfUnsuccessfulInMins
+          ? dayjs(runNow ? new Date() : runAt)
+            .add(expireIfUnsuccessfulInMins, 'minutes')
+            .format()
+          : undefined
       }
 
       return apiProps
@@ -145,11 +166,12 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         slmPercent,
         trailEveryPercentageChangeValue,
         trailingSlPercent,
-        exitStrategy
-      } = data
+        exitStrategy,
+        expireIfUnsuccessfulInMins
+      } = data as ATM_STRANGLE_CONFIG
 
-      const apiProps = {
-        ...data,
+      const apiProps: ATM_STRANGLE_TRADE = {
+        ...(data as ATM_STRANGLE_CONFIG),
         lots: Number(lots),
         slmPercent: Number(slmPercent),
         trailEveryPercentageChangeValue: Number(trailEveryPercentageChangeValue),
@@ -159,7 +181,18 @@ export const formatFormDataForApi = ({ strategy, data }) => {
         inverted: Boolean(inverted),
         squareOffTime: isAutoSquareOffEnabled
           ? dayjs(squareOffTime).set('seconds', 0).format()
-          : null
+          : undefined,
+        autoSquareOffProps: squareOffTime
+          ? {
+              time: squareOffTime,
+              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+            }
+          : undefined,
+        expiresAt: expireIfUnsuccessfulInMins
+          ? dayjs(runNow ? new Date() : runAt)
+            .add(expireIfUnsuccessfulInMins, 'minutes')
+            .format()
+          : undefined
       }
 
       return apiProps
