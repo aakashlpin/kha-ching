@@ -6,7 +6,7 @@
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "node ./bootup.js & TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080}",
-    "standard": "standard -v --parser babel-eslint 'src/**/*.js' 'components/**/*.js' 'lib/**/*.js' 'pages/**/*.js' '__tests__/**/*.js'",
+    "standard": "standard -v --parser babel-eslint",
     "test": "jest ./__tests__ --testPathIgnorePatterns support/*",
     "unit-test": "jest ./__tests__/unit --detectOpenHandles",
     "int-test": "jest ./__tests__/integration"
