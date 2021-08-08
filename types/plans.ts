@@ -41,8 +41,10 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
     disableInstrumentChange?: boolean,
     isAutoSquareOffEnabled?: boolean,
     squareOffTime?: string | null,
-    runAt?: string
-    rollback?: ATM_STRADDLE_ROLLBACK_TYPE;
+    runAt?: string,
+    rollback?: ATM_STRADDLE_ROLLBACK_TYPE,
+    trailEveryPercentageChangeValue?: number,
+    trailingSlPercent?: number,
 }
 
 export interface CM_WED_THURS_CONFIG extends ATM_STRADDLE_CONFIG { };
@@ -59,8 +61,10 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
     disableInstrumentChange?: boolean,
     isAutoSquareOffEnabled?: boolean,
     squareOffTime?: string | null,
-    runAt?: string
-    rollback?: ATM_STRANGLE_ROLLBACK_TYPE
+    runAt?: string,
+    rollback?: ATM_STRANGLE_ROLLBACK_TYPE,
+    trailEveryPercentageChangeValue?: number,
+    trailingSlPercent?: number,
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
