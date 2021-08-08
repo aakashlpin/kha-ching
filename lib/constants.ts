@@ -9,7 +9,16 @@ export enum INSTRUMENTS {
   FINNIFTY = 'FINNIFTY'
 }
 
-export const INSTRUMENT_DETAILS = {
+export type INSTRUMENT_PROPERTIES = {
+  lotSize: number;
+  displayName: string;
+  underlyingSymbol: string;
+  nfoSymbol: string;
+  exchange: string;
+  strikeStepSize: number;
+}
+
+export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
   [INSTRUMENTS.NIFTY]: {
     lotSize: 50,
     displayName: 'NIFTY',
