@@ -39,7 +39,7 @@ test('it should work when everything is okay', async () => {
 
   console.log(JSON.stringify(res, null, 2))
 
-  expect(res).toHaveProperty('__nextTradingQueue')
+  expect(res).toHaveProperty('_nextTradingQueue')
   expect(res).toHaveProperty('straddle')
   expect(res).toHaveProperty('rawKiteOrdersResponse')
 })

@@ -12,6 +12,7 @@ export interface TradeMeta extends DBMeta {
   _kite?: unknown // this is only used in jest for unit tests
   user?: SignalXUser // this is only available once job has been created on server
   orderTag?: string // this is only available once job has been created on server
+  _nextTradingQueue?: string
 }
 
 export interface ATM_STRADDLE_TRADE extends TradeMeta, ATM_STRADDLE_CONFIG{}

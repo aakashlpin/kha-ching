@@ -58,7 +58,7 @@ export default withSession(async (req, res) => {
             : null
         },
         {
-          __nextTradingQueue: TRADING_Q_NAME
+          _nextTradingQueue: TRADING_Q_NAME
         }
       )
     )

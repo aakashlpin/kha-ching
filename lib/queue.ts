@@ -51,7 +51,7 @@ const allQueues = [
 
 export async function addToNextQueue (jobData, jobResponse): Promise<Job | undefined> {
   try {
-    switch (jobResponse.__nextTradingQueue) {
+    switch (jobResponse._nextTradingQueue) {
       case ANCILLARY_Q_NAME: {
         // console.log('Adding job to ancillary queue', jobData, jobResponse)
         const marketClosing = dayjs().set('hours', 15).set('minutes', 30).set('seconds', 0)

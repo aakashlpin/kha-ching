@@ -2,6 +2,7 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../types/plans'
+import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
@@ -128,7 +129,7 @@ export default async function directionalOptionSelling (initialJobData) {
           runAt: getNextNthMinute(ms(5 * 60))
         },
         {
-          __nextTradingQueue: TRADING_Q_NAME
+          _nextTradingQueue: TRADING_Q_NAME
         }
       )
     }
@@ -141,7 +142,7 @@ export default async function directionalOptionSelling (initialJobData) {
   }
 }
 
-async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_CONFIG, superTrend, instrumentsRawData) {
+async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, superTrend, instrumentsRawData) {
   const {
     _kite,
     instrument,
@@ -295,14 +296,14 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_CONFIG, s
   const nextQueueData = omit(initialJobData, '_kite')
 
   const queueRes = await addToNextQueue(nextQueueData, {
-    __nextTradingQueue: EXIT_TRADING_Q_NAME,
+    _nextTradingQueue: EXIT_TRADING_Q_NAME,
     rawKiteOrdersResponse: [exitOrder],
     optionInstrumentToken,
     hedgeOrderResponse
   })
 
   await addToNextQueue(nextQueueData, {
-    __nextTradingQueue: WATCHER_Q_NAME,
+    _nextTradingQueue: WATCHER_Q_NAME,
     rawKiteOrderResponse: exitOrder
   })
 

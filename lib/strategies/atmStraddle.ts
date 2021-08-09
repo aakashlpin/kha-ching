@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import { INSTRUMENT_DETAILS } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
@@ -139,19 +140,23 @@ export const createOrder = ({ symbol, lots, lotSize, user, orderTag }) => {
   }
 }
 
-export default async ({
+async function atmStraddle ({
   _kite,
   instrument,
   lots,
   user,
   expiresAt,
   orderTag,
-  rollback = {},
-  maxSkewPercent = 10,
+  rollback,
+  maxSkewPercent,
   thresholdSkewPercent, // will be missing for existing plans
-  takeTradeIrrespectiveSkew = true, // for it to be backwards compatible with existing plans
-  __nextTradingQueue = EXIT_TRADING_Q_NAME
-}) => {
+  takeTradeIrrespectiveSkew,
+  _nextTradingQueue = EXIT_TRADING_Q_NAME
+}: ATM_STRADDLE_TRADE): Promise<{
+    _nextTradingQueue: string
+    straddle: {}
+    rawKiteOrdersResponse: []
+  } | undefined> {
   const kite = _kite || syncGetKiteInstance(user)
 
   const { underlyingSymbol, exchange, nfoSymbol, lotSize, strikeStepSize } = INSTRUMENT_DETAILS[
@@ -236,7 +241,7 @@ export default async ({
       // best case scenario
       const completedOrders = brokerOrderResolutions.map(res => res.value.response)
       return {
-        __nextTradingQueue,
+        _nextTradingQueue,
         straddle,
         rawKiteOrdersResponse: completedOrders
       }
@@ -247,7 +252,7 @@ export default async ({
       // some legs have failed even after several retry attempts
       // ACTION: square off the ones which are successful?
       const partialFulfilledLegs = brokerOrderResolutions.filter(res => res.status === 'fulfilled').map(res => res.value.response)
-      if (rollback.onBrokenPrimaryOrders) {
+      if (rollback?.onBrokenPrimaryOrders) {
         await doSquareOffPositions(partialFulfilledLegs, kite, {
           orderTag
         })
@@ -261,3 +266,5 @@ export default async ({
     throw e
   }
 }
+
+export default atmStraddle

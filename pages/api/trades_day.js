@@ -64,7 +64,7 @@ async function createJob ({ jobData, user }) {
       user
     },
     {
-      __nextTradingQueue: TRADING_Q_NAME
+      _nextTradingQueue: TRADING_Q_NAME
     }
   )
 
