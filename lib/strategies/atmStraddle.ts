@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
+import { KiteOrder } from '../../types/kite'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
-import { INSTRUMENT_DETAILS } from '../constants'
+import { INSTRUMENT_DETAILS, INSTRUMENT_PROPERTIES } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
@@ -21,7 +22,12 @@ const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
 
 dayjs.extend(isSameOrBefore)
 
-export async function getATMStraddle (args) {
+interface GET_ATM_STRADDLE_ARGS extends ATM_STRADDLE_TRADE, INSTRUMENT_PROPERTIES{
+  startTime: string
+  attempt?: number
+}
+
+export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
   const {
     _kite,
     startTime,
@@ -81,7 +87,7 @@ export async function getATMStraddle (args) {
     // if time has expired
     if (timeExpired) {
       console.log(
-        `🔔 [atmStraddle] time has run out! takeTradeIrrespectiveSkew = ${takeTradeIrrespectiveSkew}`
+        `🔔 [atmStraddle] time has run out! takeTradeIrrespectiveSkew = ${takeTradeIrrespectiveSkew.toString()}`
       )
       if (takeTradeIrrespectiveSkew) {
         return {
@@ -155,7 +161,7 @@ async function atmStraddle ({
 }: ATM_STRADDLE_TRADE): Promise<{
     _nextTradingQueue: string
     straddle: {}
-    rawKiteOrdersResponse: []
+    rawKiteOrdersResponse: KiteOrder[]
   } | undefined> {
   const kite = _kite || syncGetKiteInstance(user)
 
@@ -219,7 +225,7 @@ async function atmStraddle ({
       _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,
-      user
+      user: user!
     }))
 
     /**
@@ -239,7 +245,7 @@ async function atmStraddle ({
     const unsuccessfulLegs = brokerOrderResolutions.filter(res => res.status === 'rejected' || (res.status === 'fulfilled' && !res.value.successful))
     if (!unsuccessfulLegs.length) {
       // best case scenario
-      const completedOrders = brokerOrderResolutions.map(res => res.value.response)
+      const completedOrders = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response)
       return {
         _nextTradingQueue,
         straddle,
@@ -251,7 +257,7 @@ async function atmStraddle ({
     } else {
       // some legs have failed even after several retry attempts
       // ACTION: square off the ones which are successful?
-      const partialFulfilledLegs = brokerOrderResolutions.filter(res => res.status === 'fulfilled').map(res => res.value.response)
+      const partialFulfilledLegs = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response).filter(o => o)
       if (rollback?.onBrokenPrimaryOrders) {
         await doSquareOffPositions(partialFulfilledLegs, kite, {
           orderTag

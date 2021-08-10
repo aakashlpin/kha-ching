@@ -15,39 +15,39 @@ export interface KiteProfile {
 }
 
 export interface KiteOrder {
-  order_id: string
-  parent_order_id: string | null
-  exchange_order_id: string | null
-  placed_by: string
-  variety: string
-  status: 'COMPLETE' | 'REJECTED' | 'CANCELLED' | 'OPEN' | 'TRIGGER PENDING'
+  order_id?: string
+  parent_order_id?: string | null
+  exchange_order_id?: string | null
+  placed_by?: string
+  variety?: string
+  status?: 'COMPLETE' | 'REJECTED' | 'CANCELLED' | 'OPEN' | 'TRIGGER PENDING'
 
   tradingsymbol: string
   exchange: string
-  instrument_token: number
+  instrument_token?: number
   transaction_type: 'BUY' | 'SELL'
   order_type: string
   product: string
   validity: string
-  guid: string
+  guid?: string
 
-  price: number
+  price?: number
   quantity: number
-  trigger_price: number
+  trigger_price?: number
 
-  average_price: number
-  pending_quantity: number
-  filled_quantity: number
-  disclosed_quantity: number
-  market_protection: number
+  average_price?: number
+  pending_quantity?: number
+  filled_quantity?: number
+  disclosed_quantity?: number
+  market_protection?: number
 
-  order_timestamp: string
+  order_timestamp?: string
   exchange_timestamp?: string
 
-  status_message: string
-  tag?: string
+  status_message?: string
+  tag: string
   tags?: string[]
-  meta: {}
+  meta?: {}
 }
 
 export interface KitePosition {

@@ -8,6 +8,8 @@ import { EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
+import { SignalXUser } from '../types/misc'
+import { KiteOrder } from '../types/kite'
 
 Promise.config({ cancellation: true, warnings: true })
 const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
@@ -83,7 +85,7 @@ export const getCurrentExpiryTradingSymbol = ({
   instrumentType,
   tradingsymbol
 }: {
-  sourceData: any[]
+  sourceData: [any]
   nfoSymbol?: string
   strike?: number
   instrumentType?: string
@@ -522,7 +524,7 @@ export const getTradingSymbolsByOptionPrice = async ({
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
 
-export function withoutFwdSlash (url) {
+export function withoutFwdSlash (url: string): string {
   if (url.endsWith('/')) {
     return url.slice(0, url.length - 1)
   }
@@ -550,6 +552,8 @@ export const SIGNALX_AXIOS_DB_AUTH = {
     'x-api-key': process.env.DATABASE_API_KEY
   }
 }
+
+const baseTradeUrl = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATABASE_USER_KEY as string}`
 
 export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
 
@@ -673,7 +677,20 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
  * which means order was placed, but its status couldn't be determined within `orderStatusCheckTimeout`
  * receiving `false` is a tricky situation to be in - and it shouldn't happen in an ideal world
  */
-export const remoteOrderSuccessEnsurer = async (args) => {
+export const remoteOrderSuccessEnsurer = async (args: {
+  _kite?: object
+  ensureOrderState: string
+  orderProps: KiteOrder
+  onFailureRetryAfterMs?: number
+  retryAttempts?: number
+  orderStatusCheckTimeout?: number
+  remoteRetryTimeout?: number
+  user: SignalXUser
+  attemptCount?: number
+}): Promise<{
+  successful: boolean
+  response: object
+} | Promise.TimeoutError | Error> => {
   const {
     _kite,
     ensureOrderState,
@@ -697,15 +714,15 @@ export const remoteOrderSuccessEnsurer = async (args) => {
   }
 
   const { data: [tradeSettings] } = await withRemoteRetry(
-    async () => axios(`${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}?q=orderTag:${orderProps.tag}`)
+    async () => axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag}`)
   )
   const { user_override: userOverride } = tradeSettings
   if (userOverride === USER_OVERRIDE.ABORT) {
     console.log('🔴 [remoteOrderSuccessEnsurer] user override ABORT. Terminating!')
-    throw USER_OVERRIDE.ABORT
+    throw Error(USER_OVERRIDE.ABORT)
   }
 
-  const kite = _kite || syncGetKiteInstance(user)
+  const kite = _kite ?? syncGetKiteInstance(user)
 
   try {
     const orderAckResponse = isMockOrder() ? { order_id: '' } : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)
@@ -746,7 +763,7 @@ export const remoteOrderSuccessEnsurer = async (args) => {
         const orders = await withRemoteRetry(() => kite.getOrders(), remoteRetryTimeout)
         const matchedOrder = orders.find(
           (order) =>
-            order.tag === orderProps.orderTag &&
+            order.tag === orderProps.tag &&
             order.tradingsymbol === orderProps.tradingsymbol &&
             order.quantity === orderProps.quantity &&
             order.product === orderProps.product &&
@@ -787,13 +804,8 @@ export const remoteOrderSuccessEnsurer = async (args) => {
   }
 }
 
-const baseTradeUrl = `${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}`
-
 // patches and returns stale data
-export const patchDbTrade = async ({ _id, patchProps }) => {
-  if (!_id || !patchProps) {
-    throw new Error('Missing args in patchDbTrade fn')
-  }
+export const patchDbTrade = async ({ _id, patchProps }: {_id: string, patchProps: object}): Promise<object> => {
   const endpoint = `${baseTradeUrl}/${_id}`
   const { data } = await axios(endpoint)
   await axios.put(endpoint, {
