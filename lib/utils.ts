@@ -63,7 +63,7 @@ const asyncGetIndexInstruments = (exchange = 'NFO') =>
     })
   })
 
-export const getIndexInstruments = memoizer(asyncGetIndexInstruments, {
+export const getIndexInstruments: Promise<[any]> = memoizer(asyncGetIndexInstruments, {
   maxAge: dayjs().get('hours') >= 8 ? ms(9 * 60 * 60) : ms(5 * 60),
   promise: true
 })
@@ -116,12 +116,12 @@ export const getCurrentExpiryTradingSymbol = ({
   }
 }
 
-export function getPercentageChange (price1, price2, mode = 'AGGRESIVE') {
+export function getPercentageChange (price1: number, price2: number, mode: string = 'AGGRESIVE') {
   const denominator = mode === 'AGGRESIVE' ? ((price1 + price2) / 2) : Math.min(price1, price2)
   return Math.floor((Math.abs(price1 - price2) / denominator) * 100)
 }
 
-export async function getInstrumentPrice (kite, underlying, exchange) {
+export async function getInstrumentPrice (kite, underlying: string, exchange: string) {
   const instrumentString = `${exchange}:${underlying}`
   const underlyingRes = await kite.getLTP(instrumentString)
   return Number(underlyingRes[instrumentString]?.last_price)

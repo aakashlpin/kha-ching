@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs, { ConfigType, Dayjs } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
@@ -23,11 +23,12 @@ const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
 dayjs.extend(isSameOrBefore)
 
 interface GET_ATM_STRADDLE_ARGS extends ATM_STRADDLE_TRADE, INSTRUMENT_PROPERTIES{
-  startTime: string
+  startTime: ConfigType
   attempt?: number
+  instrumentsData: [any]
 }
 
-export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
+export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>) {
   const {
     _kite,
     startTime,
@@ -40,7 +41,7 @@ export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
     thresholdSkewPercent,
     takeTradeIrrespectiveSkew,
     expiresAt,
-    instruments,
+    instrumentsData,
     attempt = 0
   } = args
   try {
@@ -61,7 +62,7 @@ export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
      */
 
     const kite = _kite || syncGetKiteInstance(user)
-    const totalTime = dayjs(expiresAt).diff(startTime)
+    const totalTime = dayjs(expiresAt).diff(startTime!)
     const remainingTime = dayjs(expiresAt).diff(dayjs())
     const timeExpired = dayjs().isAfter(dayjs(expiresAt))
 
@@ -70,24 +71,24 @@ export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
       ? fractionalTimeRemaining >= 0.5
         ? maxSkewPercent
         : Math.round(
-          fractionalTimeRemaining * maxSkewPercent +
+          fractionalTimeRemaining * maxSkewPercent! +
               (1 - fractionalTimeRemaining) * thresholdSkewPercent
         )
       : maxSkewPercent
 
-    const underlyingLTP = await withRemoteRetry(getInstrumentPrice(kite, underlyingSymbol, exchange))
-    const atmStrike = Math.round(underlyingLTP / strikeStepSize) * strikeStepSize
+    const underlyingLTP = await withRemoteRetry(getInstrumentPrice(kite, underlyingSymbol!, exchange!))
+    const atmStrike = Math.round(underlyingLTP / strikeStepSize!) * strikeStepSize!
 
     const { PE_STRING, CE_STRING } = getCurrentExpiryTradingSymbol({
       nfoSymbol,
-      sourceData: instruments,
+      sourceData: instrumentsData!,
       strike: atmStrike
     })
 
     // if time has expired
     if (timeExpired) {
       console.log(
-        `🔔 [atmStraddle] time has run out! takeTradeIrrespectiveSkew = ${takeTradeIrrespectiveSkew.toString()}`
+        `🔔 [atmStraddle] time has run out! takeTradeIrrespectiveSkew = ${takeTradeIrrespectiveSkew!.toString()}`
       )
       if (takeTradeIrrespectiveSkew) {
         return {
@@ -103,18 +104,18 @@ export async function getATMStraddle (args: GET_ATM_STRADDLE_ARGS) {
     // if time hasn't expired
     const { skew } = await withRemoteRetry(getSkew(kite, PE_STRING, CE_STRING, 'NFO'))
     // if skew not fitting in, try again
-    if (skew > updatedSkewPercent) {
+    if (skew > updatedSkewPercent!) {
       console.log(
         `Retry #${
           attempt + 1
-        }... Live skew (${skew}%) > Skew consideration (${updatedSkewPercent}%)`
+        }... Live skew (${skew as string}%) > Skew consideration (${String(updatedSkewPercent)}%)`
       )
       await delay(ms(2))
       return getATMStraddle({ ...args, attempt: attempt + 1 })
     }
 
     console.log(
-      `[atmStraddle] punching with current skew ${skew}%, and last skew threshold was ${updatedSkewPercent}`
+      `[atmStraddle] punching with current skew ${String(skew)}%, and last skew threshold was ${String(updatedSkewPercent)}`
     )
 
     // if skew is fitting in, return
@@ -178,7 +179,7 @@ async function atmStraddle ({
     maxSkewPercent
   })
 
-  const instruments = await getIndexInstruments()
+  const instrumentsData = await getIndexInstruments()
 
   let PE_STRING, CE_STRING, straddle
   try {
@@ -186,7 +187,7 @@ async function atmStraddle ({
       _kite,
       startTime: dayjs(),
       user,
-      instruments,
+      instrumentsData,
       underlyingSymbol,
       exchange,
       nfoSymbol,
