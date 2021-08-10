@@ -12,6 +12,7 @@ const withAdminCheck = (handler) => {
     const kiteKey = req.headers['signalx-kite-key'];
     const kiteToken = req.headers['signalx-kite-token'];
     if (kiteKey && kiteToken) {
+      console.log('key and token found in headers. ateempting to connect kite and save session')
       try {
         const kc = new KiteConnect({
           api_key: kiteKey,
@@ -22,9 +23,10 @@ const withAdminCheck = (handler) => {
         const user = { isLoggedIn: true, session: { access_token: kiteToken, ...kiteProfile } }
         req.session.set('user', user)
         await req.session.save()
+        console.log('session generated')
       } catch (error) {
         console.log(error)
-        return res.status(403).send('Forbidden. Unaithorized kry or token provided')
+        return res.status(403).send('Forbidden. Unauthorized kry or token provided')
       }
     }
     return handler(req, res)

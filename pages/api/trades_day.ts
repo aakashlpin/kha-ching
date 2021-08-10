@@ -21,9 +21,9 @@ import { SignalXUser } from '../../types/misc'
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8)
 
-async function createJob (
+async function createJob(
   { jobData, user }:
-  { jobData: SUPPORTED_TRADE_CONFIG, user: SignalXUser}
+    { jobData: SUPPORTED_TRADE_CONFIG, user: SignalXUser }
 ) {
   const {
     runAt,
@@ -73,7 +73,7 @@ async function createJob (
   )
 }
 
-async function deleteJob (id) {
+async function deleteJob(id) {
   try {
     if (id.includes('repeat')) {
       await tradingQueue.removeRepeatableByKey(id)
@@ -152,6 +152,7 @@ export default withSession(async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
+    console.log("delete request recieved for: ", req.body._id)
     try {
       const { data } = await axios(`${endpoint}/${req.body._id as string}`)
       if (data.queue?.id) {
