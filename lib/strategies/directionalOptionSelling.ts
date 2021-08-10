@@ -175,7 +175,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
       price: strikeByPriceNumber,
       pivotStrike: atmStrike,
       instrumentType,
-      user
+      user: user!
     }))
     : getCurrentExpiryTradingSymbol({
       sourceData: instrumentsRawData,
@@ -222,7 +222,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
           _kite: kite,
           orderProps: hedgeOrder,
           ensureOrderState: kite.STATUS_COMPLETE,
-          user
+          user: user!
         })
 
         if (successful) {
@@ -258,7 +258,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
       _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,
-      user
+      user: user!
     })
 
     if (successful) {

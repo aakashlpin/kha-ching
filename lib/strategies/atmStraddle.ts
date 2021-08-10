@@ -1,4 +1,4 @@
-import dayjs, { ConfigType, Dayjs } from 'dayjs'
+import dayjs, { ConfigType } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 

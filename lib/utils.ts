@@ -1,6 +1,6 @@
 import axios from 'axios'
 import csv from 'csvtojson'
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
 import { Promise } from 'bluebird'
 
@@ -19,11 +19,12 @@ const https = require('https')
 const fs = require('fs')
 const memoizer = require('memoizee')
 
-const apiKey = process.env.KITE_API_KEY
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
-const SIGNALX_URL = process.env.SIGNALX_URL || 'https://indicator.signalx.trade'
+const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
 const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
+const DATABASE_API_KEY = process.env.DATABASE_API_KEY
+const KITE_API_KEY = process.env.KITE_API_KEY
 
 export const ms = (seconds) => seconds * 1000
 
@@ -85,7 +86,7 @@ export const getCurrentExpiryTradingSymbol = ({
   instrumentType,
   tradingsymbol
 }: {
-  sourceData: [any]
+  sourceData: any[]
   nfoSymbol?: string
   strike?: number
   instrumentType?: string
@@ -124,7 +125,7 @@ export function getPercentageChange (price1: number, price2: number, mode: strin
 export async function getInstrumentPrice (kite, underlying: string, exchange: string) {
   const instrumentString = `${exchange}:${underlying}`
   const underlyingRes = await kite.getLTP(instrumentString)
-  return Number(underlyingRes[instrumentString]?.last_price)
+  return Number(underlyingRes[instrumentString].last_price)
 }
 
 export async function getSkew (kite, instrument1, instrument2, exchange) {
@@ -147,7 +148,7 @@ export function syncGetKiteInstance (user) {
     throw new Error('missing access_token in `user` object, or `user` is undefined')
   }
   return new KiteConnect({
-    api_key: apiKey,
+    api_key: KITE_API_KEY,
     access_token: accessToken
   })
 }
@@ -332,7 +333,7 @@ const marketHolidays = [
   ['November 19,2021', 'Friday']
 ]
 
-export const isDateHoliday = (date) => {
+export const isDateHoliday = (date: Dayjs) => {
   const isMarketHoliday = marketHolidays.find(
     (holidays) => holidays[0] === date.format('MMMM DD,YYYY')
   )
@@ -344,7 +345,7 @@ export const isDateHoliday = (date) => {
   return isWeeklyHoliday
 }
 
-export const getLastOpenDateSince = (from) => {
+export const getLastOpenDateSince = (from: Dayjs) => {
   const fromDay = from.format('dddd')
   const yesterday = from.subtract(fromDay === 'Monday' ? 3 : 1, 'days')
   if (isDateHoliday(yesterday)) {
@@ -354,9 +355,9 @@ export const getLastOpenDateSince = (from) => {
   return yesterday
 }
 
-export const checkHasSameAccessToken = async (accessToken) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL)}/pvt_${
-    DATABASE_USER_KEY
+export const checkHasSameAccessToken = async (accessToken: string) => {
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
+    DATABASE_USER_KEY as string
   }/tokens?limit=1`
   try {
     const { data: [token] } = await axios(ACCESS_TOKEN_URL)
@@ -369,8 +370,8 @@ export const checkHasSameAccessToken = async (accessToken) => {
 }
 
 export const storeAccessTokenRemotely = async (accessToken) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL)}/pvt_${
-    DATABASE_USER_KEY
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
+    DATABASE_USER_KEY as string
   }/tokens`
   try {
     await axios.post(
@@ -378,11 +379,7 @@ export const storeAccessTokenRemotely = async (accessToken) => {
       {
         access_token: accessToken
       },
-      {
-        headers: {
-          'x-api-key': process.env.DATABASE_API_KEY
-        }
-      }
+      SIGNALX_AXIOS_DB_AUTH
     )
   } catch (e) {
     console.log('🔴 [storeAccessTokenRemotely] error', e)
@@ -416,7 +413,7 @@ export const ensureMarginForBasketOrder = async (user, orders) => {
     {
       headers: {
         'X-Kite-Version': 3,
-        Authorization: `token ${process.env.KITE_API_KEY}:${user.session.access_token}`,
+        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`,
         'Content-Type': 'application/json'
       }
     }
@@ -445,12 +442,14 @@ export const isMarketOpen = (time = dayjs()) => {
   return time.isAfter(startTime) && time.isBefore(endTime)
 }
 
-export function randomIntFromInterval (min, max) {
+export function randomIntFromInterval (min: number, max: number) {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-export function closest (needle, haystack, haystackKey, greaterThanEqualToPrice = false) {
+interface LTP_TYPE {tradingsymbol: string, strike: string, last_price: number}
+
+export function closest (needle: number, haystack: LTP_TYPE[], haystackKey: string, greaterThanEqualToPrice: boolean) {
   const filtered = haystack.filter((item) => {
     if (greaterThanEqualToPrice) {
       return item[haystackKey] >= needle
@@ -466,6 +465,16 @@ export function closest (needle, haystack, haystackKey, greaterThanEqualToPrice 
   )
 }
 
+interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
+  sourceData: any[]
+  nfoSymbol?: string
+  price: number
+  instrumentType?: string
+  pivotStrike: number
+  user: SignalXUser
+  greaterThanEqualToPrice?: boolean
+}
+
 export const getTradingSymbolsByOptionPrice = async ({
   sourceData,
   nfoSymbol,
@@ -474,7 +483,7 @@ export const getTradingSymbolsByOptionPrice = async ({
   pivotStrike,
   user,
   greaterThanEqualToPrice = false
-}) => {
+}: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE) => {
   const kite = syncGetKiteInstance(user)
   const totalStrikes = 21 // pivot and 10 on each side
   const strikeStepSize = 100
@@ -483,7 +492,7 @@ export const getTradingSymbolsByOptionPrice = async ({
       idx === 0 ? idx : idx < totalStrikes / 2 ? idx * -1 : idx - Math.floor(totalStrikes / 2)
     )
     .map((idx) => pivotStrike + idx * strikeStepSize)
-    .sort()
+    .sort((a, b) => a - b)
 
   const requestParams = strikes.map((strike) => {
     const { tradingsymbol } = getCurrentExpiryTradingSymbol({
@@ -493,7 +502,7 @@ export const getTradingSymbolsByOptionPrice = async ({
       instrumentType
     })
 
-    return `${kite.EXCHANGE_NFO}:${tradingsymbol}`
+    return `${kite.EXCHANGE_NFO as string}:${tradingsymbol as string}`
   })
 
   const {
@@ -503,7 +512,7 @@ export const getTradingSymbolsByOptionPrice = async ({
     {
       headers: {
         'X-Kite-Version': 3,
-        Authorization: `token ${process.env.KITE_API_KEY}:${user.session.access_token}`
+        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`
       }
     }
   )
@@ -515,7 +524,7 @@ export const getTradingSymbolsByOptionPrice = async ({
     return Number(withoutExpiryDetails)
   }
 
-  const formattedPrices = Object.keys(allPrices).map((requestParam) => ({
+  const formattedPrices: LTP_TYPE[] = Object.keys(allPrices).map((requestParam) => ({
     tradingsymbol: requestParam.split(':')[1],
     strike: getStrike(requestParam),
     ...allPrices[requestParam]
@@ -549,7 +558,7 @@ export function premiumAuthCheck () {
 
 export const SIGNALX_AXIOS_DB_AUTH = {
   headers: {
-    'x-api-key': process.env.DATABASE_API_KEY
+    'x-api-key': DATABASE_API_KEY
   }
 }
 
@@ -557,7 +566,7 @@ const baseTradeUrl = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATA
 
 export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
 
-export const finiteStateChecker = (infinitePr, checkDurationMs) => {
+export const finiteStateChecker = (infinitePr: Promise, checkDurationMs: number): Promise<any | Error> => {
   return infinitePr.timeout(checkDurationMs).catch(e => {
     // cleanup infinitePr
     infinitePr.cancel()
@@ -566,7 +575,7 @@ export const finiteStateChecker = (infinitePr, checkDurationMs) => {
   })
 }
 
-export const withRemoteRetry = async (remoteFn, timeoutMs = ms(60)) => {
+export const withRemoteRetry = async (remoteFn: Promise | Function, timeoutMs = ms(60)): Promise<any> => {
   const remoteFnExecution = () =>
     new Promise((resolve, reject, onCancel) => {
       let cancelled = false
@@ -579,7 +588,7 @@ export const withRemoteRetry = async (remoteFn, timeoutMs = ms(60)) => {
           const res = await (isRemoteFnPromise ? remoteFn : remoteFn())
           return res
         } catch (e) {
-          console.log('withRemoteRetry attempt failed', e)
+          console.log(`withRemoteRetry attempt failed in ${remoteFn?.name as string}`, e)
           await Promise.delay(ms(2))
           return fn()
         }
@@ -680,7 +689,7 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
 export const remoteOrderSuccessEnsurer = async (args: {
   _kite?: object
   ensureOrderState: string
-  orderProps: KiteOrder
+  orderProps: Partial<KiteOrder>
   onFailureRetryAfterMs?: number
   retryAttempts?: number
   orderStatusCheckTimeout?: number

@@ -1,4 +1,6 @@
 import dayjs from 'dayjs'
+import { KiteOrder } from '../../types/kite'
+import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
@@ -31,7 +33,14 @@ const tradeHeartbeat = async (dbId) => {
   return data
 }
 
-export default async ({ initialJobData, rawKiteOrdersResponse }) => {
+type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
+  lastTrailingSlTriggerAtPremium: number
+}
+
+async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse }: {
+  initialJobData: JobDataInterface
+  rawKiteOrdersResponse: [KiteOrder]
+}) {
   try {
     if (getTimeLeftInMarketClosingMs() < 0) {
       return Promise.resolve(
@@ -44,7 +53,7 @@ export default async ({ initialJobData, rawKiteOrdersResponse }) => {
 
     try {
       // notify db that the worker is active and check current user override settings
-      const dbTrade = await withRemoteRetry(() => tradeHeartbeat(dbId))
+      const dbTrade = await withRemoteRetry(async () => tradeHeartbeat(dbId))
       if (dbTrade.user_override === USER_OVERRIDE.ABORT) {
         return Promise.resolve(
           '🟢 [multiLegPremiumThreshold] Terminating Combined Premium checker as status ABORTed'
@@ -91,12 +100,12 @@ export default async ({ initialJobData, rawKiteOrdersResponse }) => {
     const tradingSymbols = legsOrders.map((order) => order.tradingsymbol)
 
     const averageOrderPrices = legsOrders.map((order) => order.average_price)
-    const initialPremiumReceived = averageOrderPrices.reduce((sum, price) => sum + price, 0)
+    const initialPremiumReceived = averageOrderPrices.reduce((sum, price) => sum! + price!, 0)
 
-    let liveSymbolPrices
+    let liveSymbolPrices: number[]
     try {
       liveSymbolPrices = await Promise.all(
-        tradingSymbols.map((symbol) => withRemoteRetry(getInstrumentPrice(kite, symbol, kite.EXCHANGE_NFO)))
+        tradingSymbols.map(async (symbol) => withRemoteRetry(async () => getInstrumentPrice(kite, symbol, kite.EXCHANGE_NFO)))
       )
     } catch (error) {
       console.log('🔴 [multiLegPremiumThreshold] getInstrumentPrice error', error)
@@ -104,21 +113,21 @@ export default async ({ initialJobData, rawKiteOrdersResponse }) => {
     }
 
     const liveTotalPremium = liveSymbolPrices.reduce((sum, price) => sum + price, 0)
-    const initialSlTotalPremium = initialPremiumReceived + (slmPercent / 100 * initialPremiumReceived) // 440
+    const initialSlTotalPremium = initialPremiumReceived! + (slmPercent / 100 * initialPremiumReceived!) // 440
 
     let checkAgainstSl = initialSlTotalPremium
 
     if (trailEveryPercentageChangeValue) {
       const trailingSlTotalPremium = lastTrailingSlTriggerAtPremium
-        ? (lastTrailingSlTriggerAtPremium + ((trailingSlPercent || slmPercent) / 100 * lastTrailingSlTriggerAtPremium))
+        ? (lastTrailingSlTriggerAtPremium + ((trailingSlPercent ?? slmPercent) / 100 * lastTrailingSlTriggerAtPremium))
         : null // 418
-      checkAgainstSl = trailingSlTotalPremium || initialSlTotalPremium // 418
+      checkAgainstSl = trailingSlTotalPremium ?? initialSlTotalPremium // 418
 
       if (liveTotalPremium < checkAgainstSl) {
         const lastInflectionPoint = lastTrailingSlTriggerAtPremium || initialPremiumReceived // 380
         // liveTotalPremium = 360
         const changeFromLastInflectionPoint =
-          ((liveTotalPremium - lastInflectionPoint) / lastInflectionPoint) * 100
+          ((liveTotalPremium - lastInflectionPoint!) / lastInflectionPoint!) * 100
         // continue the checker
         if (
           changeFromLastInflectionPoint < 0 &&
@@ -139,9 +148,9 @@ export default async ({ initialJobData, rawKiteOrdersResponse }) => {
           // update db trade with new combined SL property
           // and expose it in the UI
           try {
-            await withRemoteRetry(() => patchTradeWithTrailingSL({
+            await withRemoteRetry(async () => patchTradeWithTrailingSL({
               dbId,
-              trailingSl: (liveTotalPremium + ((trailingSlPercent || slmPercent) / 100 * liveTotalPremium))
+              trailingSl: (liveTotalPremium + ((trailingSlPercent ?? slmPercent) / 100 * liveTotalPremium))
             }))
           } catch (error) {
             // harmless error, move on
@@ -171,3 +180,5 @@ export default async ({ initialJobData, rawKiteOrdersResponse }) => {
     return Promise.resolve(e)
   }
 }
+
+export default multiLegPremiumThreshold
