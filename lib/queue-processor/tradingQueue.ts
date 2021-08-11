@@ -1,4 +1,4 @@
-import { Worker } from 'bullmq'
+import { Job, Worker } from 'bullmq'
 // import { omit } from 'lodash'
 
 import { ANCILLARY_TASKS, STRATEGIES } from '../constants'
@@ -16,7 +16,7 @@ import optionBuyingStrategy from '../strategies/optionBuyingStrategy'
 import strangle from '../strategies/strangle'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
-async function processJob (job) {
+async function processJob (job: Job) {
   const {
     data,
     data: { strategy }
@@ -93,13 +93,11 @@ const worker = new Worker(
   }
 )
 
-worker.on('completed', async (job) => {
-  // job has completed
-  // console.log('inside worker completed event')
+worker.on('completed', (job) => {
   const { data, returnvalue } = job
   try {
     if (job.returnvalue?._nextTradingQueue) {
-      await addToNextQueue(data, returnvalue)
+      addToNextQueue(data, returnvalue)
     }
   } catch (e) {
     console.log('job return value', job.returnvalue)

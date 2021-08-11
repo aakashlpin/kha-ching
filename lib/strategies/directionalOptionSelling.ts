@@ -1,7 +1,6 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
-import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../types/plans'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../constants'
@@ -61,7 +60,9 @@ async function fetchSuperTrend ({ instrument_token, from_date, to_date, ...other
   return data
 }
 
-export default async function directionalOptionSelling (initialJobData) {
+export default async function directionalOptionSelling (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
+  lastTrend: string
+}) {
   try {
     const {
       instrument,
@@ -73,7 +74,7 @@ export default async function directionalOptionSelling (initialJobData) {
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
-      return `🟢 [dos] Terminating DOS trade. ${(maxTrades as number).toString()} attempts left but less than 40 mins in market closing.`
+      return `🟢 [dos] Terminating DOS trade. ${(maxTrades).toString()} attempts left but less than 40 mins in market closing.`
     }
 
     const { nfoSymbol } = INSTRUMENT_DETAILS[instrument]

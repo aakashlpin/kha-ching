@@ -1,7 +1,7 @@
 export interface KiteProfile {
   user_id: string
   user_name: string
-  user_short_name?: string
+  user_shortname?: string
   user_type: string
   email: string
   broker: string

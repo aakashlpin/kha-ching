@@ -1,19 +1,22 @@
-import { INSTRUMENT_DETAILS } from '../constants'
+import { ATM_STRANGLE_TRADE } from '../../types/trade'
+import { INSTRUMENTS, INSTRUMENT_DETAILS } from '../constants'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
 import {
   ensureMarginForBasketOrder,
   getCurrentExpiryTradingSymbol,
   getIndexInstruments,
-  ms,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance
 } from '../utils'
 import { getATMStraddle as getATMStrikes } from './atmStraddle'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import dayjs from 'dayjs'
+import { KiteOrder } from '../../types/kite'
 
-const getStrangleStrikes = async ({ atmStrike, instrument, inverted = false }) => {
+const getStrangleStrikes = async (
+  { atmStrike, instrument, inverted = false }: { atmStrike: number, instrument: INSTRUMENTS, inverted?: boolean}
+) => {
   const { nfoSymbol, strikeStepSize } = INSTRUMENT_DETAILS[
     instrument
   ]
@@ -45,8 +48,8 @@ const getStrangleStrikes = async ({ atmStrike, instrument, inverted = false }) =
   }
 }
 
-export default async (args) => {
-  const { instrument, inverted = false, lots, user, orderTag, rollback = {}, _nextTradingQueue = EXIT_TRADING_Q_NAME } = args
+async function atmStrangle (args: ATM_STRANGLE_TRADE) {
+  const { instrument, inverted = false, lots, user, orderTag, rollback, _nextTradingQueue = EXIT_TRADING_Q_NAME } = args
   const { lotSize, nfoSymbol, strikeStepSize, exchange, underlyingSymbol } = INSTRUMENT_DETAILS[instrument]
 
   const sourceData = await getIndexInstruments()
@@ -58,12 +61,12 @@ export default async (args) => {
     takeTradeIrrespectiveSkew: true,
     instruments: sourceData,
     startTime: dayjs(),
-    expiresAt: dayjs().subtract(1, 'seconds'),
+    expiresAt: dayjs().subtract(1, 'seconds').format(),
     underlyingSymbol,
     exchange,
     nfoSymbol,
     strikeStepSize
-  })
+  } as any)
 
   const {
     PE_STRING,
@@ -98,7 +101,7 @@ export default async (args) => {
       _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,
-      user
+      user: user!
     }))
 
     const brokerOrderResolutions = await Promise.allSettled(brokerOrdersPr)
@@ -106,7 +109,7 @@ export default async (args) => {
     const unsuccessfulLegs = brokerOrderResolutions.filter(res => res.status === 'rejected' || (res.status === 'fulfilled' && !res.value.successful))
     if (!unsuccessfulLegs.length) {
       // best case scenario
-      const completedOrders = brokerOrderResolutions.map(res => res.value.response)
+      const completedOrders: KiteOrder[] = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response)
       return {
         _nextTradingQueue,
         rawKiteOrdersResponse: completedOrders
@@ -117,8 +120,8 @@ export default async (args) => {
     } else {
       // some legs have failed even after several retry attempts
       // ACTION: square off the ones which are successful?
-      const partialFulfilledLegs = brokerOrderResolutions.filter(res => res.status === 'fulfilled').map(res => res.value.response)
-      if (rollback.onBrokenPrimaryOrders) {
+      const partialFulfilledLegs: KiteOrder[] = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response).filter(res => res)
+      if (rollback?.onBrokenPrimaryOrders) {
         await doSquareOffPositions(partialFulfilledLegs, kite, {
           orderTag
         })
@@ -132,3 +135,5 @@ export default async (args) => {
     throw e
   }
 }
+
+export default atmStrangle
