@@ -1,19 +1,20 @@
 import { Worker } from 'bullmq'
+import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import orderbookSyncByTag from '../ancillary-tasks/orderbookSyncByTag'
 import { ANCILLARY_TASKS } from '../constants'
 import console from '../logging'
 import { ANCILLARY_Q_NAME, redisConnection } from '../queue'
 
-function processJob (jobData) {
+function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
   const { initialJobData } = jobData
 
   const { ancillaryTask, orderTag, user } = initialJobData
   switch (ancillaryTask) {
     case ANCILLARY_TASKS.ORDERBOOK_SYNC_BY_TAG: {
       return orderbookSyncByTag({
-        orderTag,
-        user
+        orderTag: orderTag!,
+        user: user!
       })
     }
     default: {

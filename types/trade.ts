@@ -1,3 +1,4 @@
+import { ANCILLARY_TASKS } from '../lib/constants'
 import { DBMeta, SignalXUser } from './misc'
 import { ATM_STRADDLE_CONFIG, ATM_STRANGLE_CONFIG, DIRECTIONAL_OPTION_SELLING_CONFIG } from './plans'
 
@@ -13,6 +14,7 @@ export interface TradeMeta extends DBMeta {
   user?: SignalXUser // this is only available once job has been created on server
   orderTag?: string // this is only available once job has been created on server
   _nextTradingQueue?: string
+  ancillaryTask?: ANCILLARY_TASKS
 }
 
 export interface ATM_STRADDLE_TRADE extends TradeMeta, ATM_STRADDLE_CONFIG{}
