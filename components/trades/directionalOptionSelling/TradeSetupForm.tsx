@@ -1,24 +1,18 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
 import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
-  CssBaseline,
   FormControl,
   FormControlLabel,
   FormGroup,
   FormLabel,
   Grid,
-  Link,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography
 } from '@material-ui/core'
-import Box from '@material-ui/core/Box'
 import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import dayjs from 'dayjs'
 import React from 'react'
@@ -33,15 +27,15 @@ import {
   STRATEGIES_DETAILS,
   DOS_ENTRY_STRATEGIES
 } from '../../../lib/constants'
-import { DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
+import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface DOSTradeSetupFormProps {
-  state: DIRECTIONAL_OPTION_SELLING_CONFIG
+  state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
   isRunnable?: boolean
   onChange: (changedProps: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => void
-  onCancel: () => void
-  onSubmit: (data: DIRECTIONAL_OPTION_SELLING_CONFIG | null) => void
+  onCancel?: () => void
+  onSubmit: (data: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => Promise<any>
   enabledInstruments?: INSTRUMENTS[]
   exitStrategies?: EXIT_STRATEGIES[]
   entryStrategies?: DOS_ENTRY_STRATEGIES[]
@@ -65,7 +59,7 @@ const TradeSetupForm = ({
   const handleFormSubmit = (e) => {
     e.preventDefault()
     onSubmit(
-      formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state })
+      formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state as AvailablePlansConfig }) as Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
     )
   }
 
@@ -86,11 +80,11 @@ const TradeSetupForm = ({
                       <Checkbox
                         name='instruments'
                         disabled={state.disableInstrumentChange}
-                        checked={state.instruments[instrument]}
+                        checked={state.instruments![instrument]}
                         onChange={() => {
                           onChange({
                             instruments: {
-                              [instrument]: !state.instruments[instrument]
+                              [instrument]: !state.instruments![instrument]
                             } as Record<INSTRUMENTS, boolean>
                           })
                         }}
@@ -116,7 +110,7 @@ const TradeSetupForm = ({
               name='martingaleIncrementSize'
               value={state.martingaleIncrementSize}
               onChange={(e) => onChange({ martingaleIncrementSize: +e.target.value || undefined })}
-              label='⚡️ Martingale additional lots'
+              label='Martingale additional lots'
             />
           </Grid>
           <Grid item xs={12}>
@@ -125,7 +119,7 @@ const TradeSetupForm = ({
               name='maxTrades'
               value={state.maxTrades}
               onChange={(e) => onChange({ maxTrades: +e.target.value || undefined })}
-              label='⚡️ Maximum trades to take'
+              label='Maximum trades'
             />
           </Grid>
           <Grid item xs={12} style={{ marginBottom: 16 }}>
@@ -199,7 +193,7 @@ const TradeSetupForm = ({
               <FormGroup>
                 <FormControlLabel
                   key='isHedgeEnabled'
-                  label='Add an OTM hedge'
+                  label='Add OTM hedge'
                   control={
                     <Checkbox
                       checked={state.isHedgeEnabled}
@@ -263,7 +257,7 @@ const TradeSetupForm = ({
             </FormControl>
           </Grid>
 
-          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+          <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
           {isRunnable
             ? (
@@ -272,7 +266,7 @@ const TradeSetupForm = ({
                 variant='contained'
                 color='secondary'
                 type='button'
-                onClick={(e) => {
+                onClick={() => {
                   onChange({ runNow: true })
                 }}
               >
@@ -326,29 +320,6 @@ const TradeSetupForm = ({
               </Button>
                 )
               : null}
-          </Grid>
-          <Grid item xs={12}>
-            <Typography>
-              <Box fontStyle='italic' fontSize={14}>
-                <p>Note —</p>
-                <ol>
-                  <li>
-                    ⚡️ Martingale additional lots — if Supertrend (10,3) on futures changes, next
-                    trade gets taken with last lot size + martingale additional lots. Set it to 0 if
-                    you wish to deactivate the martingale method.
-                  </li>
-                  <li>
-                    ⚡️ Maximum trades to take — it&apos;s recommended to NOT trade more than 3
-                    Supertrend changes per day. Set it to 1 if you wish to take only 1 trade/day.
-                  </li>
-                  {isRunnable
-                    ? (
-                    <li>You can delete the task until scheduled time on the next step.</li>
-                      )
-                    : null}
-                </ol>
-              </Box>
-            </Typography>
           </Grid>
         </Grid>
       </Paper>

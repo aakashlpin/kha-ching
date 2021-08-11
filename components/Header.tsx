@@ -98,7 +98,7 @@ const Header = () => {
             ? (
             <li>
               <a href='https://cloud.digitalocean.com/apps' title='App update available'>
-                <NotificationsActiveIcon color='default' />
+                <NotificationsActiveIcon color='inherit' />
               </a>
             </li>
               )

@@ -1,11 +1,11 @@
-import { Job, Worker } from 'bullmq'
+import { Worker } from 'bullmq'
 import { KiteOrder } from '../../types/kite'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import { EXIT_STRATEGIES } from '../constants'
-import fyersTrailObsSL from '../exit-strategies/fyersTrailObsSL'
+// import fyersTrailObsSL from '../exit-strategies/fyersTrailObsSL'
 import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
-import minXPercentOrSupertrend from '../exit-strategies/minXPercentOrSupertrend'
+import minXPercentOrSupertrend, { DOS_TRAILING_INTERFACE } from '../exit-strategies/minXPercentOrSupertrend'
 import multiLegPremiumThreshold from '../exit-strategies/multiLegPremiumThreshold'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, redisConnection, WATCHER_Q_NAME } from '../queue'
@@ -29,22 +29,22 @@ function processJob (jobData: {
     }
     case EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD: {
       return multiLegPremiumThreshold({
-        initialJobData,
+        initialJobData: initialJobData as ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE,
         ...jobResponse
       })
     }
     case EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND: {
       return minXPercentOrSupertrend({
-        initialJobData,
+        initialJobData: initialJobData as DIRECTIONAL_OPTION_SELLING_TRADE,
         ...jobResponse
-      })
+      } as DOS_TRAILING_INTERFACE)
     }
-    case EXIT_STRATEGIES.OBS_TRAIL_SL: {
-      return fyersTrailObsSL({
-        initialJobData,
-        ...jobResponse
-      })
-    }
+    // case EXIT_STRATEGIES.OBS_TRAIL_SL: {
+    //   return fyersTrailObsSL({
+    //     initialJobData,
+    //     ...jobResponse
+    //   })
+    // }
     default: {
       return null
     }

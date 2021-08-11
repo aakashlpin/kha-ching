@@ -34,7 +34,7 @@ const tradeHeartbeat = async (dbId) => {
 }
 
 type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
-  lastTrailingSlTriggerAtPremium: number
+  lastTrailingSlTriggerAtPremium?: number
 }
 
 async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse }: {

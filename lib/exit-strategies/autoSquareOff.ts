@@ -35,7 +35,7 @@ async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
   )
 }
 
-export async function doSquareOffPositions (orders: KiteOrder[], kite: any, initialJobData: SUPPORTED_TRADE_CONFIG) {
+export async function doSquareOffPositions (orders: KiteOrder[], kite: any, initialJobData: Partial<SUPPORTED_TRADE_CONFIG>) {
   const openPositions = await withRemoteRetry(() => kite.getPositions())
   const { net } = openPositions
   const openPositionsForOrders = orders

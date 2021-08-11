@@ -204,7 +204,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
             </FormControl>
           </Grid>
 
-          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+          <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
           {isRunnable
             ? (

@@ -27,14 +27,10 @@ export function getScheduleableTradeTime (strategy: STRATEGIES) {
 }
 
 export function getDefaultSquareOffTime () {
-  try {
-    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME ?? '15:20').split(
-      ':'
-    )
-    return dayjs().set('hours', +hours).set('minutes', +minutes).format()
-  } catch (e) {
-    return null
-  }
+  const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME ?? '15:20').split(
+    ':'
+  )
+  return dayjs().set('hours', +hours).set('minutes', +minutes).format()
 }
 
 export function getSchedulingStateProps (strategy: STRATEGIES) {
@@ -64,10 +60,6 @@ export function commonOnChangeHandler (changedProps: Partial<AvailablePlansConfi
 }
 
 export const formatFormDataForApi = ({ strategy, data }: { strategy: string, data: AvailablePlansConfig }): SUPPORTED_TRADE_CONFIG | null => {
-  if (!strategy || !data) {
-    throw new Error('[formatFormDataForApi] args missing')
-  }
-
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
       const {
@@ -92,12 +84,12 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         slmPercent: Number(slmPercent),
         maxTrades: Number(maxTrades),
         runAt: runNow ? dayjs().format() : runAt,
-        strikeByPrice: strikeByPrice ? Number(strikeByPrice) : null,
+        strikeByPrice: strikeByPrice ? Number(strikeByPrice) : undefined,
         squareOffTime: isAutoSquareOffEnabled
           ? dayjs(squareOffTime).set('seconds', 0).format()
           : undefined,
         isHedgeEnabled,
-        hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : null,
+        hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : undefined,
         autoSquareOffProps: squareOffTime
           ? {
               time: squareOffTime,

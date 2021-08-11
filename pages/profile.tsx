@@ -5,7 +5,7 @@ import React from 'react'
 const Profile = () => {
   const { user } = useUser({ redirectTo: '/' })
 
-  if (!user.isLoggedIn) {
+  if (!user?.isLoggedIn) {
     return <Layout>loading...</Layout>
   }
 

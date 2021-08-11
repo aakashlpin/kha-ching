@@ -12,7 +12,7 @@ export interface SavedPlanMeta {
   runNow?: boolean
   autoSquareOffProps?: {time: string, deletePendingOrders: boolean}
   runAt?: string
-  squareOffTime?: string
+  squareOffTime: string | undefined
   expiresAt?: string
 }
 
@@ -63,13 +63,13 @@ export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
   maxTrades: number
   martingaleIncrementSize: number
   isHedgeEnabled: boolean
-  hedgeDistance: number | null
+  hedgeDistance: number | undefined
   entryStrategy: DOS_ENTRY_STRATEGIES
   exitStrategy: EXIT_STRATEGIES
   strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING
   instrument: INSTRUMENTS
   disableInstrumentChange?: boolean
-  strikeByPrice?: number | null
+  strikeByPrice?: number | undefined
   rollback?: ROLLBACK_TYPE
 }
 

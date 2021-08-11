@@ -18,17 +18,19 @@ import { doSquareOffPositions } from './autoSquareOff'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
+export interface DOS_TRAILING_INTERFACE {
+  initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE
+  rawKiteOrdersResponse: KiteOrder[]
+  optionInstrumentToken: string
+  hedgeOrderResponse: KiteOrder
+}
+
 async function minXPercentOrSupertrend ({
   initialJobData,
   rawKiteOrdersResponse,
   optionInstrumentToken,
   hedgeOrderResponse
-}: {
-  initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE
-  rawKiteOrdersResponse: KiteOrder[]
-  optionInstrumentToken: string
-  hedgeOrderResponse: KiteOrder
-}) {
+}: DOS_TRAILING_INTERFACE) {
   const { user, orderTag } = initialJobData
   try {
     const kite = syncGetKiteInstance(user)

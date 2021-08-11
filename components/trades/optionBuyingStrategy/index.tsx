@@ -19,16 +19,16 @@ const TESTING = true
  * and automatically clean up any jobs that belong to days before today
  */
 
-function getDefaultSquareOffTime () {
-  try {
-    const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
-      ':'
-    )
-    return dayjs().set('hours', hours).set('minutes', minutes).format()
-  } catch (e) {
-    return null
-  }
-}
+// function getDefaultSquareOffTime () {
+//   try {
+//     const [hours, minutes] = (process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME || '15:20').split(
+//       ':'
+//     )
+//     return dayjs().set('hours', hours).set('minutes', minutes).format()
+//   } catch (e) {
+//     return null
+//   }
+// }
 
 const notify = (message) =>
   toast.error(message, {

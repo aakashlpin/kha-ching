@@ -289,7 +289,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
   } catch (e) {
     // if this throws, then the initial SL order for the sold option is not in system
     if (rollback?.onBrokenExitOrders) {
-      await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o))
+      await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o), kite, initialJobData)
     }
     throw e
   }

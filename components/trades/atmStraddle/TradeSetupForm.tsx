@@ -131,7 +131,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                 aria-label='takeTradeIrrespectiveSkew'
                 name='takeTradeIrrespectiveSkew'
                 value={state.takeTradeIrrespectiveSkew}
-                onChange={(e) =>
+                onChange={() =>
                   onChange({ takeTradeIrrespectiveSkew: !state.takeTradeIrrespectiveSkew })}
               >
                 <FormControlLabel
@@ -246,7 +246,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
             </FormControl>
           </Grid>
 
-          <RollbackComponent rollback={state.rollback} onChange={onChange} />
+          <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
           {isRunnable
             ? (
@@ -255,7 +255,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
                   variant='contained'
                   color='secondary'
                   type='button'
-                  onClick={(e) => {
+                  onClick={() => {
                     onChange({ runNow: true })
                   }}
                 >

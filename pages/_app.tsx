@@ -28,6 +28,7 @@ function MyApp ({ Component, pageProps }) {
     >
       <Head>
         <title>SignalX</title>
+        <link rel='icon' href='/favicon.png' />
         <meta name='viewport' content='minimum-scale=1, initial-scale=1, width=device-width' />
       </Head>
       <ThemeProvider theme={theme}>

@@ -10,7 +10,7 @@ async function individualLegExitOrders ({
   initialJobData,
   rawKiteOrdersResponse
 }: {
-  _kite: any
+  _kite?: any
   initialJobData: SUPPORTED_TRADE_CONFIG
   rawKiteOrdersResponse: KiteOrder[]
 }) {

@@ -7,7 +7,7 @@ export interface TradeMeta extends DBMeta {
   isAutoSquareOffEnabled: boolean
   runNow?: boolean
   runAt?: string
-  squareOffTime?: string
+  squareOffTime: string | undefined
   autoSquareOffProps?: {time: string, deletePendingOrders: boolean}
   expiresAt?: string
   _kite?: unknown // this is only used in jest for unit tests

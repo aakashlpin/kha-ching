@@ -23,7 +23,7 @@ import ATMStrangleTradeForm from '../components/trades/atmStrangle/TradeSetupFor
 import DOSTradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm'
 import { getSchedulingStateProps } from '../lib/browserUtils'
 import { INSTRUMENTS, INSTRUMENT_DETAILS, STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants'
-import { DailyPlansConfig, DailyPlansDayKey, DailyPlansDisplayValue } from '../types/misc'
+import { DailyPlansConfig, DailyPlansDayKey } from '../types/misc'
 import { ATM_STRADDLE_CONFIG, ATM_STRANGLE_CONFIG, AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../types/plans'
 
 const useStyles = makeStyles((theme) => ({
@@ -182,9 +182,9 @@ const Plan = () => {
     return omit(props, ['instruments', 'disableInstrumentChange'])
   }
 
-  const commonOnSubmitHandler = async (formattedStateForApiProps: AvailablePlansConfig) => {
-    const selectedConfig = stratState[currentEditStrategy]
-    console.log('commonOnSubmitHandler', selectedConfig)
+  const commonOnSubmitHandler = async (formattedStateForApiProps: AvailablePlansConfig): Promise<any> => {
+    const selectedConfig = stratState[currentEditStrategy!]
+    // console.log('commonOnSubmitHandler', selectedConfig)
 
     let updatedConfig
     if (selectedConfig._id) {
@@ -224,10 +224,10 @@ const Plan = () => {
 
     setDayState({
       ...dayState,
-      [currentEditDay]: {
-        ...dayState[currentEditDay],
+      [currentEditDay as string]: {
+        ...dayState[currentEditDay!],
         strategies: {
-          ...dayState[currentEditDay].strategies,
+          ...dayState[currentEditDay!].strategies,
           ...updatedConfig
         }
       }
@@ -419,7 +419,7 @@ const Plan = () => {
             <Fade in={open}>
               <div className={classes.paper}>
                 <h2 id='transition-modal-title'>
-                  {dayState[currentEditDay].heading} |{' '}
+                  {dayState[currentEditDay!].heading} |{' '}
                   {STRATEGIES_DETAILS[currentEditStrategy].heading}
                 </h2>
                 {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING
@@ -428,7 +428,7 @@ const Plan = () => {
                       state={stratState[STRATEGIES.DIRECTIONAL_OPTION_SELLING] as DIRECTIONAL_OPTION_SELLING_CONFIG}
                       onChange={(changedProps) =>
                         stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)}
-                      onSubmit={commonOnSubmitHandler}
+                      onSubmit={commonOnSubmitHandler as any}
                       onCancel={commonOnCancelHandler}
                       isRunnable={false}
                     />

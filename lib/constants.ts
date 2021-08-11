@@ -69,8 +69,8 @@ export enum ANCILLARY_TASKS {
   CLEANUP_COMPLETED_JOBS = 'CLEANUP_COMPLETED_JOBS'
 }
 
-const getInstrumentsDefaultState = () =>
-  Object.values(INSTRUMENTS).reduce(
+const getInstrumentsDefaultState = (): Record<INSTRUMENTS, boolean> =>
+  Object.values(INSTRUMENTS).reduce<Record<string, boolean>>(
     (accum, item) => ({
       ...accum,
       [item]: false
