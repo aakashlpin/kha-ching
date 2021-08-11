@@ -722,9 +722,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
     console.log({ attemptCount: attemptCount + 1, retryAttempts })
   }
 
-  const { data: [tradeSettings] } = await withRemoteRetry(
-    async () => axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag}`)
-  )
+  const { data: [tradeSettings] } = await withRemoteRetry(async () => axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag!}`))
   const { user_override: userOverride } = tradeSettings
   if (userOverride === USER_OVERRIDE.ABORT) {
     console.log('🔴 [remoteOrderSuccessEnsurer] user override ABORT. Terminating!')

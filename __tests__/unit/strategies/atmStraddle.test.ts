@@ -19,7 +19,7 @@ test('it should work when everything is okay', async () => {
     }).mockResolvedValueOnce({
       order_id: '12321312312'
     }),
-    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
+    getOrderHistory: jest.fn().mockImplementation(async () => Promise.resolve([{
       status: kite.STATUS_COMPLETE
     }]))
   }
@@ -31,9 +31,9 @@ test('it should work when everything is okay', async () => {
     lots: 1,
     user,
     expiresAt: dayjs().add(1, 'minutes').format(),
-    orderTag: 'asdsad',
-    maxSkewPercent: 10,
-    thresholdSkewPercent: 30,
+    orderTag: 'alKOiwR2',
+    maxSkewPercent: 60,
+    thresholdSkewPercent: 100,
     takeTradeIrrespectiveSkew: true
   })
 
