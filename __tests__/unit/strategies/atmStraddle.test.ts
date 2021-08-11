@@ -14,10 +14,8 @@ test('it should work when everything is okay', async () => {
 
   kite = {
     ...kite,
-    placeOrder: jest.fn().mockResolvedValueOnce({
+    placeOrder: jest.fn().mockResolvedValue({
       order_id: '45834234213'
-    }).mockResolvedValueOnce({
-      order_id: '12321312312'
     }),
     getOrderHistory: jest.fn().mockImplementation(async () => Promise.resolve([{
       status: kite.STATUS_COMPLETE
@@ -34,7 +32,9 @@ test('it should work when everything is okay', async () => {
     orderTag: 'alKOiwR2',
     maxSkewPercent: 60,
     thresholdSkewPercent: 100,
-    takeTradeIrrespectiveSkew: true
+    takeTradeIrrespectiveSkew: true,
+    isHedgeEnabled: false,
+    hedgeDistance: 500
   })
 
   console.log(JSON.stringify(res, null, 2))

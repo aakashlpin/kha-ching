@@ -1,5 +1,6 @@
 import dayjs, { ConfigType } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
+import { SignalXUser } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import { INSTRUMENT_DETAILS, INSTRUMENT_PROPERTIES } from '../constants'
@@ -7,6 +8,7 @@ import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
 import {
+  attemptBrokerOrders,
   delay,
   ensureMarginForBasketOrder,
   getCurrentExpiryTradingSymbol,
@@ -28,7 +30,11 @@ interface GET_ATM_STRADDLE_ARGS extends ATM_STRADDLE_TRADE, INSTRUMENT_PROPERTIE
   instrumentsData: [any]
 }
 
-export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>) {
+export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Promise<{
+  PE_STRING: string
+  CE_STRING: string
+  atmStrike: number
+}> {
   const {
     _kite,
     startTime,
@@ -133,13 +139,16 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>) {
   }
 }
 
-export const createOrder = ({ symbol, lots, lotSize, user, orderTag }) => {
+export const createOrder = (
+  { symbol, lots, lotSize, user, orderTag, transactionType }:
+  { symbol: string, lots: number, lotSize: number, user: SignalXUser, orderTag: string, transactionType?: string }
+): KiteOrder => {
   const kite = syncGetKiteInstance(user)
   return {
     tradingsymbol: symbol,
     quantity: lotSize * lots,
     exchange: kite.EXCHANGE_NFO,
-    transaction_type: kite.TRANSACTION_TYPE_SELL,
+    transaction_type: transactionType ?? kite.TRANSACTION_TYPE_SELL,
     order_type: kite.ORDER_TYPE_MARKET,
     product: kite.PRODUCT_MIS,
     validity: kite.VALIDITY_DAY,
@@ -158,11 +167,14 @@ async function atmStraddle ({
   maxSkewPercent,
   thresholdSkewPercent, // will be missing for existing plans
   takeTradeIrrespectiveSkew,
+  isHedgeEnabled,
+  hedgeDistance,
   _nextTradingQueue = EXIT_TRADING_Q_NAME
 }: ATM_STRADDLE_TRADE): Promise<{
     _nextTradingQueue: string
     straddle: {}
     rawKiteOrdersResponse: KiteOrder[]
+    squareOffOrders: KiteOrder[]
   } | undefined> {
   const kite = _kite || syncGetKiteInstance(user)
 
@@ -170,20 +182,10 @@ async function atmStraddle ({
     instrument
   ]
 
-  console.log('processing atm straddle for', {
-    underlyingSymbol,
-    exchange,
-    nfoSymbol,
-    strikeStepSize,
-    lots,
-    maxSkewPercent
-  })
-
   const instrumentsData = await getIndexInstruments()
 
-  let PE_STRING, CE_STRING, straddle
   try {
-    straddle = await getATMStraddle({
+    const straddle = await getATMStraddle({
       _kite,
       startTime: dayjs(),
       user,
@@ -198,29 +200,62 @@ async function atmStraddle ({
       expiresAt
     })
 
-    PE_STRING = straddle.PE_STRING
-    CE_STRING = straddle.CE_STRING
-  } catch (e) {
-    console.log('🔴 [atmStradde] getATMStraddle failed', e)
-    return Promise.reject(e)
-  }
+    const { PE_STRING, CE_STRING, atmStrike } = straddle
 
-  const orders = [PE_STRING, CE_STRING].map((symbol) =>
-    createOrder({ symbol, lots, lotSize, user, orderTag })
-  )
+    let allOrders: KiteOrder[] = []
 
-  try {
-    const hasMargin = await withRemoteRetry(ensureMarginForBasketOrder(user, orders), ms(30))
-    if (!hasMargin) {
-      throw new Error('insufficient margin!')
+    const orders: KiteOrder[] = [PE_STRING, CE_STRING].map((symbol) =>
+      createOrder({ symbol, lots, lotSize, user: user!, orderTag: orderTag! })
+    )
+
+    allOrders = [...orders]
+
+    const getHedgeForStrike = async (strike: number, distance: number, type: string): Promise<string> => {
+      const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
+
+      const { tradingsymbol: hedgeTradingSymbol } = getCurrentExpiryTradingSymbol({
+        sourceData: instrumentsData,
+        nfoSymbol,
+        strike: hedgeStrike,
+        instrumentType: type
+      })
+
+      return hedgeTradingSymbol
     }
-  } catch (error) {
-    return Promise.reject(error)
-  }
 
-  try {
-    console.log('placing orders...')
-    console.log(JSON.stringify(orders, null, 2))
+    let hedgeOrders: KiteOrder[] = []
+    if (isHedgeEnabled) {
+      const [putHedge, callHedge] = await Promise.all(
+        ['PE', 'CE'].map(async (type) => getHedgeForStrike(atmStrike, hedgeDistance!, type))
+      )
+      hedgeOrders = [putHedge, callHedge].map(symbol => createOrder({
+        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY
+      }))
+      allOrders = [...hedgeOrders, ...allOrders]
+    }
+
+    const hasMargin = await withRemoteRetry(ensureMarginForBasketOrder(user, allOrders))
+    if (!hasMargin) {
+      throw Error('insufficient margin!')
+    }
+
+    if (hedgeOrders.length) {
+      const hedgeOrdersPr = hedgeOrders.map((order) => remoteOrderSuccessEnsurer({
+        _kite: kite,
+        orderProps: order,
+        ensureOrderState: kite.STATUS_COMPLETE,
+        user: user!
+      }))
+
+      const { allOk, statefulOrders } = await attemptBrokerOrders(hedgeOrdersPr)
+      if (!allOk && rollback?.onBrokenHedgeOrders) {
+        await doSquareOffPositions(statefulOrders, kite, {
+          orderTag
+        })
+
+        throw Error('rolled back onBrokenHedgeOrders')
+      }
+    }
 
     const brokerOrdersPr = orders.map((order) => remoteOrderSuccessEnsurer({
       _kite: kite,
@@ -229,44 +264,20 @@ async function atmStraddle ({
       user: user!
     }))
 
-    /**
-     * what all can we expect brokerOrders to do?
-     *
-     * if it doesn't throw - then it'll return
-     * {
-     *    successful: true/false,
-     *    response: { order_id: '' }
-     * }
-     *
-     * if successful is false, I don't know what to do at this point in time
-     */
+    const { allOk, statefulOrders } = await attemptBrokerOrders(brokerOrdersPr)
+    if (!allOk && rollback?.onBrokenPrimaryOrders) {
+      await doSquareOffPositions([...hedgeOrders, ...statefulOrders], kite, {
+        orderTag
+      })
 
-    const brokerOrderResolutions = await Promise.allSettled(brokerOrdersPr)
+      throw Error('rolled back on onBrokenPrimaryOrders')
+    }
 
-    const unsuccessfulLegs = brokerOrderResolutions.filter(res => res.status === 'rejected' || (res.status === 'fulfilled' && !res.value.successful))
-    if (!unsuccessfulLegs.length) {
-      // best case scenario
-      const completedOrders = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response)
-      return {
-        _nextTradingQueue,
-        straddle,
-        rawKiteOrdersResponse: completedOrders
-      }
-    } else if (unsuccessfulLegs.length === orders.length) {
-      // no orders went through, terminate the strategy
-      throw new Error('🔴 [atmStraddle] failed after several reattempts!')
-    } else {
-      // some legs have failed even after several retry attempts
-      // ACTION: square off the ones which are successful?
-      const partialFulfilledLegs = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response).filter(o => o)
-      if (rollback?.onBrokenPrimaryOrders) {
-        await doSquareOffPositions(partialFulfilledLegs, kite, {
-          orderTag
-        })
-      }
-
-      // generate an alert right now
-      throw new Error('🔴 [atmStraddle] some legs failed!')
+    return {
+      _nextTradingQueue,
+      straddle,
+      rawKiteOrdersResponse: statefulOrders,
+      squareOffOrders: allOrders
     }
   } catch (e) {
     console.log(e)

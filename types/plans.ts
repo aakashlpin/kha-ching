@@ -38,6 +38,8 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   trailEveryPercentageChangeValue?: number
   trailingSlPercent?: number
   onSquareOffSetAborted?: boolean
+  isHedgeEnabled: boolean
+  hedgeDistance?: number
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -54,6 +56,8 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   trailingSlPercent?: number
   expireIfUnsuccessfulInMins?: number
   onSquareOffSetAborted?: boolean
+  isHedgeEnabled: boolean
+  hedgeDistance?: number
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

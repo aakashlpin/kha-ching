@@ -131,7 +131,7 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   const {
     autoSquareOffProps: { time, deletePendingOrders }
   } = initialJobData
-  const { rawKiteOrdersResponse } = jobResponse
+  const { rawKiteOrdersResponse, squareOffOrders } = jobResponse
   const finalOrderTime = getMisOrderLastSquareOffTime()
   const runAtTime = isMockOrder()
     ? time
@@ -144,7 +144,7 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   return autoSquareOffQueue.add(
     `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
     {
-      rawKiteOrdersResponse,
+      rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
       deletePendingOrders,
       initialJobData
     },

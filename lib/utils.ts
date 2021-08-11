@@ -822,3 +822,35 @@ export const patchDbTrade = async ({ _id, patchProps }: {_id: string, patchProps
 
   return data
 }
+
+export const attemptBrokerOrders = async (ordersPr: Promise[]): Promise<{
+  allOk: boolean
+  statefulOrders: KiteOrder[]
+}> => {
+  try {
+    const brokerOrderResolutions = await Promise.allSettled(ordersPr)
+
+    const rejectedLegs = brokerOrderResolutions.filter(res => res.status === 'rejected')
+    const successfulLegs = brokerOrderResolutions.map(res =>
+      res.status === 'fulfilled' && res.value.successful ? res.value.response : null
+    ).filter(o => o)
+
+    if (rejectedLegs.length > 0 || successfulLegs.length < ordersPr.length) {
+      return {
+        allOk: false,
+        statefulLegs: successfulLegs
+      }
+    }
+
+    return {
+      allOk: true,
+      statefulLegs: successfulLegs
+    }
+  } catch (e) {
+    console.log(e)
+    return {
+      allOk: false,
+      statefulOrders: []
+    }
+  }
+}
