@@ -2,13 +2,13 @@
 import { withIronSession } from 'next-iron-session'
 // NB: not the best place to require these
 // ideally these should live in their own file that gets included as a middleware
-require('./queue-processor')
-require('./exit-strategies')
-require('./watchers')
+import './queue-processor'
+import './exit-strategies'
+import './watchers'
 
 export default function withSession (handler) {
   return withIronSession(handler, {
-    password: process.env.SECRET_COOKIE_PASSWORD,
+    password: process.env.SECRET_COOKIE_PASSWORD!,
     cookieName: 'khaching/kite/session',
     cookieOptions: {
       // the next line allows to use the session in non-https environments like
