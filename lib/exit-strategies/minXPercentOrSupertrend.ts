@@ -1,5 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
+import { KiteOrder } from '../../types/kite'
+import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, WATCHER_Q_NAME } from '../queue'
@@ -11,24 +13,31 @@ import {
   getPercentageChange,
   ms,
   randomIntFromInterval,
-  syncGetKiteInstance
+  remoteOrderSuccessEnsurer,
+  syncGetKiteInstance,
+  withRemoteRetry
 } from '../utils'
 import { doSquareOffPositions } from './autoSquareOff'
 
-const SIGNALX_URL = process.env.SIGNALX_URL || 'https://indicator.signalx.trade'
+const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
-export default async ({
+async function minXPercentOrSupertrend ({
   initialJobData,
   rawKiteOrdersResponse,
   optionInstrumentToken,
   hedgeOrderResponse
-}) => {
+}: {
+  initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE
+  rawKiteOrdersResponse: KiteOrder[]
+  optionInstrumentToken: string
+  hedgeOrderResponse: KiteOrder
+}) {
   const { user, orderTag } = initialJobData
   try {
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
     // NB: rawKiteOrderResponse here is of pending SLM Order
-    const orderHistory = await kite.getOrderHistory(rawKiteOrderResponse.order_id)
+    const orderHistory: KiteOrder[] = await kite.getOrderHistory(rawKiteOrderResponse.order_id)
     const byRecencyOrderHistory = orderHistory.reverse()
 
     const isSlOrderCancelled = byRecencyOrderHistory.find((odr) => odr.status === 'CANCELLED')
@@ -43,10 +52,10 @@ export default async ({
       if (hedgeOrderResponse) {
         // take off the hedge
         try {
-          const hedgeOrder = await getCompletedOrderFromOrderHistoryById(
+          const hedgeOrder: KiteOrder = await withRemoteRetry(async () => getCompletedOrderFromOrderHistoryById(
             kite,
             hedgeOrderResponse.order_id
-          )
+          ))
           // do this only if this buy position is still active
           await doSquareOffPositions([hedgeOrder], kite, initialJobData)
         } catch (e) {
@@ -59,7 +68,7 @@ export default async ({
     const triggerPendingOrder = byRecencyOrderHistory.find(
       (odr) => odr.status === 'TRIGGER PENDING'
     )
-    const punchedTriggerPrice = triggerPendingOrder.trigger_price
+    const punchedTriggerPrice = (triggerPendingOrder as KiteOrder).trigger_price
 
     // 1. whenever this gets called - check supertrend value and the current punched in SL value
     // update pending order if supertrend value is lower
@@ -79,13 +88,8 @@ export default async ({
       latest_only: true
     }
 
-    // create a random delay here of 0-30seconds
-    // to prevent concurrent requests on signalx service
-    // potentially causing delays for everyone anyways
-    await delay(ms(randomIntFromInterval(0, 30)))
-
     // console.log('[minXPercentOrSupertrend] ST request', supertrendProps)
-    const { data: optionSuperTrend } = await axios.post(
+    const { data: optionSuperTrend } = await withRemoteRetry(async () => axios.post(
       `${SIGNALX_URL}/api/indicator/supertrend`,
       supertrendProps,
       {
@@ -93,7 +97,7 @@ export default async ({
           'X-API-KEY': process.env.SIGNALX_API_KEY
         }
       }
-    )
+    ))
 
     // console.log('[minXPercentOrSupertrend] ST response', optionSuperTrend)
     const [latestST] = optionSuperTrend.slice(-1)
@@ -103,19 +107,19 @@ export default async ({
     if (
       // possible that the ST on option strike is still trending "up"
       STX_10_3 === 'down' &&
-      newSL < punchedTriggerPrice &&
-      getPercentageChange(punchedTriggerPrice, newSL) >= 3
+      newSL < punchedTriggerPrice! &&
+      getPercentageChange(punchedTriggerPrice!, newSL) >= 3
     ) {
       try {
         const res = await kite.modifyOrder(
-          triggerPendingOrder.variety,
-          triggerPendingOrder.order_id,
+          triggerPendingOrder!.variety,
+          triggerPendingOrder!.order_id,
           {
             trigger_price: newSL
           }
         )
         console.log(
-          `🟢 [minXPercentOrSupertrend] SL modified from ${punchedTriggerPrice} to ${newSL}`,
+          `🟢 [minXPercentOrSupertrend] SL modified from ${String(punchedTriggerPrice)} to ${newSL}`,
           res
         )
       } catch (e) {
@@ -127,18 +131,30 @@ export default async ({
         ) {
           // cancel this order, place a new SL order and then trail that
           try {
-            await kite.cancelOrder(triggerPendingOrder.variety, triggerPendingOrder.order_id)
+            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
             const exitOrder = {
               trigger_price: newSL,
-              tradingsymbol: triggerPendingOrder.tradingsymbol,
-              quantity: triggerPendingOrder.quantity,
-              exchange: triggerPendingOrder.exchange,
+              tradingsymbol: triggerPendingOrder!.tradingsymbol,
+              quantity: triggerPendingOrder!.quantity,
+              exchange: triggerPendingOrder!.exchange,
               transaction_type: kite.TRANSACTION_TYPE_BUY,
               order_type: kite.ORDER_TYPE_SLM,
-              product: triggerPendingOrder.product,
+              product: triggerPendingOrder!.product,
               tag: orderTag
             }
-            const newExitOrder = await kite.placeOrder(kite.VARIETY_REGULAR, exitOrder)
+
+            const { successful, response } = await remoteOrderSuccessEnsurer({
+              ensureOrderState: kite.COMPLETE,
+              orderProps: exitOrder,
+              user: user!
+            })
+
+            if (!successful) {
+              throw new Error('[minXPercentOrSupertrend] replacement order failed!')
+            }
+
+            const newExitOrder = response
+
             console.log(
               '[minXPercentOrSupertrend] placing new exit order',
               exitOrder,
@@ -179,3 +195,5 @@ export default async ({
     return Promise.reject(new Error('[minXPercentOrSupertrend] global caught error. Will retry!'))
   }
 }
+
+export default minXPercentOrSupertrend

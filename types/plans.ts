@@ -37,7 +37,7 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   rollback?: ROLLBACK_TYPE
   trailEveryPercentageChangeValue?: number
   trailingSlPercent?: number
-  onSquareOffSetAborted: boolean
+  onSquareOffSetAborted?: boolean
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -52,8 +52,8 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   rollback?: ROLLBACK_TYPE
   trailEveryPercentageChangeValue?: number
   trailingSlPercent?: number
-  expireIfUnsuccessfulInMins: number
-  onSquareOffSetAborted: boolean
+  expireIfUnsuccessfulInMins?: number
+  onSquareOffSetAborted?: boolean
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

@@ -1,4 +1,6 @@
-import { Worker } from 'bullmq'
+import { Job, Worker } from 'bullmq'
+import { KiteOrder } from '../../types/kite'
+import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import { EXIT_STRATEGIES } from '../constants'
 import fyersTrailObsSL from '../exit-strategies/fyersTrailObsSL'
@@ -9,7 +11,12 @@ import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, redisConnection, WATCHER_Q_NAME } from '../queue'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
-function processJob (jobData) {
+function processJob (jobData: {
+  initialJobData: SUPPORTED_TRADE_CONFIG
+  jobResponse: {
+    rawKiteOrdersResponse: KiteOrder[]
+  }
+}) {
   const { initialJobData, jobResponse } = jobData
 
   const { exitStrategy } = initialJobData
@@ -51,7 +58,7 @@ const worker = new Worker(
       const exitOrders = await processJob(job.data)
       const { exitStrategy } = job.data.initialJobData
       if (exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X) {
-        const watcherQueueJobs = exitOrders.map((exitOrder) => {
+        const watcherQueueJobs = exitOrders.map(async (exitOrder) => {
           return addToNextQueue(job.data.initialJobData, {
             _nextTradingQueue: WATCHER_Q_NAME,
             rawKiteOrderResponse: exitOrder

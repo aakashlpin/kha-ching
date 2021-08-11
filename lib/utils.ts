@@ -698,7 +698,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
   attemptCount?: number
 }): Promise<{
   successful: boolean
-  response: object
+  response: KiteOrder
 } | Promise.TimeoutError | Error> => {
   const {
     _kite,

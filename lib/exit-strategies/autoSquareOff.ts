@@ -1,3 +1,5 @@
+import { KiteOrder } from '../../types/kite'
+import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
@@ -7,9 +9,9 @@ import {
   withRemoteRetry
 } from '../utils'
 
-async function doDeletePendingOrders (orders, kite) {
-  const allOrders = await withRemoteRetry(() => kite.getOrders())
-  const openOrders = allOrders.filter((order) => order.status === 'TRIGGER PENDING')
+async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
+  const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders())
+  const openOrders: KiteOrder[] = allOrders.filter((order) => order.status === 'TRIGGER PENDING')
 
   const openOrdersForPositions = orders
     .map((order) =>
@@ -27,13 +29,13 @@ async function doDeletePendingOrders (orders, kite) {
 
   // some positions might have squared off during the day when the SL hit
   return Promise.all(
-    openOrdersForPositions.map((openOrder) =>
+    openOrdersForPositions.map((openOrder: KiteOrder) =>
       withRemoteRetry(() => kite.cancelOrder(openOrder.variety, openOrder.order_id))
     )
   )
 }
 
-export async function doSquareOffPositions (orders, kite, initialJobData) {
+export async function doSquareOffPositions (orders: KiteOrder[], kite: any, initialJobData: SUPPORTED_TRADE_CONFIG) {
   const openPositions = await withRemoteRetry(() => kite.getPositions())
   const { net } = openPositions
   const openPositionsForOrders = orders
@@ -78,15 +80,16 @@ export async function doSquareOffPositions (orders, kite, initialJobData) {
       return remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: exitOrder,
-        ensureOrderState: kite.STATUS_COMPLETE
+        ensureOrderState: kite.STATUS_COMPLETE,
+        user: initialJobData.user!
       })
     })
   )
 
-  if (initialJobData.onSquareOffSetAborted) {
+  if ((initialJobData as ATM_STRANGLE_TRADE | ATM_STRADDLE_TRADE).onSquareOffSetAborted) {
     try {
       await patchDbTrade({
-        _id: initialJobData._id,
+        _id: initialJobData._id!,
         patchProps: {
           user_override: USER_OVERRIDE.ABORT
         }
@@ -99,7 +102,14 @@ export async function doSquareOffPositions (orders, kite, initialJobData) {
   return remoteRes
 }
 
-async function autoSquareOffStrat ({ rawKiteOrdersResponse, deletePendingOrders, initialJobData }) {
+async function autoSquareOffStrat (
+  { rawKiteOrdersResponse, deletePendingOrders, initialJobData }:
+  {
+    rawKiteOrdersResponse: KiteOrder[]
+    deletePendingOrders: boolean
+    initialJobData: SUPPORTED_TRADE_CONFIG
+  }
+): Promise<any> {
   const { user } = initialJobData
   const kite = syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
