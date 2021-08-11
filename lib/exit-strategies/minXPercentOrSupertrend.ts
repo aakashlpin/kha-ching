@@ -6,13 +6,10 @@ import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, WATCHER_Q_NAME } from '../queue'
 import {
-  delay,
   getCompletedOrderFromOrderHistoryById,
   getLastOpenDateSince,
   getNearestCandleTime,
   getPercentageChange,
-  ms,
-  randomIntFromInterval,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
   withRemoteRetry

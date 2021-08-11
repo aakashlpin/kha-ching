@@ -4,7 +4,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
-import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, getInstrumentPrice, withRemoteRetry, withoutFwdSlash, SIGNALX_AXIOS_DB_AUTH, patchDbTrade } from '../utils'
+import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, getInstrumentPrice, withRemoteRetry, patchDbTrade } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 
@@ -39,7 +39,7 @@ type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
 
 async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse }: {
   initialJobData: JobDataInterface
-  rawKiteOrdersResponse: [KiteOrder]
+  rawKiteOrdersResponse: KiteOrder[]
 }) {
   try {
     if (getTimeLeftInMarketClosingMs() < 0) {
