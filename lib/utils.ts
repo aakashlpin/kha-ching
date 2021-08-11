@@ -562,7 +562,7 @@ export const SIGNALX_AXIOS_DB_AUTH = {
   }
 }
 
-const baseTradeUrl = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATABASE_USER_KEY as string}`
+export const baseTradeUrl: string = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATABASE_USER_KEY as string}`
 
 export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
 

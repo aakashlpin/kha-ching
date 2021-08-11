@@ -80,6 +80,7 @@ const getInstrumentsDefaultState = () =>
 
 export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRADDLE]: {
+    premium: false,
     heading: 'Short Straddle — ATM',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
@@ -106,6 +107,7 @@ export const STRATEGIES_DETAILS = {
     }
   },
   [STRATEGIES.ATM_STRANGLE]: {
+    premium: false,
     heading: 'Short Strangle — ATM',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {

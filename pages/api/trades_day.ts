@@ -5,22 +5,28 @@ import { customAlphabet } from 'nanoid'
 
 import { tradingQueue, addToNextQueue, TRADING_Q_NAME } from '../../lib/queue'
 
-import { EXIT_STRATEGIES, STRATEGIES_DETAILS } from '../../lib/constants'
+import { STRATEGIES_DETAILS } from '../../lib/constants'
 import console from '../../lib/logging'
 
 import withSession from '../../lib/session'
 import {
+  baseTradeUrl,
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
   SIGNALX_AXIOS_DB_AUTH,
   withoutFwdSlash
 } from '../../lib/utils'
+import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { SignalXUser } from '../../types/misc'
 const { DATABASE_HOST_URL, DATABASE_USER_KEY } = process.env
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8)
 
-async function createJob ({ jobData, user }) {
+async function createJob (
+  { jobData, user }:
+  { jobData: SUPPORTED_TRADE_CONFIG, user: SignalXUser}
+) {
   const {
     runAt,
     runNow,
@@ -58,7 +64,7 @@ async function createJob ({ jobData, user }) {
     return Promise.reject(new Error('Exchange would be offline at the scheduled time.'))
   }
 
-  const qRes = addToNextQueue(
+  return addToNextQueue(
     {
       ...jobData,
       user
@@ -67,8 +73,6 @@ async function createJob ({ jobData, user }) {
       _nextTradingQueue: TRADING_Q_NAME
     }
   )
-
-  return qRes
 }
 
 async function deleteJob (id) {
@@ -77,7 +81,7 @@ async function deleteJob (id) {
       await tradingQueue.removeRepeatableByKey(id)
     } else {
       const job = await tradingQueue.getJob(id)
-      await job.remove()
+      job && await job.remove()
     }
   } catch (e) {
     console.log('[deleteJob] failed', e)
@@ -93,10 +97,10 @@ export default withSession(async (req, res) => {
   }
 
   const urlDateParam = dayjs().format('DDMMYYYY')
-  const endpoint = `${withoutFwdSlash(DATABASE_HOST_URL)}/day_${DATABASE_USER_KEY}/${urlDateParam}`
+  const endpoint = `${baseTradeUrl}/${urlDateParam}`
 
   if (req.method === 'POST') {
-    let data
+    let data: SUPPORTED_TRADE_CONFIG
     const orderTag = nanoid()
     try {
       // for every new job, first create a db entry
@@ -122,7 +126,7 @@ export default withSession(async (req, res) => {
       })
       // then patch the db entry with queue entry
       await axios.put(
-        `${endpoint}/${data._id}`,
+        `${endpoint}/${data._id!}`,
         {
           ...data,
           status: 'QUEUE',
@@ -134,7 +138,7 @@ export default withSession(async (req, res) => {
       return res.json(data)
     } catch (e) {
       await axios.put(
-        `${endpoint}/${data._id}`,
+        `${endpoint}/${data._id!}`,
         {
           ...data,
           status: 'REJECT',
@@ -149,11 +153,11 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'DELETE') {
     try {
-      const { data } = await axios(`${endpoint}/${req.body._id}`)
+      const { data } = await axios(`${endpoint}/${req.body._id as string}`)
       if (data.queue.id) {
         await deleteJob(data.queue.id)
       }
-      await axios.delete(`${endpoint}/${req.body._id}`, SIGNALX_AXIOS_DB_AUTH)
+      await axios.delete(`${endpoint}/${req.body._id as string}`, SIGNALX_AXIOS_DB_AUTH)
       return res.end()
     } catch (e) {
       return res.status(e.response.status).json(e.response.data || {})
@@ -163,8 +167,8 @@ export default withSession(async (req, res) => {
   if (req.method === 'PUT') {
     try {
       const { _id, ...props } = req.body
-      const { data } = await axios(`${endpoint}/${_id}`)
-      await axios.put(`${endpoint}/${_id}`, {
+      const { data } = await axios(`${endpoint}/${_id as string}`)
+      await axios.put(`${endpoint}/${_id as string}`, {
         ...data,
         ...props
       }, SIGNALX_AXIOS_DB_AUTH)

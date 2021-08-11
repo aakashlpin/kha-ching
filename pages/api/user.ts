@@ -1,11 +1,12 @@
 import { KiteConnect } from 'kiteconnect'
 
 import withSession from '../../lib/session'
+import { SignalXUser } from '../../types/misc'
 
 const apiKey = process.env.KITE_API_KEY
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user')
+  const user: SignalXUser = req.session.get('user')
 
   if (user) {
     const kc = new KiteConnect({
@@ -19,8 +20,8 @@ export default withSession(async (req, res) => {
       await kc.getProfile()
 
       res.json({
-        isLoggedIn: true,
-        ...user
+        ...user,
+        isLoggedIn: true
       })
     } catch (e) {
       req.session.destroy()
