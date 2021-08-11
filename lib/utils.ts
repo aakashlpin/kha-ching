@@ -854,3 +854,20 @@ export const attemptBrokerOrders = async (ordersPr: Promise[]): Promise<{
     }
   }
 }
+
+export const getHedgeForStrike = async (
+  { strike, distance, type, nfoSymbol }:
+  {strike: number, distance: number, type: string, nfoSymbol: string}
+): Promise<string> => {
+  const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
+  const instrumentsData = await getIndexInstruments()
+
+  const { tradingsymbol: hedgeTradingSymbol } = getCurrentExpiryTradingSymbol({
+    sourceData: instrumentsData,
+    nfoSymbol,
+    strike: hedgeStrike,
+    instrumentType: type
+  })
+
+  return hedgeTradingSymbol
+}

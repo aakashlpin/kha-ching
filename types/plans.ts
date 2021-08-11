@@ -58,6 +58,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   onSquareOffSetAborted?: boolean
   isHedgeEnabled: boolean
   hedgeDistance?: number
+  distanceFromAtm?: number
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

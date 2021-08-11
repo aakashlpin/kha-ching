@@ -12,6 +12,7 @@ import {
   delay,
   ensureMarginForBasketOrder,
   getCurrentExpiryTradingSymbol,
+  getHedgeForStrike,
   getIndexInstruments,
   getInstrumentPrice,
   getSkew,
@@ -202,45 +203,35 @@ async function atmStraddle ({
 
     const { PE_STRING, CE_STRING, atmStrike } = straddle
 
+    let allOrdersLocal: KiteOrder[] = []
+    let hedgeOrdersLocal: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
+
+    // allOrders = [...orders]
+
+    if (isHedgeEnabled) {
+      const [putHedge, callHedge] = await Promise.all(
+        ['PE', 'CE'].map(async (type) => getHedgeForStrike({ strike: atmStrike, distance: hedgeDistance!, type, nfoSymbol }))
+      )
+      hedgeOrdersLocal = [putHedge, callHedge].map(symbol => createOrder({
+        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY
+      }))
+      allOrdersLocal = [...hedgeOrdersLocal]
+    }
 
     const orders: KiteOrder[] = [PE_STRING, CE_STRING].map((symbol) =>
       createOrder({ symbol, lots, lotSize, user: user!, orderTag: orderTag! })
     )
 
-    allOrders = [...orders]
+    allOrdersLocal = [...allOrdersLocal, ...orders]
 
-    const getHedgeForStrike = async (strike: number, distance: number, type: string): Promise<string> => {
-      const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
-
-      const { tradingsymbol: hedgeTradingSymbol } = getCurrentExpiryTradingSymbol({
-        sourceData: instrumentsData,
-        nfoSymbol,
-        strike: hedgeStrike,
-        instrumentType: type
-      })
-
-      return hedgeTradingSymbol
-    }
-
-    let hedgeOrders: KiteOrder[] = []
-    if (isHedgeEnabled) {
-      const [putHedge, callHedge] = await Promise.all(
-        ['PE', 'CE'].map(async (type) => getHedgeForStrike(atmStrike, hedgeDistance!, type))
-      )
-      hedgeOrders = [putHedge, callHedge].map(symbol => createOrder({
-        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY
-      }))
-      allOrders = [...hedgeOrders, ...allOrders]
-    }
-
-    const hasMargin = await withRemoteRetry(ensureMarginForBasketOrder(user, allOrders))
+    const hasMargin = await withRemoteRetry(ensureMarginForBasketOrder(user, allOrdersLocal))
     if (!hasMargin) {
       throw Error('insufficient margin!')
     }
 
-    if (hedgeOrders.length) {
-      const hedgeOrdersPr = hedgeOrders.map((order) => remoteOrderSuccessEnsurer({
+    if (hedgeOrdersLocal.length) {
+      const hedgeOrdersPr = hedgeOrdersLocal.map((order) => remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: order,
         ensureOrderState: kite.STATUS_COMPLETE,
@@ -255,6 +246,8 @@ async function atmStraddle ({
 
         throw Error('rolled back onBrokenHedgeOrders')
       }
+
+      allOrders = [...statefulOrders]
     }
 
     const brokerOrdersPr = orders.map((order) => remoteOrderSuccessEnsurer({
@@ -265,8 +258,9 @@ async function atmStraddle ({
     }))
 
     const { allOk, statefulOrders } = await attemptBrokerOrders(brokerOrdersPr)
+    allOrders = [...allOrders, ...statefulOrders]
     if (!allOk && rollback?.onBrokenPrimaryOrders) {
-      await doSquareOffPositions([...hedgeOrders, ...statefulOrders], kite, {
+      await doSquareOffPositions(allOrders, kite, {
         orderTag
       })
 
