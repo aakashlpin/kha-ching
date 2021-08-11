@@ -28,7 +28,7 @@ export interface KiteOrder {
   transaction_type: 'BUY' | 'SELL'
   order_type: string
   product: string
-  validity: string
+  validity?: string
   guid?: string
 
   price?: number
