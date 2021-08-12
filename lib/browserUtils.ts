@@ -59,6 +59,27 @@ export function commonOnChangeHandler (changedProps: Partial<AvailablePlansConfi
   }
 }
 
+const getSchedulingApiProps = ({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, runAt, runNow, expireIfUnsuccessfulInMins }) => {
+  const apiSquareOffTime = isAutoSquareOffEnabled
+    ? dayjs(squareOffTime).set('seconds', 0).format()
+    : undefined
+  return {
+    squareOffTime: apiSquareOffTime,
+    autoSquareOffProps: apiSquareOffTime
+      ? {
+          time: apiSquareOffTime,
+          deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+        }
+      : undefined,
+    expiresAt: expireIfUnsuccessfulInMins
+      ? dayjs(runNow ? new Date() : runAt)
+        .add(Number(expireIfUnsuccessfulInMins), 'minutes')
+        .format()
+      : undefined
+
+  }
+}
+
 export const formatFormDataForApi = ({ strategy, data }: { strategy: string, data: AvailablePlansConfig }): SUPPORTED_TRADE_CONFIG | null => {
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
@@ -85,17 +106,9 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         maxTrades: Number(maxTrades),
         runAt: runNow ? dayjs().format() : runAt,
         strikeByPrice: strikeByPrice ? Number(strikeByPrice) : undefined,
-        squareOffTime: isAutoSquareOffEnabled
-          ? dayjs(squareOffTime).set('seconds', 0).format()
-          : undefined,
         isHedgeEnabled,
         hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : undefined,
-        autoSquareOffProps: squareOffTime
-          ? {
-              time: squareOffTime,
-              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            }
-          : undefined
+        ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy } as any)
       }
 
       return apiProps
@@ -126,22 +139,8 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
-        expireIfUnsuccessfulInMins: Number(expireIfUnsuccessfulInMins),
         runAt: runNow ? dayjs().format() : runAt,
-        squareOffTime: isAutoSquareOffEnabled
-          ? dayjs(squareOffTime).set('seconds', 0).format()
-          : undefined,
-        autoSquareOffProps: squareOffTime
-          ? {
-              time: squareOffTime,
-              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            }
-          : undefined,
-        expiresAt: expireIfUnsuccessfulInMins
-          ? dayjs(runNow ? new Date() : runAt)
-            .add(expireIfUnsuccessfulInMins, 'minutes')
-            .format()
-          : undefined
+        ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
       }
 
       return apiProps
@@ -171,20 +170,7 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
         runAt: runNow ? dayjs().format() : runAt,
         inverted: Boolean(inverted),
-        squareOffTime: isAutoSquareOffEnabled
-          ? dayjs(squareOffTime).set('seconds', 0).format()
-          : undefined,
-        autoSquareOffProps: squareOffTime
-          ? {
-              time: squareOffTime,
-              deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            }
-          : undefined,
-        expiresAt: expireIfUnsuccessfulInMins
-          ? dayjs(runNow ? new Date() : runAt)
-            .add(expireIfUnsuccessfulInMins, 'minutes')
-            .format()
-          : undefined
+        ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
       }
 
       return apiProps
