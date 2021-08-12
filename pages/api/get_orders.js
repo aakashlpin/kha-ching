@@ -1,11 +1,11 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { uniqBy } from 'lodash'
+import { Promise } from 'bluebird'
 
 import withSession from '../../lib/session'
 import {
   getCurrentExpiryTradingSymbol,
-  getIndexInstruments,
   syncGetKiteInstance
 } from '../../lib/utils'
 const advancedFormat = require('dayjs/plugin/advancedFormat')
@@ -47,12 +47,9 @@ export default withSession(async (req, res) => {
             : -1
       )
 
-    const sourceData = await getIndexInstruments()
-
-    const getHumanTradingSymbol = ({ tradingsymbol }) => {
+    const getHumanTradingSymbol = async ({ tradingsymbol }) => {
       const instrumentType = tradingsymbol.substr(tradingsymbol.length - 2, 2)
-      const expiryData = getCurrentExpiryTradingSymbol({
-        sourceData,
+      const expiryData = await getCurrentExpiryTradingSymbol({
         tradingsymbol,
         instrumentType
       })
@@ -68,10 +65,12 @@ export default withSession(async (req, res) => {
       return `${name} ${dateString} ${strike} ${instrumentType}`
     }
 
-    const humanOrders = orders.map((order) => ({
-      ...order,
-      humanTradingSymbol: getHumanTradingSymbol({ tradingsymbol: order.tradingsymbol })
-    }))
+    const humanOrders = await Promise.map(orders, async (order) => {
+      return {
+        ...order,
+        humanTradingSymbol: await getHumanTradingSymbol({ tradingsymbol: order.tradingsymbol })
+      }
+    })
 
     res.json(humanOrders)
   } catch (e) {

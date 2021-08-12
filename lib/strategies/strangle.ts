@@ -9,7 +9,8 @@ import {
   getHedgeForStrike,
   getIndexInstruments,
   remoteOrderSuccessEnsurer,
-  syncGetKiteInstance
+  syncGetKiteInstance,
+  TradingSymbolInterface
 } from '../utils'
 import { createOrder, getATMStraddle as getATMStrikes } from './atmStraddle'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
@@ -26,21 +27,17 @@ const getStrangleStrikes = async (
   const lowerLegPEStrike = atmStrike - (distanceFromAtm * strikeStepSize)
   const higherLegCEStrike = atmStrike + (distanceFromAtm * strikeStepSize)
 
-  const sourceData = await getIndexInstruments()
-
-  const { tradingsymbol: LOWER_LEG_PE_STRING } = getCurrentExpiryTradingSymbol({
-    sourceData,
+  const { tradingsymbol: LOWER_LEG_PE_STRING } = await getCurrentExpiryTradingSymbol({
     nfoSymbol,
     strike: lowerLegPEStrike,
     instrumentType: 'PE'
-  })
+  }) as TradingSymbolInterface
 
-  const { tradingsymbol: HIGHER_LEG_CE_STRING } = getCurrentExpiryTradingSymbol({
-    sourceData,
+  const { tradingsymbol: HIGHER_LEG_CE_STRING } = await getCurrentExpiryTradingSymbol({
     nfoSymbol,
     strike: higherLegCEStrike,
     instrumentType: 'CE'
-  })
+  }) as TradingSymbolInterface
 
   const PE_STRING = !inverted ? LOWER_LEG_PE_STRING : HIGHER_LEG_CE_STRING.replace('CE', 'PE')
   const CE_STRING = !inverted ? HIGHER_LEG_CE_STRING : LOWER_LEG_PE_STRING.replace('PE', 'CE')
@@ -76,7 +73,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     } = await getATMStrikes({
       ...args,
       takeTradeIrrespectiveSkew: true,
-      instruments: sourceData,
+      instrumentsData: sourceData,
       startTime: dayjs(),
       expiresAt: dayjs().subtract(1, 'seconds').format(),
       underlyingSymbol,
@@ -121,7 +118,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     }
 
     if (hedgeOrdersLocal.length) {
-      const hedgeOrdersPr = hedgeOrdersLocal.map((order) => remoteOrderSuccessEnsurer({
+      const hedgeOrdersPr = hedgeOrdersLocal.map(async (order) => remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: order,
         ensureOrderState: kite.STATUS_COMPLETE,
@@ -140,7 +137,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       allOrders = [...statefulOrders]
     }
 
-    const brokerOrdersPr = orders.map((order) => remoteOrderSuccessEnsurer({
+    const brokerOrdersPr = orders.map(async (order) => remoteOrderSuccessEnsurer({
       _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,

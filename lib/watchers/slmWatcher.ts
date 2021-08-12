@@ -130,7 +130,7 @@ const slmWatcher = async (
 
     console.log('[slmWatcher] openPositionThatMustBeSquaredOff', openPositionThatMustBeSquaredOff)
 
-    const ltp = await withRemoteRetry(getInstrumentPrice(kite, tradingsymbol, exchange))
+    const ltp = await withRemoteRetry(async () => getInstrumentPrice(kite, tradingsymbol, exchange))
 
     const newOrderType =
       (transactionType === kite.TRANSACTION_TYPE_BUY && ltp < triggerPrice) ||

@@ -1,4 +1,4 @@
-import { finiteStateChecker, ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
+import { attemptBrokerOrders, finiteStateChecker, ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
 import { Promise } from 'bluebird'
 
 jest.setTimeout(ms(60))
@@ -292,4 +292,22 @@ test('finiteStateChecker should work', async () => {
 
   const finitePr = finiteStateChecker(infinitePr, ms(10))
   await expect(finitePr).rejects.toThrow(Promise.TimeoutError)
+})
+
+test('attemptBrokerOrders should work', async () => {
+  const pr1 = Promise.resolve({
+    successful: true,
+    response: {
+      hello: 'world'
+    }
+  })
+  const pr2 = Promise.resolve({
+    successful: true,
+    response: {
+      hello: 'world2'
+    }
+  })
+
+  const res = await attemptBrokerOrders([pr1, pr2])
+  console.log(res)
 })

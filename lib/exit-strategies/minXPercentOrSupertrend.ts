@@ -6,6 +6,7 @@ import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, WATCHER_Q_NAME } from '../queue'
 import {
+  attemptBrokerOrders,
   getCompletedOrderFromOrderHistoryById,
   getLastOpenDateSince,
   getNearestCandleTime,
@@ -142,17 +143,19 @@ async function minXPercentOrSupertrend ({
               tag: orderTag
             }
 
-            const { successful, response } = await remoteOrderSuccessEnsurer({
+            const remoteOrder = remoteOrderSuccessEnsurer({
               ensureOrderState: kite.COMPLETE,
               orderProps: exitOrder,
               user: user!
             })
 
-            if (!successful) {
+            const { allOk, statefulOrders } = await attemptBrokerOrders([remoteOrder])
+
+            if (!allOk) {
               throw new Error('[minXPercentOrSupertrend] replacement order failed!')
             }
 
-            const newExitOrder = response
+            const [newExitOrder] = statefulOrders
 
             console.log(
               '[minXPercentOrSupertrend] placing new exit order',

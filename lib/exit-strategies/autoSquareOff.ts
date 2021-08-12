@@ -9,7 +9,7 @@ import {
   withRemoteRetry
 } from '../utils'
 
-async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
+export async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
   const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders())
   const openOrders: KiteOrder[] = allOrders.filter((order) => order.status === 'TRIGGER PENDING')
 
@@ -29,7 +29,7 @@ async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
 
   // some positions might have squared off during the day when the SL hit
   return Promise.all(
-    openOrdersForPositions.map((openOrder: KiteOrder) =>
+    openOrdersForPositions.map(async (openOrder: KiteOrder) =>
       withRemoteRetry(() => kite.cancelOrder(openOrder.variety, openOrder.order_id))
     )
   )
@@ -65,7 +65,7 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
     .filter((o) => o)
 
   const remoteRes = await Promise.all(
-    openPositionsForOrders.map((order) => {
+    openPositionsForOrders.map(async (order) => {
       const exitOrder = {
         tradingsymbol: order.tradingsymbol,
         quantity: Math.abs(order.quantity),

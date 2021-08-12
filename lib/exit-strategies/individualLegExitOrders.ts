@@ -2,8 +2,8 @@ import { KiteOrder } from '../../types/kite'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
 import orderResponse from '../strategies/mockData/orderResponse'
-import { isMockOrder, remoteOrderSuccessEnsurer, syncGetKiteInstance } from '../utils'
-import { doSquareOffPositions } from './autoSquareOff'
+import { attemptBrokerOrders, isMockOrder, remoteOrderSuccessEnsurer, syncGetKiteInstance } from '../utils'
+import { doDeletePendingOrders, doSquareOffPositions } from './autoSquareOff'
 
 async function individualLegExitOrders ({
   _kite,
@@ -43,27 +43,24 @@ async function individualLegExitOrders ({
     return exitOrder
   })
 
-  const exitOrderPrs = exitOrders.map(order => remoteOrderSuccessEnsurer({
+  const exitOrderPrs = exitOrders.map(async (order) => remoteOrderSuccessEnsurer({
     _kite: kite,
     ensureOrderState: 'TRIGGER PENDING',
     orderProps: order,
     user: user!
   }))
-  const brokerOrderResolutions = await Promise.allSettled(exitOrderPrs)
-  const unsuccessfulLegs = brokerOrderResolutions.filter(res => res.status === 'rejected' || (res.status === 'fulfilled' && !res.value.successful))
-  if (!unsuccessfulLegs.length) {
-    // best case scenario
-    const completedOrders = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response)
-    return completedOrders
-  } else {
-    // very bad situation to be in.
-    // original positions are in, but one or more SL orders are not
-    const successfulExitLegs = brokerOrderResolutions.map(res => res.status === 'fulfilled' && res.value.response).filter(res => res)
-    if (rollback?.onBrokenExitOrders) {
-      await doSquareOffPositions([...successfulExitLegs, ...completedOrders], kite, initialJobData)
-    }
-    throw new Error('🔴 [individualLegExitOrders] one or more SL orders failed!')
+
+  const { allOk, statefulOrders } = await attemptBrokerOrders(exitOrderPrs)
+  if (!allOk && rollback?.onBrokenExitOrders) {
+    await doDeletePendingOrders(statefulOrders, kite)
+    await doSquareOffPositions(completedOrders, kite, {
+      orderTag
+    })
+
+    throw Error('rolled back onBrokenExitOrders')
   }
+
+  return statefulOrders
 }
 
 export default individualLegExitOrders

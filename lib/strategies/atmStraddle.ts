@@ -18,6 +18,7 @@ import {
   getSkew,
   ms,
   remoteOrderSuccessEnsurer,
+  StrikeInterface,
   syncGetKiteInstance,
   withRemoteRetry
 } from '../utils'
@@ -48,7 +49,6 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
     thresholdSkewPercent,
     takeTradeIrrespectiveSkew,
     expiresAt,
-    instrumentsData,
     attempt = 0
   } = args
   try {
@@ -83,14 +83,13 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
         )
       : maxSkewPercent
 
-    const underlyingLTP = await withRemoteRetry(getInstrumentPrice(kite, underlyingSymbol!, exchange!))
+    const underlyingLTP = await withRemoteRetry(async () => getInstrumentPrice(kite, underlyingSymbol!, exchange!))
     const atmStrike = Math.round(underlyingLTP / strikeStepSize!) * strikeStepSize!
 
-    const { PE_STRING, CE_STRING } = getCurrentExpiryTradingSymbol({
+    const { PE_STRING, CE_STRING } = await getCurrentExpiryTradingSymbol({
       nfoSymbol,
-      sourceData: instrumentsData!,
       strike: atmStrike
-    })
+    }) as StrikeInterface
 
     // if time has expired
     if (timeExpired) {
@@ -109,7 +108,7 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
     }
 
     // if time hasn't expired
-    const { skew } = await withRemoteRetry(getSkew(kite, PE_STRING, CE_STRING, 'NFO'))
+    const { skew } = await withRemoteRetry(async () => getSkew(kite, PE_STRING, CE_STRING, 'NFO'))
     // if skew not fitting in, try again
     if (skew > updatedSkewPercent!) {
       console.log(
@@ -225,13 +224,13 @@ async function atmStraddle ({
 
     allOrdersLocal = [...allOrdersLocal, ...orders]
 
-    const hasMargin = await withRemoteRetry(ensureMarginForBasketOrder(user, allOrdersLocal))
+    const hasMargin = await withRemoteRetry(async () => ensureMarginForBasketOrder(user, allOrdersLocal))
     if (!hasMargin) {
       throw Error('insufficient margin!')
     }
 
     if (hedgeOrdersLocal.length) {
-      const hedgeOrdersPr = hedgeOrdersLocal.map((order) => remoteOrderSuccessEnsurer({
+      const hedgeOrdersPr = hedgeOrdersLocal.map(async (order) => remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: order,
         ensureOrderState: kite.STATUS_COMPLETE,
@@ -250,7 +249,7 @@ async function atmStraddle ({
       allOrders = [...statefulOrders]
     }
 
-    const brokerOrdersPr = orders.map((order) => remoteOrderSuccessEnsurer({
+    const brokerOrdersPr = orders.map(async (order) => remoteOrderSuccessEnsurer({
       _kite: kite,
       orderProps: order,
       ensureOrderState: kite.STATUS_COMPLETE,

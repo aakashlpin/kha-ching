@@ -1,8 +1,6 @@
 import withSession from '../../lib/session'
 import {
-  getIndexInstruments,
-  getTradingSymbolsByOptionPrice,
-  syncGetKiteInstance
+  getTradingSymbolsByOptionPrice
 } from '../../lib/utils'
 
 export default withSession(async (req, res) => {
@@ -12,10 +10,7 @@ export default withSession(async (req, res) => {
     return res.status(401).send('Unauthorized')
   }
 
-  const kite = syncGetKiteInstance(user)
-  const sourceData = await getIndexInstruments()
   const response = await getTradingSymbolsByOptionPrice({
-    sourceData,
     nfoSymbol: 'BANKNIFTY',
     price: 200,
     instrumentType: 'CE',

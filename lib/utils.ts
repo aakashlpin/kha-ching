@@ -2,7 +2,8 @@ import axios from 'axios'
 import csv from 'csvtojson'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
-import { Promise } from 'bluebird'
+import Bluebird, { Promise } from 'bluebird'
+import { allSettled, allSettledInterface } from './es6-promise'
 
 import { EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
@@ -64,7 +65,7 @@ const asyncGetIndexInstruments = (exchange = 'NFO') =>
     })
   })
 
-export const getIndexInstruments: Promise<[any]> = memoizer(asyncGetIndexInstruments, {
+export const getIndexInstruments = memoizer(asyncGetIndexInstruments, {
   maxAge: dayjs().get('hours') >= 8 ? ms(9 * 60 * 60) : ms(5 * 60),
   promise: true
 })
@@ -79,20 +80,29 @@ export const delay = (ms) =>
 export const getMisOrderLastSquareOffTime = () =>
   dayjs().set('hour', 15).set('minutes', 24).set('seconds', 0).format()
 
-export const getCurrentExpiryTradingSymbol = ({
-  sourceData,
+export interface TradingSymbolInterface {
+  tradingsymbol: string
+  instrument_token: string
+  strike: string
+}
+export interface StrikeInterface {
+  PE_STRING: string
+  CE_STRING: string
+}
+
+export const getCurrentExpiryTradingSymbol = async ({
   nfoSymbol,
   strike,
   instrumentType,
   tradingsymbol
 }: {
-  sourceData: any[]
   nfoSymbol?: string
   strike?: number
   instrumentType?: string
   tradingsymbol?: string
-}) => {
-  const rows = sourceData
+}): Promise<TradingSymbolInterface | StrikeInterface> => {
+  const instrumentsData = await getIndexInstruments()
+  const rows = instrumentsData
     .filter(
       (item) =>
         (nfoSymbol ? item.name === nfoSymbol : true) &&
@@ -466,7 +476,6 @@ export function closest (needle: number, haystack: LTP_TYPE[], haystackKey: stri
 }
 
 interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
-  sourceData: any[]
   nfoSymbol?: string
   price: number
   instrumentType?: string
@@ -476,7 +485,6 @@ interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
 }
 
 export const getTradingSymbolsByOptionPrice = async ({
-  sourceData,
   nfoSymbol,
   price,
   instrumentType,
@@ -494,15 +502,14 @@ export const getTradingSymbolsByOptionPrice = async ({
     .map((idx) => pivotStrike + idx * strikeStepSize)
     .sort((a, b) => a - b)
 
-  const requestParams = strikes.map((strike) => {
-    const { tradingsymbol } = getCurrentExpiryTradingSymbol({
-      sourceData,
+  const requestParams = await Promise.map(strikes, async (strike) => {
+    const { tradingsymbol } = await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike,
       instrumentType
-    })
+    }) as TradingSymbolInterface
 
-    return `${kite.EXCHANGE_NFO as string}:${tradingsymbol as string}`
+    return `${kite.EXCHANGE_NFO as string}:${tradingsymbol}`
   })
 
   const {
@@ -566,7 +573,7 @@ export const baseTradeUrl: string = `${withoutFwdSlash(DATABASE_HOST_URL as stri
 
 export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
 
-export const finiteStateChecker = (infinitePr: Promise, checkDurationMs: number): Promise<any | Error> => {
+export const finiteStateChecker = async (infinitePr: Bluebird<any>, checkDurationMs: number): Promise<any | Error> => {
   return infinitePr.timeout(checkDurationMs).catch(e => {
     // cleanup infinitePr
     infinitePr.cancel()
@@ -575,7 +582,7 @@ export const finiteStateChecker = (infinitePr: Promise, checkDurationMs: number)
   })
 }
 
-export const withRemoteRetry = async (remoteFn: Promise | Function, timeoutMs = ms(60)): Promise<any> => {
+export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): Promise<any> => {
   const remoteFnExecution = () =>
     new Promise((resolve, reject, onCancel) => {
       let cancelled = false
@@ -584,11 +591,11 @@ export const withRemoteRetry = async (remoteFn: Promise | Function, timeoutMs = 
           return false
         }
         try {
-          const isRemoteFnPromise = remoteFn && typeof remoteFn.then == 'function' // eslint-disable-line
+          const isRemoteFnPromise = remoteFn && typeof (remoteFn as any).then == 'function' // eslint-disable-line
           const res = await (isRemoteFnPromise ? remoteFn : remoteFn())
           return res
         } catch (e) {
-          console.log(`withRemoteRetry attempt failed in ${remoteFn?.name as string}`, e)
+          console.log(`withRemoteRetry attempt failed in ${remoteFn?.name}`, e)
           await Promise.delay(ms(2))
           return fn()
         }
@@ -598,7 +605,7 @@ export const withRemoteRetry = async (remoteFn: Promise | Function, timeoutMs = 
         resolve(res)
       }).catch(e => reject(e))
 
-      onCancel(() => {
+      onCancel!(() => {
         cancelled = true
       })
     })
@@ -666,7 +673,7 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
         }
       })
 
-    onCancel(() => {
+    onCancel!(() => {
       cancelled = true
     })
   })
@@ -698,8 +705,8 @@ export const remoteOrderSuccessEnsurer = async (args: {
   attemptCount?: number
 }): Promise<{
   successful: boolean
-  response: KiteOrder
-} | Promise.TimeoutError | Error> => {
+  response?: KiteOrder
+}> => {
   const {
     _kite,
     ensureOrderState,
@@ -823,31 +830,31 @@ export const patchDbTrade = async ({ _id, patchProps }: {_id: string, patchProps
   return data
 }
 
-export const attemptBrokerOrders = async (ordersPr: Promise[]): Promise<{
+export const attemptBrokerOrders = async (ordersPr: Array<Promise<any>>): Promise<{
   allOk: boolean
   statefulOrders: KiteOrder[]
 }> => {
   try {
-    const brokerOrderResolutions = await Promise.allSettled(ordersPr)
-
-    const rejectedLegs = brokerOrderResolutions.filter(res => res.status === 'rejected')
-    const successfulLegs = brokerOrderResolutions.map(res =>
+    const brokerOrderResolutions = await allSettled(ordersPr)
+    console.log('[attemptBrokerOrders] resolutions', brokerOrderResolutions)
+    const rejectedLegs = (brokerOrderResolutions as any).filter((res: allSettledInterface) => res.status === 'rejected')
+    const successfulOrders: Array<KiteOrder | null> = (brokerOrderResolutions as any).map((res: allSettledInterface) =>
       res.status === 'fulfilled' && res.value.successful ? res.value.response : null
     ).filter(o => o)
 
-    if (rejectedLegs.length > 0 || successfulLegs.length < ordersPr.length) {
+    if (rejectedLegs.length > 0 || successfulOrders.length < ordersPr.length) {
       return {
         allOk: false,
-        statefulLegs: successfulLegs
+        statefulOrders: successfulOrders as KiteOrder[]
       }
     }
 
     return {
       allOk: true,
-      statefulLegs: successfulLegs
+      statefulOrders: successfulOrders as KiteOrder[]
     }
   } catch (e) {
-    console.log(e)
+    console.log('🔴 [attemptBrokerOrders] error', e)
     return {
       allOk: false,
       statefulOrders: []
@@ -860,14 +867,12 @@ export const getHedgeForStrike = async (
   {strike: number, distance: number, type: string, nfoSymbol: string}
 ): Promise<string> => {
   const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
-  const instrumentsData = await getIndexInstruments()
 
-  const { tradingsymbol: hedgeTradingSymbol } = getCurrentExpiryTradingSymbol({
-    sourceData: instrumentsData,
+  const { tradingsymbol } = await getCurrentExpiryTradingSymbol({
     nfoSymbol,
     strike: hedgeStrike,
     instrumentType: type
-  })
+  }) as TradingSymbolInterface
 
-  return hedgeTradingSymbol
+  return tradingsymbol
 }

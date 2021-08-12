@@ -16,7 +16,6 @@ import {
 } from '../queue'
 import {
   getCurrentExpiryTradingSymbol,
-  getIndexInstruments,
   getInstrumentPrice,
   getLastOpenDateSince,
   getNearestCandleTime,
@@ -26,6 +25,7 @@ import {
   ms,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
+  TradingSymbolInterface,
   withRemoteRetry
 } from '../utils'
 
@@ -78,13 +78,11 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
     }
 
     const { nfoSymbol } = INSTRUMENT_DETAILS[instrument]
-    const jsonArray = await getIndexInstruments()
 
-    const { instrument_token: futInstrumentToken } = getCurrentExpiryTradingSymbol({
-      sourceData: jsonArray,
+    const { instrument_token: futInstrumentToken } = await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       instrumentType: 'FUT'
-    })
+    }) as TradingSymbolInterface
 
     const DATE_FORMAT = 'YYYY-MM-DD'
     const DATE_TIME_FORMAT = `${DATE_FORMAT} HH:mm:ss`
@@ -97,7 +95,7 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       to_date: nearestClosedCandleTime
     }
 
-    const supertrendResponse = await withRemoteRetry(fetchSuperTrend(supertrendProps))
+    const supertrendResponse = await withRemoteRetry(async () => fetchSuperTrend(supertrendProps))
     const [currentTrendData] = supertrendResponse.slice(-1)
     const currentTrendAsPerST = currentTrendData.STX_10_3
     if (
@@ -115,7 +113,7 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       }
     }
 
-    const res = await punchOrders(initialJobData, currentTrendData, jsonArray)
+    const res = await punchOrders(initialJobData, currentTrendData)
 
     if (maxTrades > 1) {
       // flow should never reach here if the orders haven't been punched in
@@ -143,7 +141,7 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
   }
 }
 
-async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, superTrend, instrumentsRawData) {
+async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, superTrend) {
   const {
     _kite,
     instrument,
@@ -170,22 +168,20 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     instrument_token: optionInstrumentToken,
     strike: optionStrike
   } = strikeByPriceNumber
-    ? await withRemoteRetry(getTradingSymbolsByOptionPrice({
-      sourceData: instrumentsRawData,
+    ? await withRemoteRetry(async () => getTradingSymbolsByOptionPrice({
       nfoSymbol,
       price: strikeByPriceNumber,
       pivotStrike: atmStrike,
       instrumentType,
       user: user!
     }))
-    : getCurrentExpiryTradingSymbol({
-      sourceData: instrumentsRawData,
+    : await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike: superTrendStrike,
       instrumentType
     })
 
-  const ltp = await withRemoteRetry(getInstrumentPrice(kite, optionTradingSymbol, kite.EXCHANGE_NFO))
+  const ltp = await withRemoteRetry(async () => getInstrumentPrice(kite, optionTradingSymbol, kite.EXCHANGE_NFO))
   if (ltp < 10) {
     console.log(
       '🔴 [directionalOptionSelling] not punching order as option price less than 10 bucks'
@@ -199,12 +195,11 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     const hedgeStrike =
         Number(optionStrike) + Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
 
-    const { tradingsymbol: hedgeTradingSymbol } = getCurrentExpiryTradingSymbol({
-      sourceData: instrumentsRawData,
+    const { tradingsymbol: hedgeTradingSymbol } = await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike: hedgeStrike,
       instrumentType
-    })
+    }) as TradingSymbolInterface
 
     if (hedgeTradingSymbol) {
       hedgeOrder = {
