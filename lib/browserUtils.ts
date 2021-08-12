@@ -64,6 +64,7 @@ const getSchedulingApiProps = ({ isAutoSquareOffEnabled, squareOffTime, exitStra
     ? dayjs(squareOffTime).set('seconds', 0).format()
     : undefined
   return {
+    runAt: runNow ? dayjs().format() : runAt,
     squareOffTime: apiSquareOffTime,
     autoSquareOffProps: apiSquareOffTime
       ? {
@@ -93,8 +94,6 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         martingaleIncrementSize,
         strikeByPrice,
         slmPercent,
-        isHedgeEnabled,
-        hedgeDistance,
         exitStrategy
       } = data as DIRECTIONAL_OPTION_SELLING_CONFIG
 
@@ -104,11 +103,8 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         martingaleIncrementSize: Number(martingaleIncrementSize),
         slmPercent: Number(slmPercent),
         maxTrades: Number(maxTrades),
-        runAt: runNow ? dayjs().format() : runAt,
         strikeByPrice: strikeByPrice ? Number(strikeByPrice) : undefined,
-        isHedgeEnabled,
-        hedgeDistance: isHedgeEnabled ? Number(hedgeDistance) : undefined,
-        ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy } as any)
+        ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, runNow, runAt } as any)
       }
 
       return apiProps
@@ -139,7 +135,6 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
-        runAt: runNow ? dayjs().format() : runAt,
         ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
       }
 
@@ -168,7 +163,6 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         trailEveryPercentageChangeValue: Number(trailEveryPercentageChangeValue),
         trailingSlPercent: Number(trailingSlPercent),
         onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
-        runAt: runNow ? dayjs().format() : runAt,
         inverted: Boolean(inverted),
         ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
       }

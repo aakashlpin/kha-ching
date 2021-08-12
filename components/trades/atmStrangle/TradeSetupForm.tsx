@@ -26,6 +26,7 @@ import {
   STRATEGIES
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
+import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface ATMStrangleTradeSetupFormProps {
@@ -166,6 +167,13 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
             />
           </Grid>
+
+          <HedgeComponent
+            isHedgeEnabled={state.isHedgeEnabled}
+            hedgeDistance={state.hedgeDistance}
+            onChange={onChange}
+          />
+
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormGroup>

@@ -28,6 +28,7 @@ import {
   DOS_ENTRY_STRATEGIES
 } from '../../../lib/constants'
 import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
+import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface DOSTradeSetupFormProps {
@@ -188,36 +189,12 @@ const TradeSetupForm = ({
               label='SLM %'
             />
           </Grid>
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup>
-                <FormControlLabel
-                  key='isHedgeEnabled'
-                  label='Add OTM hedge'
-                  control={
-                    <Checkbox
-                      checked={state.isHedgeEnabled}
-                      onChange={() =>
-                        onChange({
-                          isHedgeEnabled: !state.isHedgeEnabled
-                        })}
-                    />
-                  }
-                />
-                {state.isHedgeEnabled
-                  ? (
-                  <TextField
-                    fullWidth
-                    name='hedgeDistance'
-                    value={state.hedgeDistance}
-                    onChange={(e) => onChange({ hedgeDistance: +e.target.value || undefined })}
-                    label='Hedge Distance'
-                  />
-                    )
-                  : null}
-              </FormGroup>
-            </FormControl>
-          </Grid>
+
+          <HedgeComponent
+            isHedgeEnabled={state.isHedgeEnabled}
+            hedgeDistance={state.hedgeDistance}
+            onChange={onChange}
+          />
 
           <Grid item xs={12}>
             <FormControl component='fieldset'>
