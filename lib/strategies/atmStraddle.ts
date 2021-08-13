@@ -206,8 +206,6 @@ async function atmStraddle ({
     let hedgeOrdersLocal: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
 
-    // allOrders = [...orders]
-
     if (isHedgeEnabled) {
       const [putHedge, callHedge] = await Promise.all(
         ['PE', 'CE'].map(async (type) => getHedgeForStrike({ strike: atmStrike, distance: hedgeDistance!, type, nfoSymbol }))

@@ -154,8 +154,6 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       throw Error('rolled back on onBrokenPrimaryOrders')
     }
 
-    allOrders = [...allOrders, ...statefulOrders]
-
     return {
       _nextTradingQueue,
       rawKiteOrdersResponse: statefulOrders,
