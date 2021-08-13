@@ -739,7 +739,11 @@ export const remoteOrderSuccessEnsurer = async (args: {
   const kite = _kite ?? syncGetKiteInstance(user)
 
   try {
-    const orderAckResponse = isMockOrder() ? { order_id: '' } : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)
+    const mockOrders = isMockOrder()
+    if (mockOrders) {
+      console.log('mock order', orderProps)
+    }
+    const orderAckResponse = mockOrders ? { order_id: '' } : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)
     const { order_id: ackOrderId } = orderAckResponse
     const isOrderInUltimateStatePr = orderStateChecker(kite, ackOrderId, ensureOrderState)
     try {

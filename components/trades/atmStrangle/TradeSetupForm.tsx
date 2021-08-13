@@ -28,6 +28,7 @@ import {
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
+import DiscreteSlider from '../../lib/Slider'
 
 interface ATMStrangleTradeSetupFormProps {
   strategy: STRATEGIES
@@ -81,6 +82,19 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <Grid item xs={12}>
+            <DiscreteSlider
+              label={'Strikes away from ATM strike'}
+              defaultValue={1}
+              step={1}
+              min={1}
+              max={25}
+              value={state.distanceFromAtm}
+              onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Change type</FormLabel>

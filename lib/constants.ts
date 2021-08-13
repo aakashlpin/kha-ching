@@ -101,6 +101,7 @@ export const STRATEGIES_DETAILS = {
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {
+        onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
         onBrokenExitOrders: false
       }
@@ -121,9 +122,11 @@ export const STRATEGIES_DETAILS = {
       trailEveryPercentageChangeValue: 2,
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       inverted: false,
+      distanceFromAtm: 1,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {
+        onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
         onBrokenExitOrders: false
       }
