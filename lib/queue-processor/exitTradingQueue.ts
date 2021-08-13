@@ -15,6 +15,7 @@ function processJob (jobData: {
   initialJobData: SUPPORTED_TRADE_CONFIG
   jobResponse: {
     rawKiteOrdersResponse: KiteOrder[]
+    squareOffOrders?: KiteOrder[]
   }
 }) {
   const { initialJobData, jobResponse } = jobData

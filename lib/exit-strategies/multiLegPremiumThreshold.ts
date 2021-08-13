@@ -37,9 +37,10 @@ type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
   lastTrailingSlTriggerAtPremium?: number
 }
 
-async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse }: {
+async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse, squareOffOrders }: {
   initialJobData: JobDataInterface
   rawKiteOrdersResponse: KiteOrder[]
+  squareOffOrders?: KiteOrder[]
 }) {
   try {
     if (getTimeLeftInMarketClosingMs() < 0) {
@@ -124,7 +125,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       checkAgainstSl = trailingSlTotalPremium ?? initialSlTotalPremium // 418
 
       if (liveTotalPremium < checkAgainstSl) {
-        const lastInflectionPoint = lastTrailingSlTriggerAtPremium || initialPremiumReceived // 380
+        const lastInflectionPoint = lastTrailingSlTriggerAtPremium ?? initialPremiumReceived // 380
         // liveTotalPremium = 360
         const changeFromLastInflectionPoint =
           ((liveTotalPremium - lastInflectionPoint!) / lastInflectionPoint!) * 100
@@ -174,7 +175,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     const exitMsg = `☢️ [multiLegPremiumThreshold] triggered! liveTotalPremium (${liveTotalPremium}) > threshold (${checkAgainstSl})`
     console.log(exitMsg)
 
-    return doSquareOffPositions(legsOrders, kite, initialJobData)
+    return doSquareOffPositions(squareOffOrders!, kite, initialJobData)
   } catch (e) {
     console.log('☢️ [multiLegPremiumThreshold] terminated', e)
     return Promise.resolve(e)
