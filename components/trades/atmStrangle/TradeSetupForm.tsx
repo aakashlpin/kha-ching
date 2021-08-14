@@ -89,7 +89,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               defaultValue={1}
               step={1}
               min={1}
-              max={25}
+              max={20}
               value={state.distanceFromAtm}
               onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
             />
