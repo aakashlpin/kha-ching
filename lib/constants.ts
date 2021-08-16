@@ -114,7 +114,7 @@ export const STRATEGIES_DETAILS = {
   },
   [STRATEGIES.ATM_STRANGLE]: {
     premium: false,
-    heading: 'Short Strangle — ATM',
+    heading: 'Short Strangle',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 420000,
