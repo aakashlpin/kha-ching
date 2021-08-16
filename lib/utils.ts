@@ -459,7 +459,7 @@ export function randomIntFromInterval (min: number, max: number) {
 
 interface LTP_TYPE {tradingsymbol: string, strike: string, last_price: number}
 
-export function closest (needle: number, haystack: LTP_TYPE[], haystackKey: string, greaterThanEqualToPrice: boolean) {
+export function closest (needle: number, haystack: Array<LTP_TYPE | any>, haystackKey: string, greaterThanEqualToPrice: boolean) {
   const filtered = haystack.filter((item) => {
     if (greaterThanEqualToPrice) {
       return item[haystackKey] >= needle
@@ -879,4 +879,38 @@ export const getHedgeForStrike = async (
   }) as TradingSymbolInterface
 
   return tradingsymbol
+}
+
+interface apiResponseObject {
+  PutDelta: number
+  CallDelta: number
+  StrikePrice: number
+}
+
+export const getStrikeByDelta = (
+  delta: number,
+  apiResponse: {
+    atmStrike: number
+    data: apiResponseObject[]
+  },
+  type?: 'PE' | 'CE'
+): apiResponseObject | {
+  putStrike: apiResponseObject
+  callStrike: apiResponseObject
+} => {
+  const { data } = apiResponse
+  const putStrike = closest(delta, data, 'PutDelta', false)
+  const callStrike = closest(delta, data, 'CallDelta', false)
+  if (type === 'PE') {
+    return putStrike
+  }
+
+  if (type === 'CE') {
+    return callStrike
+  }
+
+  return {
+    putStrike,
+    callStrike
+  }
 }
