@@ -96,7 +96,7 @@ const getInstrumentsDefaultState = (): Record<INSTRUMENTS, boolean> =>
 export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRADDLE]: {
     premium: false,
-    heading: 'Short Straddle — ATM',
+    heading: 'Long/Short Straddle — ATM',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 145000,
@@ -126,7 +126,7 @@ export const STRATEGIES_DETAILS = {
   },
   [STRATEGIES.ATM_STRANGLE]: {
     premium: false,
-    heading: 'Short Strangle',
+    heading: 'Long/Short Strangle',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 420000,
