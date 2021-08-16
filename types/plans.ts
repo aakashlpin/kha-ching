@@ -1,4 +1,4 @@
-import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES } from '../lib/constants'
+import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES } from '../lib/constants'
 import { DailyPlansDayKey, SignalXUser } from './misc'
 
 // TODO: Discuss with @Aakash about these interfaces
@@ -47,6 +47,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   lots: number
   slmPercent: number
   inverted: boolean
+  entryStrategy: STRANGLE_ENTRY_STRATEGIES
   exitStrategy: EXIT_STRATEGIES
   strategy: STRATEGIES.ATM_STRANGLE
   instrument: INSTRUMENTS
@@ -59,6 +60,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   isHedgeEnabled: boolean
   hedgeDistance?: number
   distanceFromAtm: number
+  deltaStrikes?: number
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

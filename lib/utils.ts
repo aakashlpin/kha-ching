@@ -5,7 +5,7 @@ import { KiteConnect } from 'kiteconnect'
 import Bluebird, { Promise } from 'bluebird'
 import { allSettled, allSettledInterface } from './es6-promise'
 
-import { EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './constants'
+import { ERROR_STRINGS, EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
@@ -21,7 +21,7 @@ const fs = require('fs')
 const memoizer = require('memoizee')
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
-const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
+export const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
 const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
 const DATABASE_API_KEY = process.env.DATABASE_API_KEY
@@ -595,7 +595,13 @@ export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): P
           const res = await (isRemoteFnPromise ? remoteFn : remoteFn())
           return res
         } catch (e) {
-          console.log(`withRemoteRetry attempt failed in ${remoteFn?.name}`, e)
+          if (e.isAxiosError) {
+            if (e.response.status === 401) {
+              return reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
+            }
+          }
+
+          console.log('withRemoteRetry attempt failed', e)
           await Promise.delay(ms(2))
           return fn()
         }
@@ -881,7 +887,7 @@ export const getHedgeForStrike = async (
   return tradingsymbol
 }
 
-interface apiResponseObject {
+export interface apiResponseObject {
   PutDelta: number
   CallDelta: number
   StrikePrice: number

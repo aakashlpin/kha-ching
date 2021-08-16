@@ -2,6 +2,7 @@ import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
+  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -23,7 +24,9 @@ import {
   EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
-  STRATEGIES
+  STRATEGIES,
+  STRANGLE_ENTRY_STRATEGIES,
+  STRATEGIES_DETAILS
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
@@ -43,6 +46,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
   const isSchedulingDisabled = false
 
   const enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
+  const entryStrategies = [STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM, STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]
   const exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
 
   const handleFormSubmit = (e) => {
@@ -84,33 +88,53 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
           </Grid>
 
           <Grid item xs={12}>
-            <DiscreteSlider
-              label={'Strikes away from ATM strike'}
-              defaultValue={1}
-              step={1}
-              min={1}
-              max={20}
-              value={state.distanceFromAtm}
-              onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
-            />
+            <FormControl component='fieldset'>
+              <FormLabel component='legend'>Entry strategy</FormLabel>
+              <RadioGroup
+                aria-label='entryStrategy'
+                name='entryStrategy'
+                value={state.entryStrategy}
+                onChange={(e) => onChange({ entryStrategy: e.target.value as STRANGLE_ENTRY_STRATEGIES })}
+              >
+                {entryStrategies.map((entryStrategy) => (
+                  <FormControlLabel
+                    key={entryStrategy}
+                    value={entryStrategy}
+                    control={<Radio size='small' />}
+                    label={
+                      <Typography variant='body2'>
+                        {STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE].ENTRY_STRATEGY_DETAILS[entryStrategy].label}
+                      </Typography>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Change type</FormLabel>
-              <FormGroup row>
-                <FormControlLabel
-                  label='Inverted Strangle'
-                  control={
-                    <Checkbox
-                      name='instruments'
-                      checked={state.inverted}
-                      onChange={(e) => onChange({ inverted: !state.inverted })}
-                    />
-                  }
-                />
-              </FormGroup>
-            </FormControl>
+          <Grid item>
+            { state.entryStrategy === STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM
+              ? (
+              <DiscreteSlider
+                label={'Strikes away from ATM strike'}
+                defaultValue={1}
+                step={1}
+                min={1}
+                max={20}
+                value={state.distanceFromAtm}
+                onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
+              />
+                )
+              : (
+              <TextField
+                fullWidth
+                name='deltaStrikes'
+                value={state.deltaStrikes}
+                onChange={(e) => onChange({ deltaStrikes: +e.target.value || undefined })}
+                label='Strike delta'
+              />
+                )
+            }
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 8 }}>
@@ -180,6 +204,23 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
               label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
             />
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControl component='fieldset'>
+              <FormGroup row>
+                <FormControlLabel
+                  label='Inverted Strangle'
+                  control={
+                    <Checkbox
+                      name='instruments'
+                      checked={state.inverted}
+                      onChange={() => onChange({ inverted: !state.inverted })}
+                    />
+                  }
+                />
+              </FormGroup>
+            </FormControl>
           </Grid>
 
           <HedgeComponent

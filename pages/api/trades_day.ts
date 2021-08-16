@@ -5,7 +5,7 @@ import { customAlphabet } from 'nanoid'
 
 import { tradingQueue, addToNextQueue, TRADING_Q_NAME } from '../../lib/queue'
 
-import { STRATEGIES_DETAILS } from '../../lib/constants'
+import { ERROR_STRINGS, STRATEGIES_DETAILS } from '../../lib/constants'
 import console from '../../lib/logging'
 
 import withSession from '../../lib/session'
@@ -35,7 +35,7 @@ async function createJob (
 
   if (STRATEGIES_DETAILS[strategy].premium) {
     if (!process.env.SIGNALX_API_KEY?.length) {
-      return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
+      return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
     }
 
     try {
@@ -44,12 +44,12 @@ async function createJob (
       // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
       const res = await premiumAuthCheck()
       if (!res) {
-        return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
+        return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
       }
     } catch (e) {
       if (e.isAxiosError) {
         if (e.response.status === 401) {
-          return Promise.reject(new Error('You need SignalX Premium to use this strategy.'))
+          return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
         }
         return Promise.reject(new Error(e.response.data))
       }

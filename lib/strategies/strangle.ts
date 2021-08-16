@@ -1,31 +1,82 @@
 import { ATM_STRANGLE_TRADE } from '../../types/trade'
-import { INSTRUMENTS, INSTRUMENT_DETAILS } from '../constants'
+import { ERROR_STRINGS, INSTRUMENTS, INSTRUMENT_DETAILS, STRANGLE_ENTRY_STRATEGIES } from '../constants'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
 import {
+  apiResponseObject,
   attemptBrokerOrders,
   ensureMarginForBasketOrder,
   getCurrentExpiryTradingSymbol,
   getHedgeForStrike,
   getIndexInstruments,
+  getStrikeByDelta,
   remoteOrderSuccessEnsurer,
+  SIGNALX_URL,
   syncGetKiteInstance,
   TradingSymbolInterface
 } from '../utils'
 import { createOrder, getATMStraddle as getATMStrikes } from './atmStraddle'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
+import axios from 'axios'
+
+export const getNearestContractDate = async (atmStrike: number, nfoSymbol: string): Promise<Dayjs> => {
+  const instrumentsData = await getIndexInstruments()
+  const rows = instrumentsData
+    .filter(
+      (item) =>
+        item.name === nfoSymbol &&
+      Number(item.strike) === atmStrike &&
+      item.instrument_type === 'PE'
+    )
+    .sort((row1, row2) => (dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1))
+
+  const [dataRow] = rows
+  return dayjs(dataRow.expiry)
+}
 
 const getStrangleStrikes = async (
-  { atmStrike, instrument, inverted = false, distanceFromAtm = 1 }:
-  { atmStrike: number, instrument: INSTRUMENTS, inverted?: boolean, distanceFromAtm?: number}
+  { atmStrike, instrument, inverted = false, entryStrategy, distanceFromAtm = 1, deltaStrikes }:
+  { atmStrike: number, instrument: INSTRUMENTS, inverted?: boolean, entryStrategy: STRANGLE_ENTRY_STRATEGIES, distanceFromAtm?: number, deltaStrikes?: number}
 ) => {
   const { nfoSymbol, strikeStepSize } = INSTRUMENT_DETAILS[
     instrument
   ]
-  const lowerLegPEStrike = atmStrike - (distanceFromAtm * strikeStepSize)
-  const higherLegCEStrike = atmStrike + (distanceFromAtm * strikeStepSize)
+
+  let lowerLegPEStrike
+  let higherLegCEStrike
+  if (entryStrategy === STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES) {
+    const nearestContractDate = await getNearestContractDate(atmStrike, nfoSymbol)
+    try {
+      const { data: optionChain } = await axios.post(`${SIGNALX_URL}/api/data/option_chain`, {
+        instrument,
+        contract: nearestContractDate.format('DDMMMYYYY').toUpperCase()
+      }, {
+        headers: {
+          'X-API-KEY': process.env.SIGNALX_API_KEY
+        }
+      })
+      const strikes = getStrikeByDelta(deltaStrikes!, optionChain)
+      const { putStrike, callStrike } = strikes as {
+        putStrike: apiResponseObject
+        callStrike: apiResponseObject
+      }
+
+      lowerLegPEStrike = putStrike.StrikePrice
+      higherLegCEStrike = callStrike.StrikePrice
+    } catch (e) {
+      if (e.isAxiosError) {
+        if (e.response.status === 401) {
+          return Promise.reject(new Error(ERROR_STRINGS.PAID_FEATURE))
+        }
+        return Promise.reject(new Error(e.response.data))
+      }
+    }
+  } else {
+    lowerLegPEStrike = atmStrike - (distanceFromAtm * strikeStepSize)
+    higherLegCEStrike = atmStrike + (distanceFromAtm * strikeStepSize)
+  }
 
   const { tradingsymbol: LOWER_LEG_PE_STRING } = await getCurrentExpiryTradingSymbol({
     nfoSymbol,
@@ -62,6 +113,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       isHedgeEnabled,
       hedgeDistance,
       distanceFromAtm,
+      entryStrategy,
+      deltaStrikes,
       _nextTradingQueue = EXIT_TRADING_Q_NAME
     } = args
     const { lotSize, nfoSymbol, strikeStepSize, exchange, underlyingSymbol } = INSTRUMENT_DETAILS[instrument]
@@ -91,7 +144,9 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       atmStrike,
       instrument,
       inverted,
-      distanceFromAtm
+      distanceFromAtm,
+      entryStrategy,
+      deltaStrikes
     })
 
     const kite = syncGetKiteInstance(user)

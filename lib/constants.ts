@@ -64,6 +64,11 @@ export enum DOS_ENTRY_STRATEGIES {
   ST_CHANGE = 'ST_CHANGE'
 }
 
+export enum STRANGLE_ENTRY_STRATEGIES {
+  DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
+  DELTA_STIKES = 'DELTA_STIKES'
+}
+
 export enum ANCILLARY_TASKS {
   ORDERBOOK_SYNC_BY_TAG = 'ORDERBOOK_SYNC_BY_TAG',
   CLEANUP_COMPLETED_JOBS = 'CLEANUP_COMPLETED_JOBS'
@@ -122,13 +127,24 @@ export const STRATEGIES_DETAILS = {
       trailEveryPercentageChangeValue: 2,
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       inverted: false,
+      entryStrategy: STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm: 1,
+      deltaStrikes: 20,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
         onBrokenExitOrders: false
+      }
+    },
+    ENTRY_STRATEGIES: STRANGLE_ENTRY_STRATEGIES,
+    ENTRY_STRATEGY_DETAILS: {
+      [STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM]: {
+        label: 'by distance from ATM strike'
+      },
+      [STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]: {
+        label: '⚡️ by option delta from live option chain'
       }
     }
   },
@@ -380,3 +396,8 @@ export const STOCKS_NFO_SCRIPS = [
   'WIPRO',
   'ZEEL'
 ]
+
+export const ERROR_STRINGS = {
+  PAID_FEATURE: 'Invalid SignalX Club or Premium subscription',
+  PAID_STRATEGY: 'Invalid SignalX Club or Premium subscription'
+}
