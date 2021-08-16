@@ -1,9 +1,11 @@
-import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES } from '../lib/constants'
+import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES, PRODUCT_TYPE } from '../lib/constants'
 import { DailyPlansDayKey, SignalXUser } from './misc'
 
-// TODO: Discuss with @Aakash about these interfaces
+interface COMMON_TRADE_PROPS {
+  productType: PRODUCT_TYPE
+}
 
-export interface SavedPlanMeta {
+export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
   _id?: string
   _createdOn?: string
   _updatedOn?: string

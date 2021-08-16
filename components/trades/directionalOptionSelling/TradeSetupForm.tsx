@@ -30,6 +30,7 @@ import {
 import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
+import ProductTypeComponent from '../../lib/ProductTypeComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
@@ -96,6 +97,9 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <ProductTypeComponent state={state} onChange={onChange} />
+
           <Grid item xs={12}>
             <TextField
               fullWidth

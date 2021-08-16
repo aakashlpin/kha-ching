@@ -30,6 +30,7 @@ import {
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
+import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
 
@@ -86,6 +87,8 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <ProductTypeComponent state={state} onChange={onChange} />
 
           <Grid item xs={12}>
             <FormControl component='fieldset'>

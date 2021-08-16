@@ -64,6 +64,11 @@ export enum DOS_ENTRY_STRATEGIES {
   ST_CHANGE = 'ST_CHANGE'
 }
 
+export enum PRODUCT_TYPE {
+  MIS = 'MIS',
+  NRML = 'NRML'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'
@@ -102,6 +107,7 @@ export const STRATEGIES_DETAILS = {
       slmPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       trailEveryPercentageChangeValue: 2,
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      productType: PRODUCT_TYPE.MIS,
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -130,6 +136,7 @@ export const STRATEGIES_DETAILS = {
       entryStrategy: STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm: 1,
       deltaStrikes: 20,
+      productType: PRODUCT_TYPE.MIS,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {
@@ -144,7 +151,7 @@ export const STRATEGIES_DETAILS = {
         label: 'by distance from ATM strike'
       },
       [STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]: {
-        label: '⚡️ by option delta from live option chain'
+        label: 'by option strike delta from live option chain ⚡️'
       }
     }
   },
@@ -163,7 +170,8 @@ export const STRATEGIES_DETAILS = {
       maxTrades: 3,
       martingaleIncrementSize: 1,
       isHedgeEnabled: true,
-      hedgeDistance: 1500,
+      productType: PRODUCT_TYPE.MIS,
+      hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
       rollback: {

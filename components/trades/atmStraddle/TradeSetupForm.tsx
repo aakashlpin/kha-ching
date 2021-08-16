@@ -27,6 +27,7 @@ import {
 } from '../../../lib/constants'
 import { ATM_STRADDLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
+import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface ATMStraddleTradeSetupFormProps {
@@ -88,6 +89,9 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <ProductTypeComponent state={state} onChange={onChange} />
+
           <Grid item xs={12}>
             <TextField
               fullWidth
