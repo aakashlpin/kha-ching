@@ -226,7 +226,7 @@ async function atmStraddle ({
         user: user!,
         orderTag: orderTag!,
         productType,
-        transactionType: VOLATILITY_TYPE.SHORT ? kite.TRANSACTION_TYPE_SELL : kite.TRANSACTION_TYPE_BUY
+        transactionType: volatilityType === VOLATILITY_TYPE.SHORT ? kite.TRANSACTION_TYPE_SELL : kite.TRANSACTION_TYPE_BUY
       })
     )
 
