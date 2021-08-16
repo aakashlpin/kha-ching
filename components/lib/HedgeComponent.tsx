@@ -7,8 +7,13 @@ import {
   Grid,
   TextField
 } from '@material-ui/core'
+import { VOLATILITY_TYPE } from '../../lib/constants'
 
-const HedgeComponent = ({ isHedgeEnabled, hedgeDistance, onChange }) => {
+const HedgeComponent = ({ volatilityType, isHedgeEnabled, hedgeDistance, onChange }) => {
+  if (volatilityType === VOLATILITY_TYPE.LONG) {
+    return null
+  }
+
   return (
     <Grid item xs={12}>
       <FormControl component='fieldset'>

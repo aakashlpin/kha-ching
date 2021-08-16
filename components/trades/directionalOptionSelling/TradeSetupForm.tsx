@@ -25,7 +25,8 @@ import {
   INSTRUMENTS,
   STRATEGIES,
   STRATEGIES_DETAILS,
-  DOS_ENTRY_STRATEGIES
+  DOS_ENTRY_STRATEGIES,
+  VOLATILITY_TYPE
 } from '../../../lib/constants'
 import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
@@ -195,6 +196,7 @@ const TradeSetupForm = ({
           </Grid>
 
           <HedgeComponent
+            volatilityType={VOLATILITY_TYPE.SHORT}
             isHedgeEnabled={state.isHedgeEnabled}
             hedgeDistance={state.hedgeDistance}
             onChange={onChange}

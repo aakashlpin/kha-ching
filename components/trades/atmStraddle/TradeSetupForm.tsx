@@ -218,6 +218,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
           </Grid>
 
           <HedgeComponent
+            volatilityType={state.volatilityType}
             isHedgeEnabled={state.isHedgeEnabled}
             hedgeDistance={state.hedgeDistance}
             onChange={onChange}
