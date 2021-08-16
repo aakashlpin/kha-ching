@@ -165,12 +165,12 @@ async function atmStraddle ({
   orderTag,
   rollback,
   maxSkewPercent,
-  thresholdSkewPercent, // will be missing for existing plans
+  thresholdSkewPercent,
   takeTradeIrrespectiveSkew,
   isHedgeEnabled,
   hedgeDistance,
-  productType,
-  volatilityType,
+  productType = PRODUCT_TYPE.MIS,
+  volatilityType = VOLATILITY_TYPE.SHORT,
   _nextTradingQueue = EXIT_TRADING_Q_NAME
 }: ATM_STRADDLE_TRADE): Promise<{
     _nextTradingQueue: string

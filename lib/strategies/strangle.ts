@@ -1,5 +1,5 @@
 import { ATM_STRANGLE_TRADE } from '../../types/trade'
-import { ERROR_STRINGS, INSTRUMENTS, INSTRUMENT_DETAILS, STRANGLE_ENTRY_STRATEGIES, VOLATILITY_TYPE } from '../constants'
+import { ERROR_STRINGS, INSTRUMENTS, INSTRUMENT_DETAILS, PRODUCT_TYPE, STRANGLE_ENTRY_STRATEGIES, VOLATILITY_TYPE } from '../constants'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
 import {
@@ -105,18 +105,18 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
   try {
     const {
       instrument,
-      inverted = false,
+      inverted,
       lots,
       user,
       orderTag,
       rollback,
       isHedgeEnabled,
       hedgeDistance,
-      distanceFromAtm,
-      entryStrategy,
       deltaStrikes,
-      productType,
-      volatilityType,
+      entryStrategy = STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
+      distanceFromAtm = 1,
+      productType = PRODUCT_TYPE.MIS,
+      volatilityType = VOLATILITY_TYPE.SHORT,
       _nextTradingQueue = EXIT_TRADING_Q_NAME
     } = args
     const { lotSize, nfoSymbol, strikeStepSize, exchange, underlyingSymbol } = INSTRUMENT_DETAILS[instrument]
