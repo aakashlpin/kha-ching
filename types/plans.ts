@@ -1,4 +1,4 @@
-import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES, PRODUCT_TYPE } from '../lib/constants'
+import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES, PRODUCT_TYPE, VOLATILITY_TYPE } from '../lib/constants'
 import { DailyPlansDayKey, SignalXUser } from './misc'
 
 interface COMMON_TRADE_PROPS {
@@ -42,6 +42,7 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   onSquareOffSetAborted?: boolean
   isHedgeEnabled: boolean
   hedgeDistance?: number
+  volatilityType: VOLATILITY_TYPE
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -63,6 +64,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   hedgeDistance?: number
   distanceFromAtm: number
   deltaStrikes?: number
+  volatilityType: VOLATILITY_TYPE
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

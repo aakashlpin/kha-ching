@@ -69,6 +69,11 @@ export enum PRODUCT_TYPE {
   NRML = 'NRML'
 }
 
+export enum VOLATILITY_TYPE {
+  LONG = 'LONG',
+  SHORT = 'SHORT'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'
@@ -108,6 +113,7 @@ export const STRATEGIES_DETAILS = {
       trailEveryPercentageChangeValue: 2,
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       productType: PRODUCT_TYPE.MIS,
+      volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -137,6 +143,7 @@ export const STRATEGIES_DETAILS = {
       distanceFromAtm: 1,
       deltaStrikes: 20,
       productType: PRODUCT_TYPE.MIS,
+      volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {

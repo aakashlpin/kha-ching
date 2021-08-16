@@ -28,6 +28,7 @@ import {
 import { ATM_STRADDLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
+import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface ATMStraddleTradeSetupFormProps {
@@ -89,6 +90,8 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <VolatilityTypeComponent state={state} onChange={onChange} />
 
           <ProductTypeComponent state={state} onChange={onChange} />
 
