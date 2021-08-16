@@ -9,10 +9,11 @@ export default function Home () {
     <div className={styles.container}>
       <Head>
         <title>SignalX</title>
-        <link rel='icon' href='/favicon.png' />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <main className={styles.main}>
+        {/* eslint-disable */}
         <img src='/logo.png' width='300' alt='SignalX' />
 
         <p className={styles.description}>

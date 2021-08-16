@@ -12,6 +12,15 @@ import BrokerOrders from './lib/brokerOrders'
 import PnLComponent from './lib/pnlComponent'
 import TradeDetails from './lib/tradeDetails'
 
+const HeadingWithError = ({ heading, error }) => (
+  <>
+    <Typography component='p' color='error'>
+      {error}
+    </Typography>
+    <Typography component='p'>{heading}</Typography>
+  </>
+)
+
 const WrapperComponent = (props) => {
   const jobWasQueued = props.status !== 'REJECT' && props.queue?.id
   const { data: jobDetails } = useSWR(jobWasQueued ? `/api/get_job?id=${props.queue.id}` : null)
@@ -23,28 +32,15 @@ const WrapperComponent = (props) => {
   const { data: pnlData } = useSWR(props.orderTag ? `/api/pnl?order_tag=${props.orderTag}` : null)
 
   const strategyDetails = STRATEGIES_DETAILS[props.strategy]
-  const isJobPastScheduledTime = props.runNow || dayjs().isAfter(props.runAt)
   const Heading = () => {
     if (!jobWasQueued) {
       if (typeof props.status_message === 'string') {
-        return (
-          <>
-            <Typography component='p' color='error'>
-              FAILED: {props.status_message}
-            </Typography>
-            <Typography component='p'>{strategyDetails.heading}</Typography>
-          </>
-        )
+        return <HeadingWithError error={props.status_message} heading={strategyDetails.heading} />
       } else {
-        return (
-          <>
-            <Typography component='p' color='error'>
-              FAILED: Unknown Error
-            </Typography>
-            <Typography component='p'>{strategyDetails.heading}</Typography>
-          </>
-        )
+        return <HeadingWithError error={'Unknown Error'} heading={strategyDetails.heading} />
       }
+    } else if (jobWasQueued && jobDetails?.current_state === 'failed') {
+      return <HeadingWithError error={jobDetails?.job?.failedReason} heading={strategyDetails.heading} />
     }
 
     return (
@@ -87,57 +83,55 @@ const WrapperComponent = (props) => {
         <Typography style={{ marginRight: '8px' }}>
           <Heading />
         </Typography>
-        {jobWasQueued
-          ? (
-            <Box>
-              {!isJobPastScheduledTime && ['delayed', 'waiting'].includes(jobDetails?.current_state)
-                ? (
-                  <Grid item>
-                    <ActionButtonOrLoader>
-                      {({ setLoading }) =>
-                        <Button
-                          variant='outlined'
-                          type='button'
-                          onClick={async () => {
-                            setLoading(true)
-                            await handleDeleteTrade(props._id)
-                            setLoading(false)
-                          }}
-                        >
-                          <DeleteForever />Delete
-                        </Button>}
-                    </ActionButtonOrLoader>
-                  </Grid>
-                  )
-                : null}
-              {['active', 'completed'].includes(jobDetails?.current_state) && !pnlData?.pnl
-                ? (
-                  <Grid item>
-                    <ActionButtonOrLoader>
-                      {({ setLoading }) =>
-                        <Button
-                          variant='outlined'
-                          color='default'
-                          type='button'
-                          onClick={async () => {
-                            setLoading(true)
-                            if (!userOverrideAborted) {
-                              await handleAbortTrade(props._id)
-                            } else {
-                              await handleDeleteTrade(props._id)
-                            }
-                            setLoading(false)
-                          }}
-                        >
-                          {userOverrideAborted ? <><DeleteForever /> Delete</> : <><Stop /> Stop</>}
-                        </Button>}
-                    </ActionButtonOrLoader>
-                  </Grid>
-                  )
-                : null}
-            </Box>
-            )
-          : null}
+        <Box>
+          {['delayed', 'waiting', 'failed'].includes(jobDetails?.current_state)
+            ? (
+              <Grid item>
+                <ActionButtonOrLoader>
+                  {({ setLoading }) =>
+                    <Button
+                      variant='outlined'
+                      type='button'
+                      onClick={async () => {
+                        setLoading(true)
+                        await handleDeleteTrade(props._id)
+                        setLoading(false)
+                      }}
+                    >
+                      <DeleteForever />Delete
+                    </Button>}
+                </ActionButtonOrLoader>
+              </Grid>
+              )
+            : null
+          }
+          {['active', 'completed'].includes(jobDetails?.current_state) && !pnlData?.pnl
+            ? (
+              <Grid item>
+                <ActionButtonOrLoader>
+                  {({ setLoading }) =>
+                    <Button
+                      variant='outlined'
+                      color='default'
+                      type='button'
+                      onClick={async () => {
+                        setLoading(true)
+                        if (!userOverrideAborted) {
+                          await handleAbortTrade(props._id)
+                        } else {
+                          await handleDeleteTrade(props._id)
+                        }
+                        setLoading(false)
+                      }}
+                    >
+                      {userOverrideAborted ? <><DeleteForever /> Delete</> : <><Stop /> Stop</>}
+                    </Button>}
+                </ActionButtonOrLoader>
+              </Grid>
+              )
+            : null
+          }
+        </Box>
       </Box>
 
       <div style={{ marginBottom: 16 }}>{props.detailsComponent(props.strategy, jobDetails)}</div>

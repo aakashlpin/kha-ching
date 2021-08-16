@@ -53,12 +53,12 @@ export default withSession(async (req, res) => {
             : null,
           expiresAt: expireIfUnsuccessfulInMins
             ? dayjs(runNow ? new Date() : runAt)
-                .add(expireIfUnsuccessfulInMins, 'minutes')
-                .format()
+              .add(expireIfUnsuccessfulInMins, 'minutes')
+              .format()
             : null
         },
         {
-          __nextTradingQueue: TRADING_Q_NAME
+          _nextTradingQueue: TRADING_Q_NAME
         }
       )
     )

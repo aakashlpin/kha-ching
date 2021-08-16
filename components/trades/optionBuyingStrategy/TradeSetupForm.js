@@ -28,7 +28,8 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        {fyersProfileError ? (
+        {fyersProfileError
+          ? (
           <>
             <div style={{ marginBottom: '16px' }}>
               <Typography variant='h6' component='span'>
@@ -37,7 +38,8 @@ const TradeSetupForm = ({ enabledInstruments, state, onChange, onSubmit }) => {
             </div>
             <Divider />
           </>
-        ) : null}
+            )
+          : null}
         <h3>Setup new trade</h3>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>

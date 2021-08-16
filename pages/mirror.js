@@ -65,7 +65,8 @@ const Mirror = () => {
           {mirrorDetails?.userType}
         </h4>
 
-        {subsDetails?.access_token ? (
+        {subsDetails?.access_token
+          ? (
           <>
             <Button
               variant='contained'
@@ -82,15 +83,20 @@ const Mirror = () => {
               </Button>
             ) : null} */}
           </>
-        ) : mirrorDetails?.userType === 'CONSUMER' ? (
+            )
+          : mirrorDetails?.userType === 'CONSUMER'
+            ? (
           <Button variant='contained' color='primary' type='button' onClick={handleStartMirror}>
             Start mirroring
           </Button>
-        ) : mirrorDetails?.userType === 'PUBLISHER' ? (
+              )
+            : mirrorDetails?.userType === 'PUBLISHER'
+              ? (
           <h2>Waiting for subscriber!</h2>
-        ) : (
+                )
+              : (
           <i>No idea why I&apos;m here!</i>
-        )}
+                )}
 
         {/* {mirrorDetails?.userType === 'PUBLISHER' && subsDetails?.access_token ? (
           <p>

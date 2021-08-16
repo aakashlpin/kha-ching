@@ -58,9 +58,9 @@ async function orderUpdate (trade, isTestTrade = false) {
     const kc =
       subscriberApiKey && subscriberAccessToken
         ? new KiteConnect({
-            api_key: subscriberApiKey,
-            access_token: subscriberAccessToken
-          })
+          api_key: subscriberApiKey,
+          access_token: subscriberAccessToken
+        })
         : null
 
     if (!kc) {

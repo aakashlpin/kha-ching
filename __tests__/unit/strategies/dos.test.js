@@ -82,7 +82,7 @@ test('it should work without hedge order', async () => {
   )
 
   const res = await directionalOptionSelling({
-    __kite: kite,
+    _kite: kite,
     instrument: INSTRUMENTS.BANKNIFTY,
     exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
     lots: 1,
