@@ -1,5 +1,5 @@
 import { ATM_STRANGLE_TRADE } from '../../types/trade'
-import { ERROR_STRINGS, INSTRUMENTS, INSTRUMENT_DETAILS, STRANGLE_ENTRY_STRATEGIES } from '../constants'
+import { ERROR_STRINGS, INSTRUMENTS, INSTRUMENT_DETAILS, STRANGLE_ENTRY_STRATEGIES, VOLATILITY_TYPE } from '../constants'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
 import {
@@ -116,6 +116,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       entryStrategy,
       deltaStrikes,
       productType,
+      volatilityType,
       _nextTradingQueue = EXIT_TRADING_Q_NAME
     } = args
     const { lotSize, nfoSymbol, strikeStepSize, exchange, underlyingSymbol } = INSTRUMENT_DETAILS[instrument]
@@ -156,7 +157,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     let hedgeOrdersLocal: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
 
-    if (isHedgeEnabled) {
+    if (volatilityType === VOLATILITY_TYPE.SHORT && isHedgeEnabled) {
       const hedges = [{ strike: peStrike, type: 'PE' }, { strike: ceStrike, type: 'CE' }]
       const [putHedge, callHedge] = await Promise.all(hedges.map(async ({ strike, type }) =>
         getHedgeForStrike({ strike, distance: hedgeDistance!, type, nfoSymbol })))
@@ -168,8 +169,15 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     }
 
     const orders = [PE_STRING, CE_STRING].map((symbol) => createOrder({
-      symbol, lots, lotSize, user: user!, orderTag: orderTag!, productType
+      symbol,
+      lots,
+      lotSize,
+      user: user!,
+      orderTag: orderTag!,
+      productType,
+      transactionType: VOLATILITY_TYPE.SHORT ? kite.TRANSACTION_TYPE_SELL : kite.TRANSACTION_TYPE_BUY
     }))
+
     allOrdersLocal = [...allOrdersLocal, ...orders]
 
     const hasMargin = await ensureMarginForBasketOrder(user, allOrdersLocal)
