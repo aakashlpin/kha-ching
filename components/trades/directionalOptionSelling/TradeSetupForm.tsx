@@ -25,11 +25,13 @@ import {
   INSTRUMENTS,
   STRATEGIES,
   STRATEGIES_DETAILS,
-  DOS_ENTRY_STRATEGIES
+  DOS_ENTRY_STRATEGIES,
+  VOLATILITY_TYPE
 } from '../../../lib/constants'
 import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
+import ProductTypeComponent from '../../lib/ProductTypeComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
@@ -96,6 +98,9 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
+
+          <ProductTypeComponent state={state} onChange={onChange} />
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -191,6 +196,7 @@ const TradeSetupForm = ({
           </Grid>
 
           <HedgeComponent
+            volatilityType={VOLATILITY_TYPE.SHORT}
             isHedgeEnabled={state.isHedgeEnabled}
             hedgeDistance={state.hedgeDistance}
             onChange={onChange}

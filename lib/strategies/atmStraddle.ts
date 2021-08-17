@@ -3,7 +3,7 @@ import { KiteOrder } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
-import { INSTRUMENT_DETAILS, INSTRUMENT_PROPERTIES } from '../constants'
+import { INSTRUMENT_DETAILS, INSTRUMENT_PROPERTIES, PRODUCT_TYPE, VOLATILITY_TYPE } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
@@ -140,8 +140,8 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
 }
 
 export const createOrder = (
-  { symbol, lots, lotSize, user, orderTag, transactionType }:
-  { symbol: string, lots: number, lotSize: number, user: SignalXUser, orderTag: string, transactionType?: string }
+  { symbol, lots, lotSize, user, orderTag, transactionType, productType }:
+  { symbol: string, lots: number, lotSize: number, user: SignalXUser, orderTag: string, transactionType?: string, productType: PRODUCT_TYPE }
 ): KiteOrder => {
   const kite = syncGetKiteInstance(user)
   return {
@@ -150,7 +150,7 @@ export const createOrder = (
     exchange: kite.EXCHANGE_NFO,
     transaction_type: transactionType ?? kite.TRANSACTION_TYPE_SELL,
     order_type: kite.ORDER_TYPE_MARKET,
-    product: kite.PRODUCT_MIS,
+    product: productType,
     validity: kite.VALIDITY_DAY,
     tag: orderTag
   }
@@ -165,10 +165,12 @@ async function atmStraddle ({
   orderTag,
   rollback,
   maxSkewPercent,
-  thresholdSkewPercent, // will be missing for existing plans
+  thresholdSkewPercent,
   takeTradeIrrespectiveSkew,
   isHedgeEnabled,
   hedgeDistance,
+  productType = PRODUCT_TYPE.MIS,
+  volatilityType = VOLATILITY_TYPE.SHORT,
   _nextTradingQueue = EXIT_TRADING_Q_NAME
 }: ATM_STRADDLE_TRADE): Promise<{
     _nextTradingQueue: string
@@ -206,18 +208,26 @@ async function atmStraddle ({
     let hedgeOrdersLocal: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
 
-    if (isHedgeEnabled) {
+    if (volatilityType === VOLATILITY_TYPE.SHORT && isHedgeEnabled) {
       const [putHedge, callHedge] = await Promise.all(
         ['PE', 'CE'].map(async (type) => getHedgeForStrike({ strike: atmStrike, distance: hedgeDistance!, type, nfoSymbol }))
       )
       hedgeOrdersLocal = [putHedge, callHedge].map(symbol => createOrder({
-        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY
+        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY, productType
       }))
       allOrdersLocal = [...hedgeOrdersLocal]
     }
 
     const orders: KiteOrder[] = [PE_STRING, CE_STRING].map((symbol) =>
-      createOrder({ symbol, lots, lotSize, user: user!, orderTag: orderTag! })
+      createOrder({
+        symbol,
+        lots,
+        lotSize,
+        user: user!,
+        orderTag: orderTag!,
+        productType,
+        transactionType: volatilityType === VOLATILITY_TYPE.SHORT ? kite.TRANSACTION_TYPE_SELL : kite.TRANSACTION_TYPE_BUY
+      })
     )
 
     allOrdersLocal = [...allOrdersLocal, ...orders]

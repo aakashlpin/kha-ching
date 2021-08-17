@@ -151,6 +151,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     strikeByPrice,
     orderTag,
     rollback,
+    productType,
     isHedgeEnabled = false,
     hedgeDistance = 1700
   } = initialJobData
@@ -208,7 +209,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
         exchange: kite.EXCHANGE_NFO,
         transaction_type: kite.TRANSACTION_TYPE_BUY,
         order_type: kite.ORDER_TYPE_MARKET,
-        product: kite.PRODUCT_MIS,
+        product: productType,
         validity: kite.VALIDITY_DAY,
         tag: orderTag
       }
@@ -243,7 +244,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     exchange: kite.EXCHANGE_NFO,
     transaction_type: kite.TRANSACTION_TYPE_SELL,
     order_type: kite.ORDER_TYPE_MARKET,
-    product: kite.PRODUCT_MIS,
+    product: productType,
     validity: kite.VALIDITY_DAY,
     tag: orderTag
   }

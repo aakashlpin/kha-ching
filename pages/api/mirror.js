@@ -118,7 +118,7 @@ export default withSession(async (req, res) => {
   })
 
   if (req.body?.test_trade) {
-    orderUpdate(testPayload, true)
+    orderUpdate(testPayload, true)// eslint-disable-line
   }
 
   res.json({ mirrorUrl: SIGNALX_MIRROR_URL, userType: SIGNALX_MIRROR_USER_TYPE })

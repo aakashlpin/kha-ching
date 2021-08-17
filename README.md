@@ -2,13 +2,13 @@
 
 SignalX is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
 
-✅  Read everything about SignalX [here](https://www.notion.so/SignalX-5a43061a2b1f4e3ea10843f65186c30d).
+✅  Read everything about SignalX [here](https://signalx.club).
 
 Once you've gone through the Notion doc above, come back here for instructions to setup SignalX!
 
 ## Setup Prerequisites:
 
-1. [Sign up on DigitalOcean using this link](https://m.do.co/c/d9db955b428e). You'd receive $100 in new signup credits valid for 2 months. Running this app costs $5/month. So you'd be able to run it FREE for first 2 months.
+1. [Sign up on DigitalOcean using this link](https://m.do.co/c/d9db955b428e). You'd receive $100 in new signup credits valid for 2 months. Running this app costs $10/month. So you'd be able to run it FREE for first 2 months.
 
 
 2. Goto https://kite.trade and sign up for Kite Connect. Create an app and pay Zerodha the ₹2000/month fee.

@@ -64,6 +64,16 @@ export enum DOS_ENTRY_STRATEGIES {
   ST_CHANGE = 'ST_CHANGE'
 }
 
+export enum PRODUCT_TYPE {
+  MIS = 'MIS',
+  NRML = 'NRML'
+}
+
+export enum VOLATILITY_TYPE {
+  LONG = 'LONG',
+  SHORT = 'SHORT'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'
@@ -86,7 +96,7 @@ const getInstrumentsDefaultState = (): Record<INSTRUMENTS, boolean> =>
 export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRADDLE]: {
     premium: false,
-    heading: 'Short Straddle — ATM',
+    heading: 'Long/Short Straddle — ATM',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 145000,
@@ -102,6 +112,8 @@ export const STRATEGIES_DETAILS = {
       slmPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       trailEveryPercentageChangeValue: 2,
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      productType: PRODUCT_TYPE.MIS,
+      volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -114,7 +126,7 @@ export const STRATEGIES_DETAILS = {
   },
   [STRATEGIES.ATM_STRANGLE]: {
     premium: false,
-    heading: 'Short Strangle — ATM',
+    heading: 'Long/Short Strangle',
     defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 420000,
@@ -130,6 +142,8 @@ export const STRATEGIES_DETAILS = {
       entryStrategy: STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm: 1,
       deltaStrikes: 20,
+      productType: PRODUCT_TYPE.MIS,
+      volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       rollback: {
@@ -144,7 +158,7 @@ export const STRATEGIES_DETAILS = {
         label: 'by distance from ATM strike'
       },
       [STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]: {
-        label: '⚡️ by option delta from live option chain'
+        label: 'by option strike delta from live option chain ⚡️'
       }
     }
   },
@@ -163,7 +177,8 @@ export const STRATEGIES_DETAILS = {
       maxTrades: 3,
       martingaleIncrementSize: 1,
       isHedgeEnabled: true,
-      hedgeDistance: 1500,
+      productType: PRODUCT_TYPE.MIS,
+      hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
       rollback: {
@@ -208,13 +223,13 @@ export const ROLLBACK_KEY_MAP = {
 
 export const EXIT_STRATEGIES_DETAILS = {
   [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]: {
-    label: 'SL-M on each leg'
+    label: 'Fixed SL% on all legs'
   },
   [EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]: {
-    label: '(BETA) Combined premium SL'
+    label: 'Combined/trailing SL%'
   },
   [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]: {
-    label: 'Initial SL-M %, then trail Option Supertrend'
+    label: 'Initial SL%, then trail Option Supertrend'
   },
   [EXIT_STRATEGIES.OBS_TRAIL_SL]: {
     label: 'Initial 30%, then trail SL on every higher close (1min TF)'
