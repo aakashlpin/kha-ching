@@ -15,6 +15,7 @@ export interface TradeMeta extends DBMeta {
   orderTag?: string // this is only available once job has been created on server
   _nextTradingQueue?: string
   ancillaryTask?: ANCILLARY_TASKS
+  _workerInitTime?: string
 }
 
 export interface ATM_STRADDLE_TRADE extends TradeMeta, ATM_STRADDLE_CONFIG{}

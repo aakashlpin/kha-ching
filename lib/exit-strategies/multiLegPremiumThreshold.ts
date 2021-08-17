@@ -33,12 +33,13 @@ const tradeHeartbeat = async (dbId) => {
   return data
 }
 
-type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
+export type CombinedPremiumJobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
+  _workerInitTime: string
   lastTrailingSlTriggerAtPremium?: number
 }
 
 async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse, squareOffOrders }: {
-  initialJobData: JobDataInterface
+  initialJobData: CombinedPremiumJobDataInterface
   rawKiteOrdersResponse: KiteOrder[]
   squareOffOrders?: KiteOrder[]
 }) {
@@ -49,7 +50,22 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       )
     }
 
-    const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId } = initialJobData
+    const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId, _workerInitTime } = initialJobData
+    if (dayjs().diff(dayjs(_workerInitTime), 'minutes') > 2) {
+      // retire a worker every 2mins
+      await addToNextQueue({
+        ...initialJobData,
+        _workerInitTime: dayjs().format()
+      }, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse
+      })
+
+      // [TODO] tmp log. Delete before merging
+      console.log('Retiring a tired worker, and spawning a new one!')
+      return Promise.resolve('Retiring a tired worker, and spawning a new one!')
+    }
+
     const kite = syncGetKiteInstance(user)
 
     try {
@@ -140,6 +156,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
           // add to same queue with updated params
           await addToNextQueue({
             ...initialJobData,
+            _workerInitTime: dayjs().format(),
             lastTrailingSlTriggerAtPremium: liveTotalPremium
           }, {
             _nextTradingQueue: EXIT_TRADING_Q_NAME,
