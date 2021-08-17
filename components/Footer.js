@@ -6,20 +6,12 @@ const Footer = () => (
     <Divider style={{ marginBottom: 16 }} />
     <Typography>
       <Box fontStyle='italic' fontSize={14} style={{ opacity: '0.8' }}>
-        Built and maintained by{' '}
-        <Link target='_blank' rel='noreferrer' href='https://twitter.com/aakashlpin' style={{ display: 'inline' }}>
-          Aakash Goel
-        </Link>{' '}
-        |{' '}
-        <Link target='_blank' rel='noreferrer' href='https://www.buymeacoffee.com/aakashgoel'>
-          Buy me a coffee ☕️
-        </Link>{' '}
-        to support this work. | <Link href='mailto:me@aakashgoel.com'>Get in touch</Link> for any
-        queries, suggestions, or feedback. | All about{' '}
+        <Link href='mailto:help@signalx.trade'>Get in touch</Link> for any
+        queries, suggestions, or feedback. | Learn all about{' '}
         <Link target='_blank' rel='noreferrer' href='https://signalx.club'>
           SignalX
         </Link>
-        .
+        . | By using SignalX you agree to the <Link target='_blank' rel='noreferrer' href='https://signalx.club/SignalX-User-Agreement-ac65c4c19279457ba7d133fdcaf2b21d'>terms and conditions.</Link>
       </Box>
     </Typography>
   </div>
