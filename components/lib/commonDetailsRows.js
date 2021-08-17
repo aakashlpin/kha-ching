@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { EXIT_STRATEGIES, EXIT_STRATEGIES_DETAILS } from '../../lib/constants'
+import { EXIT_STRATEGIES, EXIT_STRATEGIES_DETAILS, PRODUCT_TYPE, VOLATILITY_TYPE } from '../../lib/constants'
 
 const commonDetailsRows = ({
   runNow,
@@ -9,6 +9,8 @@ const commonDetailsRows = ({
   slmPercent,
   isAutoSquareOffEnabled,
   squareOffTime,
+  productType,
+  volatilityType,
   liveTrailingSl,
   lastTrailingSlSetAt,
   lastHeartbeatAt
@@ -22,6 +24,8 @@ const commonDetailsRows = ({
   const algoStatus = !lastHeartbeatAt ? '🔴 Offline' : dayjs().diff(dayjs(lastHeartbeatAt), 'seconds') > 60 ? '🔴 Offline' : '⚡️ Online'
 
   return [
+    volatilityType ? [{ value: 'Vol type' }, { value: volatilityType }] : null,
+    productType ? [{ value: 'Product' }, { value: productType }] : null,
     [{ value: 'Exit Strategy' }, { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }],
     [{ value: 'SL' }, { value: `${slmPercent}%` }],
     [{ value: scheduleString }, { value: humanTime }],

@@ -223,13 +223,13 @@ export const ROLLBACK_KEY_MAP = {
 
 export const EXIT_STRATEGIES_DETAILS = {
   [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]: {
-    label: 'SL-M on each leg'
+    label: 'Fixed SL% on all legs'
   },
   [EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]: {
-    label: '(BETA) Combined premium SL'
+    label: 'Combined/trailing SL%'
   },
   [EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND]: {
-    label: 'Initial SL-M %, then trail Option Supertrend'
+    label: 'Initial SL%, then trail Option Supertrend'
   },
   [EXIT_STRATEGIES.OBS_TRAIL_SL]: {
     label: 'Initial 30%, then trail SL on every higher close (1min TF)'
