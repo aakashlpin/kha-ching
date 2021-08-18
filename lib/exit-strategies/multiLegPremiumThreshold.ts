@@ -51,14 +51,18 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     }
 
     const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId, _workerInitTime } = initialJobData
-    if (dayjs().diff(dayjs(_workerInitTime), 'minutes') > 2) {
+    console.log({ _workerInitTime })
+    const workerAgeMins = dayjs().diff(dayjs(_workerInitTime), 'minute')
+    console.log({ workerAgeMins })
+    if (workerAgeMins > 2) {
       // retire a worker every 2mins
       await addToNextQueue({
         ...initialJobData,
         _workerInitTime: dayjs().format()
       }, {
         _nextTradingQueue: EXIT_TRADING_Q_NAME,
-        rawKiteOrdersResponse
+        rawKiteOrdersResponse,
+        squareOffOrders
       })
 
       // [TODO] tmp log. Delete before merging
@@ -160,7 +164,8 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
             lastTrailingSlTriggerAtPremium: liveTotalPremium
           }, {
             _nextTradingQueue: EXIT_TRADING_Q_NAME,
-            rawKiteOrdersResponse
+            rawKiteOrdersResponse,
+            squareOffOrders
           })
 
           // update db trade with new combined SL property
