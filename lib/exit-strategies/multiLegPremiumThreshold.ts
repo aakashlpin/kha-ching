@@ -33,12 +33,12 @@ const tradeHeartbeat = async (dbId) => {
   return data
 }
 
-type JobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
+export type CombinedPremiumJobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
   lastTrailingSlTriggerAtPremium?: number
 }
 
 async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse, squareOffOrders }: {
-  initialJobData: JobDataInterface
+  initialJobData: CombinedPremiumJobDataInterface
   rawKiteOrdersResponse: KiteOrder[]
   squareOffOrders?: KiteOrder[]
 }) {
@@ -138,13 +138,18 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
           // if current liveTotalPremium is X% lesser than trailEveryPercentageChangeValue
 
           // add to same queue with updated params
-          await addToNextQueue({
-            ...initialJobData,
-            lastTrailingSlTriggerAtPremium: liveTotalPremium
-          }, {
-            _nextTradingQueue: EXIT_TRADING_Q_NAME,
-            rawKiteOrdersResponse
-          })
+          try {
+            await addToNextQueue({
+              ...initialJobData,
+              lastTrailingSlTriggerAtPremium: liveTotalPremium
+            }, {
+              _nextTradingQueue: EXIT_TRADING_Q_NAME,
+              rawKiteOrdersResponse,
+              squareOffOrders
+            })
+          } catch (e) {
+            console.log('🔴 [multiLegPremiumThreshold] addToNextQueue error', e)
+          }
 
           // update db trade with new combined SL property
           // and expose it in the UI

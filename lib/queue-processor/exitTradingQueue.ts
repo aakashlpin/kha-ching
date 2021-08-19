@@ -1,12 +1,13 @@
 import { Worker } from 'bullmq'
+import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
-import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import { EXIT_STRATEGIES } from '../constants'
 // import fyersTrailObsSL from '../exit-strategies/fyersTrailObsSL'
 import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
 import minXPercentOrSupertrend, { DOS_TRAILING_INTERFACE } from '../exit-strategies/minXPercentOrSupertrend'
-import multiLegPremiumThreshold from '../exit-strategies/multiLegPremiumThreshold'
+import multiLegPremiumThreshold, { CombinedPremiumJobDataInterface } from '../exit-strategies/multiLegPremiumThreshold'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME, redisConnection, WATCHER_Q_NAME } from '../queue'
 import { getCustomBackoffStrategies, ms } from '../utils'
@@ -30,7 +31,7 @@ function processJob (jobData: {
     }
     case EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD: {
       return multiLegPremiumThreshold({
-        initialJobData: initialJobData as ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE,
+        initialJobData: initialJobData as CombinedPremiumJobDataInterface,
         ...jobResponse
       })
     }
@@ -82,7 +83,7 @@ const worker = new Worker(
   },
   {
     connection: redisConnection,
-    concurrency: 20,
+    concurrency: 100,
     settings: {
       backoffStrategies: getCustomBackoffStrategies()
     },

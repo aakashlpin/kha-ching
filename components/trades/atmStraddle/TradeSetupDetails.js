@@ -22,7 +22,7 @@ const Details = (args) => {
         [{ value: 'Lots' }, { value: lots }],
         [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],
         [{ value: 'Threshold Skew' }, { value: thresholdSkewPercent ? `${thresholdSkewPercent}%` : '-' }],
-        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins} mins` }],
+        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins ?? 0} mins` }],
         [{ value: 'After checker' }, { value: afterCheckerString }],
         ...commonDetailsRows(args)
       ]}

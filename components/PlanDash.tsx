@@ -4,8 +4,11 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 import useSWR, { mutate } from 'swr'
+import { formatFormDataForApi } from '../lib/browserUtils'
 
 import { STRATEGIES_DETAILS } from '../lib/constants'
+import { SUPPORTED_TRADE_CONFIG } from '../types/trade'
+import ActionButtonOrLoader from './lib/ActionButtonOrLoader'
 import TradeDetails from './lib/tradeDetails'
 
 const PlanDash = () => {
@@ -19,9 +22,9 @@ const PlanDash = () => {
     async function fn () {
       const { data } = await axios('/api/plan')
       const date = dayjs()
-      const day = date.format('D')
-      const month = Number(date.format('M')) - 1
-      const year = date.format('YYYY')
+      const day = date.get('date')
+      const month = date.get('month')
+      const year = date.get('year')
       const dayWiseData = data.reduce((accum, config) => {
         const updatedConfig = { ...config }
         if (updatedConfig.runAt) {
@@ -29,6 +32,7 @@ const PlanDash = () => {
             .set('date', day)
             .set('month', month)
             .set('year', year)
+            .set('seconds', 0)
             .format()
         }
 
@@ -37,6 +41,7 @@ const PlanDash = () => {
             .set('date', day)
             .set('month', month)
             .set('year', year)
+            .set('seconds', 0)
             .format()
         }
 
@@ -61,16 +66,21 @@ const PlanDash = () => {
   async function handleScheduleJob (plan) {
     const { runAt } = plan
     const runNow = dayjs().isAfter(dayjs(runAt))
-    await axios.post('/api/trades_day', {
-      ...plan,
-      plan_ref: plan._id,
-      runNow
-    })
+    await axios.post('/api/trades_day', formatFormDataForApi({
+      strategy: plan.strategy,
+      data: {
+        ...plan,
+        plan_ref: plan._id,
+        runNow
+      }
+    }))
     mutate('/api/trades_day')
   }
 
   const getPendingTrades = () =>
-    plans[dayOfWeek]?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id))
+    plans[dayOfWeek]
+      ?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id))
+      .filter(plan => STRATEGIES_DETAILS[plan.strategy])
 
   const getScheduleableTrades = () => {
     const pendingTrades = getPendingTrades()
@@ -98,13 +108,13 @@ const PlanDash = () => {
   if (!pendingTrades?.length) {
     if (plans[dayOfWeek]) {
       return (
-        <Typography variant=''>
+        <Typography>
           You&apos;ve scheduled all trades as per plan. Check "Today" tab for details.
         </Typography>
       )
     }
     return (
-      <Typography variant=''>
+      <Typography>
         You don&apos;t have a plan for {dayOfWeekHuman} yet. Create one{' '}
         <Link href='/plan'>here</Link>.
       </Typography>
@@ -117,37 +127,59 @@ const PlanDash = () => {
     <div>
       {plans[dayOfWeek] && scheduleableTrades
         ? (
-          <Button
-            style={{ marginBottom: 18 }}
-            variant='contained'
-            color='primary'
-            type='button'
-            onClick={handleScheduleEverything}
-          >
-            Schedule all trades
-          </Button>
+          <ActionButtonOrLoader>
+          {({ setLoading }) =>
+              <Button
+              style={{ marginBottom: 18 }}
+              variant='contained'
+              color='primary'
+              type='button'
+              onClick={async () => {
+                setLoading(true)
+                await handleScheduleEverything()
+                setLoading(false)
+              }}
+            >
+              Schedule all trades
+            </Button>
+          }
+          </ActionButtonOrLoader>
           )
         : null}
 
-      {pendingTrades.map((plan, idx) => {
-        return (
-          <div key={plan._id}>
-            <Paper style={{ padding: 16, marginBottom: 32 }}>
-              <h4>
-                {idx + 1} · {STRATEGIES_DETAILS[plan.strategy].heading}
-              </h4>
+      {pendingTrades
+        .map((plan: SUPPORTED_TRADE_CONFIG, idx: number) => {
+          const isPlanScheduleable = dayjs().isBefore(dayjs(plan.runAt))
+          return (
+            <div key={plan._id}>
+              <Paper style={{ padding: 16, marginBottom: 32 }}>
+                <h4>
+                  {`${idx + 1}`} · {STRATEGIES_DETAILS[plan.strategy].heading}
+                </h4>
 
-              <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
+                <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
 
-              <Grid item style={{ marginTop: 16 }}>
-                <Button variant='contained' type='button' onClick={() => handleScheduleJob(plan)}>
-                  {dayjs().isBefore(dayjs(plan.runAt)) ? 'Schedule trade' : 'Run now'}
-                </Button>
-              </Grid>
-            </Paper>
-          </div>
-        )
-      })}
+                <Grid item style={{ marginTop: 16 }}>
+                  <ActionButtonOrLoader>
+                    {({ setLoading }) =>
+                      <Button
+                        variant='contained'
+                        type='button'
+                        onClick={async () => {
+                          setLoading(true)
+                          await handleScheduleJob(plan)
+                          setLoading(false)
+                        }}
+                      >
+                      {isPlanScheduleable ? 'Schedule trade' : 'Run now'}
+                    </Button>
+                    }
+                  </ActionButtonOrLoader>
+                </Grid>
+              </Paper>
+            </div>
+          )
+        })}
     </div>
   )
 }

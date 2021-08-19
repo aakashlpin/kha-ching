@@ -11,6 +11,7 @@ import {
   getLastOpenDateSince,
   getNearestCandleTime,
   getPercentageChange,
+  logDeep,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
   withRemoteRetry
@@ -37,7 +38,7 @@ async function minXPercentOrSupertrend ({
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
     // NB: rawKiteOrderResponse here is of pending SLM Order
-    const orderHistory: KiteOrder[] = await kite.getOrderHistory(rawKiteOrderResponse.order_id)
+    const orderHistory: KiteOrder[] = await withRemoteRetry(() => kite.getOrderHistory(rawKiteOrderResponse.order_id))
     const byRecencyOrderHistory = orderHistory.reverse()
 
     const isSlOrderCancelled = byRecencyOrderHistory.find((odr) => odr.status === 'CANCELLED')
@@ -152,6 +153,7 @@ async function minXPercentOrSupertrend ({
             const { allOk, statefulOrders } = await attemptBrokerOrders([remoteOrder])
 
             if (!allOk) {
+              logDeep(statefulOrders)
               throw new Error('[minXPercentOrSupertrend] replacement order failed!')
             }
 

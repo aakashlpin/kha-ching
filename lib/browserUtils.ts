@@ -59,27 +59,23 @@ export function commonOnChangeHandler (changedProps: Partial<AvailablePlansConfi
   }
 }
 
-const getSchedulingApiProps = ({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, runAt, runNow, expireIfUnsuccessfulInMins }) => {
-  const apiSquareOffTime = isAutoSquareOffEnabled
-    ? dayjs(squareOffTime).set('seconds', 0).format()
+const getSchedulingApiProps = ({
+  isAutoSquareOffEnabled, squareOffTime, exitStrategy, runAt, runNow, expireIfUnsuccessfulInMins
+}) => ({
+  runAt: runNow ? dayjs().format() : dayjs(runAt).set('seconds', 0).format(),
+  autoSquareOffProps: isAutoSquareOffEnabled
+    ? {
+        time: squareOffTime,
+        deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+      }
+    : undefined,
+  expiresAt: expireIfUnsuccessfulInMins
+    ? dayjs(runNow ? new Date() : runAt)
+      .add(Number(expireIfUnsuccessfulInMins), 'minutes')
+      .set('seconds', 0)
+      .format()
     : undefined
-  return {
-    runAt: runNow ? dayjs().format() : runAt,
-    squareOffTime: apiSquareOffTime,
-    autoSquareOffProps: apiSquareOffTime
-      ? {
-          time: apiSquareOffTime,
-          deletePendingOrders: exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-        }
-      : undefined,
-    expiresAt: expireIfUnsuccessfulInMins
-      ? dayjs(runNow ? new Date() : runAt)
-        .add(Number(expireIfUnsuccessfulInMins), 'minutes')
-        .format()
-      : undefined
-
-  }
-}
+})
 
 export const formatFormDataForApi = ({ strategy, data }: { strategy: string, data: AvailablePlansConfig }): SUPPORTED_TRADE_CONFIG | null => {
   switch (strategy) {

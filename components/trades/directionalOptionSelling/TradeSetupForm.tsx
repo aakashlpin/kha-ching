@@ -35,6 +35,7 @@ import ProductTypeComponent from '../../lib/ProductTypeComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
+  formHeading?: string
   isRunnable?: boolean
   onChange: (changedProps: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>) => void
   onCancel?: () => void
@@ -46,6 +47,7 @@ interface DOSTradeSetupFormProps {
 
 const TradeSetupForm = ({
   state,
+  formHeading,
   onChange,
   onSubmit,
   onCancel,
@@ -69,7 +71,7 @@ const TradeSetupForm = ({
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        {isRunnable ? <h3>Setup new trade</h3> : null}
+        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>

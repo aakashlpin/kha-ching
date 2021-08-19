@@ -36,6 +36,7 @@ import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
 
 interface ATMStrangleTradeSetupFormProps {
+  formHeading?: string
   strategy: STRATEGIES
   state: ATM_STRANGLE_CONFIG
   isRunnable?: boolean
@@ -44,7 +45,7 @@ interface ATMStrangleTradeSetupFormProps {
   onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
-const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStrangleTradeSetupFormProps) => {
+const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStrangleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
@@ -59,7 +60,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRANGLE, state, onChange, o
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        {isRunnable ? <h3>Setup new trade</h3> : null}
+        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>

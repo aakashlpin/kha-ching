@@ -32,6 +32,7 @@ import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 
 interface ATMStraddleTradeSetupFormProps {
+  formHeading?: string
   strategy: STRATEGIES
   state: ATM_STRADDLE_CONFIG
   isRunnable?: boolean
@@ -40,7 +41,7 @@ interface ATMStraddleTradeSetupFormProps {
   onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
-const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStraddleTradeSetupFormProps) => {
+const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStraddleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments =
@@ -61,7 +62,7 @@ const TradeSetupForm = ({ strategy = STRATEGIES.ATM_STRADDLE, state, onChange, o
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        {isRunnable ? <h3>Setup new trade</h3> : null}
+        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
