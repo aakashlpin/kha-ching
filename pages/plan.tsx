@@ -1,3 +1,4 @@
+import { Box, Container, Link, Paper } from '@material-ui/core'
 import Accordion from '@material-ui/core/Accordion'
 import AccordionDetails from '@material-ui/core/AccordionDetails'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
@@ -59,6 +60,9 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'scroll',
     height: '100%',
     display: 'block'
+  },
+  backdrop: {
+    background: 'rgba(0,0,0,0.75)'
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
@@ -285,7 +289,7 @@ const Plan = () => {
 
   // useEffect(() => {
   //   console.log('dayState updated', dayState);
-  // }, [dayState]);
+  // }, []);
 
   useEffect(() => {
     async function fn () {
@@ -413,53 +417,60 @@ const Plan = () => {
             closeAfterTransition
             BackdropComponent={Backdrop}
             BackdropProps={{
+              classes: {
+                root: classes.backdrop
+              },
               timeout: 500
             }}
           >
-            <Fade in={open}>
-              <div className={classes.paper}>
-                <h2 id='transition-modal-title'>
-                  {dayState[currentEditDay!].heading} |{' '}
-                  {STRATEGIES_DETAILS[currentEditStrategy].heading}
-                </h2>
-                {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING
-                  ? (
-                    <DOSTradeForm
-                      state={stratState[STRATEGIES.DIRECTIONAL_OPTION_SELLING] as DIRECTIONAL_OPTION_SELLING_CONFIG}
-                      onChange={(changedProps) =>
-                        stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)}
-                      onSubmit={commonOnSubmitHandler as any}
-                      onCancel={commonOnCancelHandler}
-                      isRunnable={false}
-                    />
-                    )
-                  : currentEditStrategy === STRATEGIES.ATM_STRADDLE
+            <Container maxWidth='sm'>
+              <Fade in={open}>
+                <Box>
+                  <Typography variant="subtitle2" >
+                    <Link onClick={commonOnCancelHandler} style={{ color: 'white' }}>&lt; cancel and go back</Link>
+                  </Typography>
+                  {currentEditStrategy === STRATEGIES.DIRECTIONAL_OPTION_SELLING
                     ? (
-                      <ATMStraddleTradeForm
-                        state={stratState[STRATEGIES.ATM_STRADDLE] as ATM_STRADDLE_CONFIG}
+                      <DOSTradeForm
+                        formHeading={`Editing ${STRATEGIES_DETAILS[currentEditStrategy].heading} for ${dayState[currentEditDay!].heading}`}
+                        state={stratState[STRATEGIES.DIRECTIONAL_OPTION_SELLING] as DIRECTIONAL_OPTION_SELLING_CONFIG}
                         onChange={(changedProps) =>
-                          stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)}
-                        onSubmit={commonOnSubmitHandler}
+                          stratOnChangeHandler(changedProps, STRATEGIES.DIRECTIONAL_OPTION_SELLING)}
+                        onSubmit={commonOnSubmitHandler as any}
                         onCancel={commonOnCancelHandler}
                         isRunnable={false}
-                        strategy={STRATEGIES.ATM_STRADDLE}
                       />
                       )
-                    : currentEditStrategy === STRATEGIES.ATM_STRANGLE
+                    : currentEditStrategy === STRATEGIES.ATM_STRADDLE
                       ? (
-                        <ATMStrangleTradeForm
-                          state={stratState[STRATEGIES.ATM_STRANGLE] as ATM_STRANGLE_CONFIG}
+                        <ATMStraddleTradeForm
+                          formHeading={`Editing ${STRATEGIES_DETAILS[currentEditStrategy].heading} for ${dayState[currentEditDay!].heading}`}
+                          state={stratState[STRATEGIES.ATM_STRADDLE] as ATM_STRADDLE_CONFIG}
                           onChange={(changedProps) =>
-                            stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRANGLE)}
+                            stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRADDLE)}
                           onSubmit={commonOnSubmitHandler}
                           onCancel={commonOnCancelHandler}
                           isRunnable={false}
-                          strategy={STRATEGIES.ATM_STRANGLE}
+                          strategy={STRATEGIES.ATM_STRADDLE}
                         />
                         )
-                      : null}
-              </div>
-            </Fade>
+                      : currentEditStrategy === STRATEGIES.ATM_STRANGLE
+                        ? (
+                          <ATMStrangleTradeForm
+                          formHeading={`Editing ${STRATEGIES_DETAILS[currentEditStrategy].heading} for ${dayState[currentEditDay!].heading}`}
+                            state={stratState[STRATEGIES.ATM_STRANGLE] as ATM_STRANGLE_CONFIG}
+                            onChange={(changedProps) =>
+                              stratOnChangeHandler(changedProps, STRATEGIES.ATM_STRANGLE)}
+                            onSubmit={commonOnSubmitHandler}
+                            onCancel={commonOnCancelHandler}
+                            isRunnable={false}
+                            strategy={STRATEGIES.ATM_STRANGLE}
+                          />
+                          )
+                        : null}
+                </Box>
+              </Fade>
+            </Container>
           </Modal>
           )
         : null}
