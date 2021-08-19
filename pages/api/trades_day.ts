@@ -82,7 +82,7 @@ async function deleteJob (id) {
       job && await job.remove()
     }
   } catch (e) {
-    console.log('[deleteJob] failed', e)
+    console.log('🔴 [deleteJob] failed', e)
     return Promise.reject(e)
   }
 }
@@ -113,7 +113,8 @@ export default withSession(async (req, res) => {
       )
       data = response.data
     } catch (e) {
-      return res.status(e.response.status).json(e.response.data || {})
+      console.log('🔴 failed to post', e)
+      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
     }
 
     try {
@@ -153,13 +154,14 @@ export default withSession(async (req, res) => {
   if (req.method === 'DELETE') {
     try {
       const { data } = await axios(`${endpoint}/${req.body._id as string}`)
-      if (data.queue.id) {
+      if (data.queue?.id) {
         await deleteJob(data.queue.id)
       }
       await axios.delete(`${endpoint}/${req.body._id as string}`, SIGNALX_AXIOS_DB_AUTH)
       return res.end()
     } catch (e) {
-      return res.status(e.response.status).json(e.response.data || {})
+      console.log('🔴 failed to delete', e)
+      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
     }
   }
 
@@ -173,7 +175,8 @@ export default withSession(async (req, res) => {
       }, SIGNALX_AXIOS_DB_AUTH)
       return res.end()
     } catch (e) {
-      return res.status(e.response.status).json(e.response.data || {})
+      console.log('🔴 failed to put', e)
+      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
     }
   }
 
@@ -182,7 +185,8 @@ export default withSession(async (req, res) => {
       const { data } = await axios(`${endpoint}?limit=100`)
       return res.json(data)
     } catch (e) {
-      return res.status(e.response.status).json(e.response.data || {})
+      console.log('🔴 failed to get', e)
+      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
     }
   }
 
