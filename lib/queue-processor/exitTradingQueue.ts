@@ -88,7 +88,7 @@ const worker = new Worker(
   },
   {
     connection: redisConnection,
-    concurrency: 20,
+    concurrency: 100,
     settings: {
       backoffStrategies: getCustomBackoffStrategies()
     },

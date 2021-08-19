@@ -62,7 +62,7 @@ export function commonOnChangeHandler (changedProps: Partial<AvailablePlansConfi
 const getSchedulingApiProps = ({
   isAutoSquareOffEnabled, squareOffTime, exitStrategy, runAt, runNow, expireIfUnsuccessfulInMins
 }) => ({
-  runAt: runNow ? dayjs().format() : runAt,
+  runAt: runNow ? dayjs().format() : dayjs(runAt).set('seconds', 0).format(),
   autoSquareOffProps: isAutoSquareOffEnabled
     ? {
         time: squareOffTime,

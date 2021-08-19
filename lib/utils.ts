@@ -27,6 +27,8 @@ const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
 const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 const KITE_API_KEY = process.env.KITE_API_KEY
 
+export const logDeep = (object) => console.log(JSON.stringify(object, null, 2))
+
 export const ms = (seconds) => seconds * 1000
 
 const asyncGetIndexInstruments = (exchange = 'NFO') =>
@@ -633,7 +635,6 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
       if (cancelled) {
         return false
       }
-      console.log('[orderStateChecker] attempt...')
       try {
         const orderHistory = await withRemoteRetry(() => kite.getOrderHistory(orderId))
         const byRecencyOrderHistory = orderHistory.reverse()
@@ -646,6 +647,9 @@ const orderStateChecker = (kite, orderId, ensureOrderState) => {
         if (expectedStateOrder) {
           return expectedStateOrder
         }
+
+        console.log('🔴 [orderStateChecker] invalid state...', { orderId, ensureOrderState })
+        logDeep(orderHistory)
 
         const wasOrderRejectedOrCancelled = byRecencyOrderHistory.find(
           (odr) => odr.status === kite.STATUS_REJECTED || odr.status === kite.STATUS_CANCELLED
