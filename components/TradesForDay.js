@@ -84,7 +84,7 @@ const WrapperComponent = (props) => {
           <Heading />
         </Typography>
         <Box>
-          {['delayed', 'waiting', 'failed'].includes(jobDetails?.current_state)
+          {!jobWasQueued || (jobWasQueued && ['delayed', 'waiting', 'failed'].includes(jobDetails?.current_state))
             ? (
               <Grid item>
                 <ActionButtonOrLoader>
