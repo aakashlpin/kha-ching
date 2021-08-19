@@ -34,7 +34,6 @@ const tradeHeartbeat = async (dbId) => {
 }
 
 export type CombinedPremiumJobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
-  _workerInitTime: string
   lastTrailingSlTriggerAtPremium?: number
 }
 
@@ -50,26 +49,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       )
     }
 
-    const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId, _workerInitTime } = initialJobData
-    console.log({ _workerInitTime })
-    const workerAgeMins = dayjs().diff(dayjs(_workerInitTime), 'minute')
-    console.log({ workerAgeMins })
-    if (workerAgeMins > 2) {
-      // retire a worker every 2mins
-      await addToNextQueue({
-        ...initialJobData,
-        _workerInitTime: dayjs().format()
-      }, {
-        _nextTradingQueue: EXIT_TRADING_Q_NAME,
-        rawKiteOrdersResponse,
-        squareOffOrders
-      })
-
-      // [TODO] tmp log. Delete before merging
-      console.log('Retiring a tired worker, and spawning a new one!')
-      return Promise.resolve('Retiring a tired worker, and spawning a new one!')
-    }
-
+    const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId } = initialJobData
     const kite = syncGetKiteInstance(user)
 
     try {
@@ -158,15 +138,18 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
           // if current liveTotalPremium is X% lesser than trailEveryPercentageChangeValue
 
           // add to same queue with updated params
-          await addToNextQueue({
-            ...initialJobData,
-            _workerInitTime: dayjs().format(),
-            lastTrailingSlTriggerAtPremium: liveTotalPremium
-          }, {
-            _nextTradingQueue: EXIT_TRADING_Q_NAME,
-            rawKiteOrdersResponse,
-            squareOffOrders
-          })
+          try {
+            await addToNextQueue({
+              ...initialJobData,
+              lastTrailingSlTriggerAtPremium: liveTotalPremium
+            }, {
+              _nextTradingQueue: EXIT_TRADING_Q_NAME,
+              rawKiteOrdersResponse,
+              squareOffOrders
+            })
+          } catch (e) {
+            console.log('🔴 [multiLegPremiumThreshold] addToNextQueue error', e)
+          }
 
           // update db trade with new combined SL property
           // and expose it in the UI

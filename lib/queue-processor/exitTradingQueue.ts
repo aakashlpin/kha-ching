@@ -30,13 +30,8 @@ function processJob (jobData: {
       })
     }
     case EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD: {
-      const jobDataWithInitTime = {
-        ...initialJobData,
-        _workerInitTime: dayjs().format()
-      } as CombinedPremiumJobDataInterface
-
       return multiLegPremiumThreshold({
-        initialJobData: jobDataWithInitTime,
+        initialJobData: initialJobData as CombinedPremiumJobDataInterface,
         ...jobResponse
       })
     }
