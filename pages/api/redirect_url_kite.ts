@@ -1,3 +1,4 @@
+import { AxiosResponse } from 'axios'
 import { KiteConnect } from 'kiteconnect'
 import { cleanupQueues } from '../../lib/queue'
 
@@ -27,15 +28,21 @@ export default withSession(async (req, res) => {
 
     // prepare the day
     // fire and forget
-    premiumAuthCheck()
-    getIndexInstruments()
+    premiumAuthCheck().catch((e) => {
+      console.log(e)
+    })
+    getIndexInstruments().catch((e) => {
+      console.log(e)
+    })
 
     const existingAccessToken = await checkHasSameAccessToken(user.session.access_token!)
     if (!existingAccessToken) {
       // first login, or revoked login
       // cleanup queue in both cases
       console.log('cleaning up queues...')
-      cleanupQueues()
+      cleanupQueues().catch(e => {
+        console.log(e)
+      })
       // then store access token remotely for other services to use it
       storeAccessTokenRemotely(user.session.access_token)
     }

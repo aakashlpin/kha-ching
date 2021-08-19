@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq'
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
-import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import { EXIT_STRATEGIES } from '../constants'
 // import fyersTrailObsSL from '../exit-strategies/fyersTrailObsSL'

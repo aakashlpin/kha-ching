@@ -14,12 +14,10 @@ import {
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
-  SIGNALX_AXIOS_DB_AUTH,
-  withoutFwdSlash
+  SIGNALX_AXIOS_DB_AUTH
 } from '../../lib/utils'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
-const { DATABASE_HOST_URL, DATABASE_USER_KEY } = process.env
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8)
 
@@ -137,12 +135,13 @@ export default withSession(async (req, res) => {
       // done!
       return res.json(data)
     } catch (e) {
+      console.log('🔴 job creation failed', e)
       await axios.put(
         `${endpoint}/${data._id!}`,
         {
           ...data,
           status: 'REJECT',
-          status_message: e
+          status_message: e?.message
         },
         SIGNALX_AXIOS_DB_AUTH
       )

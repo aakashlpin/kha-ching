@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import csv from 'csvtojson'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
@@ -547,7 +547,7 @@ export function withoutFwdSlash (url: string): string {
   return url
 }
 
-export function premiumAuthCheck () {
+export async function premiumAuthCheck (): Promise<any> {
   if (!process.env.SIGNALX_API_KEY) {
     return false
   }
