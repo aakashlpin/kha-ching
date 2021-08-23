@@ -11,8 +11,7 @@ import {
   addToAutoSquareOffQueue,
   addToNextQueue,
   EXIT_TRADING_Q_NAME,
-  TRADING_Q_NAME,
-  WATCHER_Q_NAME
+  TRADING_Q_NAME
 } from '../queue'
 import {
   getCurrentExpiryTradingSymbol,
@@ -297,11 +296,6 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     rawKiteOrdersResponse: [exitOrder],
     optionInstrumentToken,
     hedgeOrderResponse
-  })
-
-  await addToNextQueue(nextQueueData, {
-    _nextTradingQueue: WATCHER_Q_NAME,
-    rawKiteOrderResponse: exitOrder
   })
 
   const { id, name, data } = queueRes!
