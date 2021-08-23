@@ -924,3 +924,8 @@ export const getStrikeByDelta = (
     callStrike
   }
 }
+
+export function round (value, step = 0.5) {
+  const inv = 1.0 / step
+  return Math.round(value * inv) / inv
+}
