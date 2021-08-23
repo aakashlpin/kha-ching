@@ -28,6 +28,11 @@ export enum SL_ORDER_TYPE {
   SLM = 'SLM'
 }
 
+export enum COMBINED_SL_EXIT_STRATEGY {
+  EXIT_ALL = 'EXIT_ALL',
+  EXIT_LOSING = 'EXIT_LOSING'
+}
+
 export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   instruments: Record<INSTRUMENTS, boolean>
   lots: number
@@ -49,6 +54,7 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   volatilityType: VOLATILITY_TYPE
   slOrderType: SL_ORDER_TYPE
   slLimitPricePercent?: number
+  combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -73,6 +79,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   volatilityType: VOLATILITY_TYPE
   slOrderType: SL_ORDER_TYPE
   slLimitPricePercent?: number
+  combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

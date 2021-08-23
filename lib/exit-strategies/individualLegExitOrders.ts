@@ -23,7 +23,7 @@ async function individualLegExitOrders ({
     return mockResponse
   }
 
-  const { slmPercent, user, orderTag, rollback, slOrderType, slLimitPricePercent } = initialJobData
+  const { slmPercent, user, orderTag, rollback, slOrderType = SL_ORDER_TYPE.SLM, slLimitPricePercent } = initialJobData
   const kite = _kite || syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
 

@@ -491,7 +491,7 @@ interface GET_LTP_ARGS {
   tradingSymbol: string
 }
 
-interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
+export interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
   instrumentToken: string
   lastPrice: number
 }

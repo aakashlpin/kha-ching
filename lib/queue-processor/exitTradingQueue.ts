@@ -1,5 +1,4 @@
 import { Worker } from 'bullmq'
-import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
@@ -9,7 +8,7 @@ import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
 import minXPercentOrSupertrend, { DOS_TRAILING_INTERFACE } from '../exit-strategies/minXPercentOrSupertrend'
 import multiLegPremiumThreshold, { CombinedPremiumJobDataInterface } from '../exit-strategies/multiLegPremiumThreshold'
 import console from '../logging'
-import { addToNextQueue, EXIT_TRADING_Q_NAME, redisConnection, WATCHER_Q_NAME } from '../queue'
+import { EXIT_TRADING_Q_NAME, redisConnection } from '../queue'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
 function processJob (jobData: {

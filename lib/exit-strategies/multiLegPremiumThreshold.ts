@@ -1,10 +1,39 @@
+/**
+     * Trailing SL method
+     * 1. initial total SL = initialPremiumReceived + sl% * initialPremiumReceived
+     * 2. trailing SL
+     *    on every decrease in combined premium by X%, trail the SL by initial SL %
+     *
+     * e.g. at 9.20am
+     * initial premium = 400 = lastInflectionPoint
+     * initial SL = 10%
+     * total SL = 440
+     *
+     *
+     * At 10.00am
+     * combined premium = 380
+     * decrease in premium = 5%
+     * new SL = 380 + 10% * 380 = 418
+     *  terminate this job, add a replica to same queue
+     *  with lastTrailingSlTriggerAtPremium = 380
+     *
+     *
+     * At 10.15am
+     * combined premium = 390
+     * ideal SL = 400 + 10%*440 = 440
+     * trailing SL = 418
+     * SL = min(ideal SL, trailing SL)
+     * no changes
+     */
+
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
+import { COMBINED_SL_EXIT_STRATEGY } from '../../types/plans'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
-import { USER_OVERRIDE } from '../constants'
+import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
-import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, getInstrumentPrice, withRemoteRetry, patchDbTrade } from '../utils'
+import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 
@@ -49,7 +78,15 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       )
     }
 
-    const { slmPercent, trailingSlPercent, user, trailEveryPercentageChangeValue, lastTrailingSlTriggerAtPremium, _id: dbId } = initialJobData
+    const {
+      slmPercent,
+      trailingSlPercent,
+      user,
+      trailEveryPercentageChangeValue,
+      lastTrailingSlTriggerAtPremium,
+      combinedExitStrategy = COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      _id: dbId
+    } = initialJobData
     const kite = syncGetKiteInstance(user)
 
     try {
@@ -65,34 +102,6 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       console.log('🔴 [multiLegPremiumThreshold] tradeHeartbeat error', error)
     }
 
-    /**
-     * Trailing SL method
-     * 1. initial total SL = initialPremiumReceived + sl% * initialPremiumReceived
-     * 2. trailing SL
-     *    on every decrease in combined premium by X%, trail the SL by initial SL %
-     *
-     * e.g. at 9.20am
-     * initial premium = 400 = lastInflectionPoint
-     * initial SL = 10%
-     * total SL = 440
-     *
-     *
-     * At 10.00am
-     * combined premium = 380
-     * decrease in premium = 5%
-     * new SL = 380 + 10% * 380 = 418
-     *  terminate this job, add a replica to same queue
-     *  with lastTrailingSlTriggerAtPremium = 380
-     *
-     *
-     * At 10.15am
-     * combined premium = 390
-     * ideal SL = 400 + 10%*440 = 440
-     * trailing SL = 418
-     * SL = min(ideal SL, trailing SL)
-     * no changes
-     */
-
     const legsOrders = rawKiteOrdersResponse
     // check here if the open positions include these legs
     // and quantities should be greater than equal to `legsOrders`
@@ -103,17 +112,18 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     const averageOrderPrices = legsOrders.map((order) => order.average_price)
     const initialPremiumReceived = averageOrderPrices.reduce((sum, price) => sum! + price!, 0)
 
-    let liveSymbolPrices: number[]
+    let liveSymbolPrices: GET_LTP_RESPONSE[]
     try {
-      liveSymbolPrices = await Promise.all(
-        tradingSymbols.map(async (symbol) => withRemoteRetry(async () => getInstrumentPrice(kite, symbol, kite.EXCHANGE_NFO)))
-      )
+      liveSymbolPrices = await getMultipleInstrumentPrices(tradingSymbols.map(symbol => ({
+        exchange: kite.EXCHANGE_NFO,
+        tradingSymbol: symbol
+      })), user!)
     } catch (error) {
       console.log('🔴 [multiLegPremiumThreshold] getInstrumentPrice error', error)
       return Promise.reject(new Error('Kite APIs acting up'))
     }
 
-    const liveTotalPremium = liveSymbolPrices.reduce((sum, price) => sum + price, 0)
+    const liveTotalPremium = liveSymbolPrices.reduce((sum, priceData) => sum + priceData.lastPrice, 0)
     const initialSlTotalPremium = initialPremiumReceived! + (slmPercent / 100 * initialPremiumReceived!) // 440
 
     let checkAgainstSl = initialSlTotalPremium
@@ -179,6 +189,47 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     // terminate the checker
     const exitMsg = `☢️ [multiLegPremiumThreshold] triggered! liveTotalPremium (${liveTotalPremium}) > threshold (${checkAgainstSl})`
     console.log(exitMsg)
+
+    if (combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING) {
+      // get the avg entry prices
+      const avgSymbolPrice = legsOrders.reduce((accum, order) => ({
+        ...accum,
+        [order.tradingsymbol]: order.average_price
+      }), {})
+
+      // future proofing by allowing for any number of positions to be trailed together
+      const { losingLegs, winningLegs } = liveSymbolPrices.reduce((accum, leg) => {
+        const { lastPrice, tradingSymbol } = leg
+        if (avgSymbolPrice[tradingSymbol] < lastPrice) {
+          return {
+            ...accum,
+            losingLegs: [...accum.losingLegs, leg]
+          }
+        }
+        return {
+          ...accum,
+          winningLegs: [...accum.winningLegs, leg]
+        }
+      }, {
+        losingLegs: [],
+        winningLegs: []
+      })
+
+      const squareOffOrders = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
+      const bringToCostOrders = winningLegs.map(winningLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol))
+      // 1. square off losing legs
+      await doSquareOffPositions(squareOffOrders as KiteOrder[], kite, initialJobData)
+      // 2. bring the winning legs to cost
+      await addToNextQueue({
+        ...initialJobData,
+        // override the slmPercent and exitStrategy in initialJobData
+        slmPercent: 0,
+        exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X
+      }, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse: bringToCostOrders
+      })
+    }
 
     return doSquareOffPositions(squareOffOrders!, kite, initialJobData)
   } catch (e) {
