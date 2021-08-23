@@ -623,7 +623,7 @@ export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): P
   return response
 }
 
-const orderStateChecker = (kite, orderId, ensureOrderState) => {
+export const orderStateChecker = (kite, orderId, ensureOrderState) => {
   /**
    * if broker responds back with order history,
    * but is not in expected state (fn arg) and is also not in failure states (REJECTED or CANCELLED)

@@ -2,6 +2,7 @@ import { KiteOrder } from '../../types/kite'
 import { SL_ORDER_TYPE } from '../../types/plans'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
+import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
 import { attemptBrokerOrders, isMockOrder, remoteOrderSuccessEnsurer, round, syncGetKiteInstance } from '../utils'
 import { doDeletePendingOrders, doSquareOffPositions } from './autoSquareOff'
@@ -87,6 +88,22 @@ async function individualLegExitOrders ({
     })
 
     throw Error('rolled back onBrokenExitOrders')
+  }
+
+  if (slOrderType === SL_ORDER_TYPE.SLL) {
+    const watcherQueueJobs = exitOrders.map(async (exitOrder) => {
+      return addToNextQueue(initialJobData, {
+        _nextTradingQueue: WATCHER_Q_NAME,
+        rawKiteOrderResponse: exitOrder
+      })
+    })
+
+    try {
+      await Promise.all(watcherQueueJobs)
+    } catch (e) {
+      console.log('error adding to `watcherQueueJobs`')
+      console.log(e.message ? e.message : e)
+    }
   }
 
   return statefulOrders

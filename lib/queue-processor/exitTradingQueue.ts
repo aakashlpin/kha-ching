@@ -58,23 +58,6 @@ const worker = new Worker(
   async (job) => {
     try {
       const exitOrders = await processJob(job.data)
-      const { exitStrategy } = job.data.initialJobData
-      if (exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X) {
-        const watcherQueueJobs = exitOrders.map(async (exitOrder) => {
-          return addToNextQueue(job.data.initialJobData, {
-            _nextTradingQueue: WATCHER_Q_NAME,
-            rawKiteOrderResponse: exitOrder
-          })
-        })
-
-        try {
-          await Promise.all(watcherQueueJobs)
-        } catch (e) {
-          console.log('error adding to `watcherQueueJobs`')
-          console.log(e.message ? e.message : e)
-        }
-      }
-
       return exitOrders
     } catch (e) {
       console.log(e.message ? e.message : e)
