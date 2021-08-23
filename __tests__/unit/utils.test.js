@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { getNearestContract } from '../../lib/strategies/strangle'
-import { getStrikeByDelta } from '../../lib/utils'
+import { getMultipleInstrumentPrices, getStrikeByDelta } from '../../lib/utils'
+
+const user = JSON.parse(process.env.USER_SESSION)
 
 test('it should fetch strikes by delta', async () => {
   const { data } = await axios.post('https://indicator.signalx.trade/api/data/option_chain', {
@@ -22,4 +24,17 @@ test('it should get nearest expiry contract', async () => {
   const contract = res.format('DDMMMYYYY')
   console.log(contract)
   expect(contract).toBeDefined()
+})
+
+test('it should return ltp of multiple instruments', async () => {
+  const instruments = [{
+    exchange: 'NFO',
+    tradingSymbol: 'NIFTY21AUG16500CE'
+  }, {
+    exchange: 'NFO',
+    tradingSymbol: 'NIFTY21AUG16500PE'
+  }]
+  const res = await getMultipleInstrumentPrices(instruments, user)
+  console.log(res)
+  expect(res).toBeDefined()
 })

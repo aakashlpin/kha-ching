@@ -486,6 +486,43 @@ interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
   greaterThanEqualToPrice?: boolean
 }
 
+interface GET_LTP_ARGS {
+  exchange: string
+  tradingSymbol: string
+}
+
+interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
+  instrumentToken: string
+  lastPrice: number
+}
+
+export const getMultipleInstrumentPrices = async (instruments: GET_LTP_ARGS[], user: SignalXUser): Promise<GET_LTP_RESPONSE[]> => {
+  const {
+    data: { data: pricesDetailsof }
+  } = await withRemoteRetry(async () => axios(
+    `https://api.kite.trade/quote/ltp?${instruments.map(({ exchange, tradingSymbol }) => `i=${exchange}:${tradingSymbol}`).join('&')}`,
+    {
+      headers: {
+        'X-Kite-Version': 3,
+        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`
+      }
+    }
+  ))
+
+  const formattedResponse = Object.keys(pricesDetailsof).map(exchangeTradingSymbol => {
+    const [exchange, tradingSymbol] = exchangeTradingSymbol.split(':')
+    const { instrument_token: instrumentToken, last_price: lastPrice } = pricesDetailsof[exchangeTradingSymbol]
+    return {
+      exchange,
+      tradingSymbol,
+      instrumentToken,
+      lastPrice
+    }
+  })
+
+  return formattedResponse
+}
+
 export const getTradingSymbolsByOptionPrice = async ({
   nfoSymbol,
   price,
