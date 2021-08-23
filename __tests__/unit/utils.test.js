@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getNearestContract } from '../../lib/strategies/strangle'
-import { getMultipleInstrumentPrices, getStrikeByDelta } from '../../lib/utils'
+import { getMultipleInstrumentPrices, getStrikeByDelta, getTradingSymbolsByOptionPrice } from '../../lib/utils'
 
 const user = JSON.parse(process.env.USER_SESSION)
 
@@ -35,6 +35,18 @@ test('it should return ltp of multiple instruments', async () => {
     tradingSymbol: 'NIFTY21AUG16500PE'
   }]
   const res = await getMultipleInstrumentPrices(instruments, user)
+  console.log(res)
+  expect(res).toBeDefined()
+})
+
+test('it should get tradingsymbol by closest price', async () => {
+  const res = await getTradingSymbolsByOptionPrice({
+    nfoSymbol: 'BANKNIFTY',
+    price: 200,
+    instrumentType: 'CE',
+    pivotStrike: 35000,
+    user
+  })
   console.log(res)
   expect(res).toBeDefined()
 })

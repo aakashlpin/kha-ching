@@ -5,7 +5,7 @@ import { KiteConnect } from 'kiteconnect'
 import Bluebird, { Promise } from 'bluebird'
 import { allSettled, allSettledInterface } from './es6-promise'
 
-import { ERROR_STRINGS, EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './constants'
+import { ERROR_STRINGS, EXIT_STRATEGIES, INSTRUMENT_DETAILS, STRATEGIES, USER_OVERRIDE } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
@@ -459,7 +459,7 @@ export function randomIntFromInterval (min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-interface LTP_TYPE {tradingsymbol: string, strike: string, last_price: number}
+interface LTP_TYPE {tradingsymbol: string, strike: number, last_price: number}
 
 export function closest (needle: number, haystack: Array<LTP_TYPE | any>, haystackKey: string, greaterThanEqualToPrice: boolean) {
   const filtered = haystack.filter((item) => {
@@ -532,8 +532,8 @@ export const getTradingSymbolsByOptionPrice = async ({
   greaterThanEqualToPrice = false
 }: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE) => {
   const kite = syncGetKiteInstance(user)
-  const totalStrikes = 21 // pivot and 10 on each side
-  const strikeStepSize = 100
+  const totalStrikes = 31 // pivot and 15 on each side
+  const { strikeStepSize } = INSTRUMENT_DETAILS[nfoSymbol!]
   const strikes = [...new Array(totalStrikes)]
     .map((_, idx) =>
       idx === 0 ? idx : idx < totalStrikes / 2 ? idx * -1 : idx - Math.floor(totalStrikes / 2)
@@ -541,39 +541,32 @@ export const getTradingSymbolsByOptionPrice = async ({
     .map((idx) => pivotStrike + idx * strikeStepSize)
     .sort((a, b) => a - b)
 
-  const requestParams = await Promise.map(strikes, async (strike) => {
+  const instruments = await Promise.map(strikes, async (strike) => {
     const { tradingsymbol } = await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike,
       instrumentType
     }) as TradingSymbolInterface
 
-    return `${kite.EXCHANGE_NFO as string}:${tradingsymbol}`
+    return {
+      exchange: kite.EXCHANGE_NFO,
+      tradingSymbol: tradingsymbol
+    }
   })
 
-  const {
-    data: { data: allPrices }
-  } = await axios(
-    `https://api.kite.trade/quote/ltp?${requestParams.map((symbol) => `i=${symbol}`).join('&')}`,
-    {
-      headers: {
-        'X-Kite-Version': 3,
-        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`
-      }
-    }
-  )
+  const pricesData = await getMultipleInstrumentPrices(instruments, user)
 
   const getStrike = (inst) => {
-    const withoutNfoString = inst.split(':')[1]
-    const withoutNfoSymbol = withoutNfoString.replace(nfoSymbol, '')
+    const withoutNfoSymbol = inst.replace(nfoSymbol, '')
     const withoutExpiryDetails = withoutNfoSymbol.substr(5, 5)
     return Number(withoutExpiryDetails)
   }
 
-  const formattedPrices: LTP_TYPE[] = Object.keys(allPrices).map((requestParam) => ({
-    tradingsymbol: requestParam.split(':')[1],
-    strike: getStrike(requestParam),
-    ...allPrices[requestParam]
+  const formattedPrices: LTP_TYPE[] = pricesData.map(({ tradingSymbol, instrumentToken, lastPrice }) => ({
+    tradingsymbol: tradingSymbol,
+    strike: getStrike(tradingSymbol),
+    instrument_token: instrumentToken,
+    last_price: lastPrice
   }))
 
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
