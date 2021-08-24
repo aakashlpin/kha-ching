@@ -160,7 +160,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
             </FormControl>
           </Grid>
 
-          <SlManagerComponent state={state} onChange={onChange} />
+          <SlManagerComponent state={state} onChange={onChange} exitStrategies={exitStrategies} />
 
           <HedgeComponent
             volatilityType={state.volatilityType}
@@ -201,7 +201,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                         }}
                       />
                     </MuiPickersUtilsProvider>
-                    )
+                  )
                   : null}
               </FormGroup>
             </FormControl>
@@ -223,7 +223,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                   Schedule now
                 </Button>
               </Grid>
-              )
+            )
             : null}
 
           <Grid item xs={12}>
@@ -267,7 +267,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                 >
                   Cancel
                 </Button>
-                )
+              )
               : null}
           </Grid>
         </Grid>
