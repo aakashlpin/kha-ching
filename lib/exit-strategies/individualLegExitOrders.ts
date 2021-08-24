@@ -59,9 +59,9 @@ async function individualLegExitOrders ({
       const absoluteLimitPriceDelta = slLimitPricePercent! / 100 * exitOrder.trigger_price!
       let absoluteLimitPrice
       if (exitOrder.transaction_type === kite.TRANSACTION_TYPE_SELL) {
-        absoluteLimitPrice = exitOrder.trigger_price! + absoluteLimitPriceDelta
-      } else {
         absoluteLimitPrice = exitOrder.trigger_price! - absoluteLimitPriceDelta
+      } else {
+        absoluteLimitPrice = exitOrder.trigger_price! + absoluteLimitPriceDelta
       }
 
       exitOrder.order_type = kite.ORDER_TYPE_SL
