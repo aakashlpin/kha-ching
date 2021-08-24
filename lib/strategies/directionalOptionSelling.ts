@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
-import { INSTRUMENT_DETAILS, STRATEGIES_DETAILS } from '../constants'
+import { INSTRUMENT_DETAILS, PRODUCT_TYPE, STRATEGIES_DETAILS } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
 import console from '../logging'
@@ -150,7 +150,7 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     strikeByPrice,
     orderTag,
     rollback,
-    productType,
+    productType = PRODUCT_TYPE.MIS,
     isHedgeEnabled = false,
     hedgeDistance = 1700
   } = initialJobData

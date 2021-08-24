@@ -167,6 +167,8 @@ async function minXPercentOrSupertrend ({
               newExitOrder
             )
 
+            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
+
             const queueRes = await addToNextQueue(initialJobData, {
               _nextTradingQueue: EXIT_TRADING_Q_NAME,
               rawKiteOrdersResponse: [newExitOrder],
