@@ -39,7 +39,6 @@ export async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
 export async function doSquareOffPositions (orders: KiteOrder[], kite: any, initialJobData: Partial<SUPPORTED_TRADE_CONFIG>) {
   const openPositions = await withRemoteRetry(() => kite.getPositions())
   const { net } = openPositions
-  console.log('[doSquareOffPositions] input orders', logDeep(orders))
   const openPositionsForOrders = orders
     .filter(o => o)
     .map((order) => {
@@ -66,8 +65,6 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
     })
     .filter((o) => o)
 
-    console.log('[doSquareOffPositions] openPositionsForOrders', logDeep(orders))
-
     const remoteRes = await Promise.all(
     openPositionsForOrders.map(async (order) => {
       const exitOrder = {
@@ -80,7 +77,7 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
         product: order.product,
         tag: initialJobData.orderTag
       }
-      console.log('square off position...', exitOrder)
+      // console.log('square off position...', exitOrder)
       return remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: exitOrder,

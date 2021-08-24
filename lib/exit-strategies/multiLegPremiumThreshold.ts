@@ -103,7 +103,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     }
 
     const legsOrders = rawKiteOrdersResponse
-    console.log('legsOrders', logDeep(legsOrders))
+    // console.log('legsOrders', logDeep(legsOrders))
     // check here if the open positions include these legs
     // and quantities should be greater than equal to `legsOrders`
     // if not, resolve this checker assuming the user has squared off the positions themselves
@@ -198,7 +198,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
         [order.tradingsymbol]: order.average_price
       }), {})
 
-      console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
+      // console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
 
       // future proofing by allowing for any number of positions to be trailed together
       const { losingLegs, winningLegs } = liveSymbolPrices.reduce((accum, leg) => {
@@ -218,17 +218,17 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
         winningLegs: []
       })
 
-      console.log('losingLegs', logDeep(losingLegs))
-      console.log('winningLegs', logDeep(winningLegs))
+      // console.log('losingLegs', logDeep(losingLegs))
+      // console.log('winningLegs', logDeep(winningLegs))
 
-      const squareOffOrders = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
-      console.log('squareOffOrders', logDeep(squareOffOrders))
+      const squareOffLosingLegs = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
+      // console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
       const bringToCostOrders = winningLegs.map(winningLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol))
-      console.log('bringToCostOrders', logDeep(bringToCostOrders))
+      // console.log('bringToCostOrders', logDeep(bringToCostOrders))
       // 1. square off losing legs
-      await doSquareOffPositions(squareOffOrders as KiteOrder[], kite, initialJobData)
+      await doSquareOffPositions(squareOffLosingLegs as KiteOrder[], kite, initialJobData)
       // 2. bring the winning legs to cost
-      await addToNextQueue({
+      return await addToNextQueue({
         ...initialJobData,
         // override the slmPercent and exitStrategy in initialJobData
         slmPercent: 0,
