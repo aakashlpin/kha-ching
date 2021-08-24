@@ -7,15 +7,14 @@ module.exports = {
     project: './tsconfig.json'
   },
   extends: [
-    'plugin:react/recommened',
     'standard-with-typescript',
     'next',
     'next/core-web-vitals'
   ],
   parser: '@typescript-eslint/parser',
-  plugins: [
-    "react",
-  ],
+  // plugins: [
+  //   "react",
+  // ],
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
