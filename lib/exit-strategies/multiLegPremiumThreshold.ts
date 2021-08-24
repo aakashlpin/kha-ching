@@ -222,9 +222,9 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
       console.log('winningLegs', logDeep(winningLegs))
 
       const squareOffOrders = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
-      console.log('squareOffOrders', squareOffOrders)
+      console.log('squareOffOrders', logDeep(squareOffOrders))
       const bringToCostOrders = winningLegs.map(winningLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol))
-      console.log('bringToCostOrders', bringToCostOrders)
+      console.log('bringToCostOrders', logDeep(bringToCostOrders))
       // 1. square off losing legs
       await doSquareOffPositions(squareOffOrders as KiteOrder[], kite, initialJobData)
       // 2. bring the winning legs to cost
