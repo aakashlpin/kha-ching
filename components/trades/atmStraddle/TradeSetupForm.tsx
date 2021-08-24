@@ -30,6 +30,7 @@ import HedgeComponent from '../../lib/HedgeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
+import SlManagerComponent from '../../lib/SlManagerComponent'
 
 interface ATMStraddleTradeSetupFormProps {
   formHeading?: string
@@ -159,64 +160,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
             </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio size='small' />}
-                    label={
-                      <Typography variant='body2'>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            ? (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailEveryPercentageChangeValue'
-                    value={state.trailEveryPercentageChangeValue}
-                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: +e.target.value || undefined })}
-                    label='Trail SL everytime combined premium decreases by %'
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailingSlPercent'
-                    value={state.trailingSlPercent}
-                    onChange={(e) => onChange({ trailingSlPercent: +e.target.value || undefined })}
-                    label='Trailing SL %'
-                  />
-                </Grid>
-              </>
-              )
-            : null}
-
-          <Grid item xs={12} style={{ marginBottom: '16px' }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
-            />
-          </Grid>
+          <SlManagerComponent state={state} onChange={onChange} />
 
           <HedgeComponent
             volatilityType={state.volatilityType}

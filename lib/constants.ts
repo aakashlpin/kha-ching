@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { SL_ORDER_TYPE } from '../types/plans'
 const NEXT_PUBLIC_DEFAULT_LOTS = process.env.NEXT_PUBLIC_DEFAULT_LOTS
 const NEXT_PUBLIC_DEFAULT_SKEW_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
 const NEXT_PUBLIC_DEFAULT_SLM_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
@@ -117,6 +118,8 @@ export const STRATEGIES_DETAILS = {
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -146,6 +149,8 @@ export const STRATEGIES_DETAILS = {
       volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -181,6 +186,8 @@ export const STRATEGIES_DETAILS = {
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
