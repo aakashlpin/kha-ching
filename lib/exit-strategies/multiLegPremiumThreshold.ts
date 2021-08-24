@@ -166,7 +166,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
           try {
             await withRemoteRetry(async () => patchTradeWithTrailingSL({
               dbId,
-              trailingSl: (liveTotalPremium + ((trailingSlPercent ?? slmPercent) / 100 * liveTotalPremium))
+              trailingSl: (liveTotalPremium + ((trailingSlPercent! ?? slmPercent) / 100 * liveTotalPremium))
             }))
           } catch (error) {
             // harmless error, move on

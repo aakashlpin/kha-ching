@@ -85,7 +85,7 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
               />
             </Grid>
           </>
-        )
+          )
         : null}
 
       <Grid item xs={12} style={{ marginBottom: '16px' }}>
@@ -134,7 +134,7 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
                   label='Limit Price %'
                 />
               </Grid>
-            )
+              )
             : null
           }
         </FormControl>

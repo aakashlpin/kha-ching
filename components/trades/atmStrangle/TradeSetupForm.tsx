@@ -2,7 +2,6 @@ import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
-  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,

@@ -64,7 +64,7 @@ async function individualLegExitOrders ({
         absoluteLimitPrice = exitOrder.trigger_price! - absoluteLimitPriceDelta
       }
 
-      exitOrder.order_type = kite.ORDER_TYPE_LIMIT
+      exitOrder.order_type = kite.ORDER_TYPE_SL
       exitOrder.price = round(absoluteLimitPrice)
     }
 
