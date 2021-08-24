@@ -1,6 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
+import { SL_ORDER_TYPE } from '../../types/plans'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
@@ -17,6 +18,7 @@ import {
   withRemoteRetry
 } from '../utils'
 import { doSquareOffPositions } from './autoSquareOff'
+import { convertSlmToSll } from './individualLegExitOrders'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
@@ -132,7 +134,7 @@ async function minXPercentOrSupertrend ({
         ) {
           // place a new SL order
           try {
-            const exitOrder = {
+            let exitOrder: KiteOrder = {
               trigger_price: newSL,
               tradingsymbol: triggerPendingOrder!.tradingsymbol,
               quantity: triggerPendingOrder!.quantity,
@@ -140,7 +142,11 @@ async function minXPercentOrSupertrend ({
               transaction_type: kite.TRANSACTION_TYPE_BUY,
               order_type: kite.ORDER_TYPE_SLM,
               product: triggerPendingOrder!.product,
-              tag: orderTag
+              tag: orderTag!
+            }
+
+            if (initialJobData.slOrderType === SL_ORDER_TYPE.SLL) {
+              exitOrder = convertSlmToSll(exitOrder, initialJobData.slLimitPricePercent!, kite)
             }
 
             const remoteOrder = remoteOrderSuccessEnsurer({

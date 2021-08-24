@@ -20,7 +20,6 @@ import React from 'react'
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
   STRATEGIES,
@@ -32,6 +31,7 @@ import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../.
 import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
+import SlManagerComponent from '../../lib/SlManagerComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
@@ -163,39 +163,8 @@ const TradeSetupForm = ({
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio />}
-                    label={
-                      <Typography style={{ fontSize: '14px' }}>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label='SLM %'
-            />
-          </Grid>
+
+          <SlManagerComponent state={state} onChange={onChange} exitStrategies={exitStrategies} />
 
           <HedgeComponent
             volatilityType={VOLATILITY_TYPE.SHORT}
