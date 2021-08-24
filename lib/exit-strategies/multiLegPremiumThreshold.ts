@@ -33,7 +33,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
 import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
-import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE, logDeep } from '../utils'
+import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 

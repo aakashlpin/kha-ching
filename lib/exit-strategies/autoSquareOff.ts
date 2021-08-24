@@ -3,7 +3,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, SUPPORTED_TRADE_CONFIG } from '
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
-  logDeep,
+  // logDeep,
   patchDbTrade,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,

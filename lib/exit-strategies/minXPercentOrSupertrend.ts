@@ -4,7 +4,7 @@ import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
-import { addToNextQueue, EXIT_TRADING_Q_NAME, WATCHER_Q_NAME } from '../queue'
+import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
 import {
   attemptBrokerOrders,
   getCompletedOrderFromOrderHistoryById,
