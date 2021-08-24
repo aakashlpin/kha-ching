@@ -132,7 +132,6 @@ async function minXPercentOrSupertrend ({
         ) {
           // cancel this order, place a new SL order and then trail that
           try {
-            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
             const exitOrder = {
               trigger_price: newSL,
               tradingsymbol: triggerPendingOrder!.tradingsymbol,
@@ -145,7 +144,7 @@ async function minXPercentOrSupertrend ({
             }
 
             const remoteOrder = remoteOrderSuccessEnsurer({
-              ensureOrderState: kite.COMPLETE,
+              ensureOrderState: 'TRIGGER PENDING',
               orderProps: exitOrder,
               user: user!
             })
@@ -160,10 +159,13 @@ async function minXPercentOrSupertrend ({
             const [newExitOrder] = statefulOrders
 
             console.log(
-              '[minXPercentOrSupertrend] placing new exit order',
+              '[minXPercentOrSupertrend] placed new exit order',
               exitOrder,
               newExitOrder
             )
+
+            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
+
             const queueRes = await addToNextQueue(initialJobData, {
               _nextTradingQueue: EXIT_TRADING_Q_NAME,
               rawKiteOrdersResponse: [newExitOrder],
