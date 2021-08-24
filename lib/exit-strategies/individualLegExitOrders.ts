@@ -91,7 +91,7 @@ async function individualLegExitOrders ({
   }
 
   if (slOrderType === SL_ORDER_TYPE.SLL) {
-    const watcherQueueJobs = exitOrders.map(async (exitOrder) => {
+    const watcherQueueJobs = statefulOrders.map(async (exitOrder) => {
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
         rawKiteOrderResponse: exitOrder
