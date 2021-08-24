@@ -3,6 +3,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, SUPPORTED_TRADE_CONFIG } from '
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
+  logDeep,
   patchDbTrade,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
@@ -38,6 +39,7 @@ export async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
 export async function doSquareOffPositions (orders: KiteOrder[], kite: any, initialJobData: Partial<SUPPORTED_TRADE_CONFIG>) {
   const openPositions = await withRemoteRetry(() => kite.getPositions())
   const { net } = openPositions
+  console.log('[doSquareOffPositions] input orders', logDeep(orders))
   const openPositionsForOrders = orders
     .filter(o => o)
     .map((order) => {
@@ -64,7 +66,9 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
     })
     .filter((o) => o)
 
-  const remoteRes = await Promise.all(
+    console.log('[doSquareOffPositions] openPositionsForOrders', logDeep(orders))
+
+    const remoteRes = await Promise.all(
     openPositionsForOrders.map(async (order) => {
       const exitOrder = {
         tradingsymbol: order.tradingsymbol,
@@ -76,7 +80,7 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
         product: order.product,
         tag: initialJobData.orderTag
       }
-      // console.log('square off position...', exitOrder)
+      console.log('square off position...', exitOrder)
       return remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: exitOrder,
