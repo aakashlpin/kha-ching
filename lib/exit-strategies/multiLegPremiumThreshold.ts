@@ -33,7 +33,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
 import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
-import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE } from '../utils'
+import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE, logDeep } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 
@@ -103,6 +103,7 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     }
 
     const legsOrders = rawKiteOrdersResponse
+    console.log('legsOrders', logDeep(legsOrders))
     // check here if the open positions include these legs
     // and quantities should be greater than equal to `legsOrders`
     // if not, resolve this checker assuming the user has squared off the positions themselves
@@ -197,6 +198,8 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
         [order.tradingsymbol]: order.average_price
       }), {})
 
+      console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
+
       // future proofing by allowing for any number of positions to be trailed together
       const { losingLegs, winningLegs } = liveSymbolPrices.reduce((accum, leg) => {
         const { lastPrice, tradingSymbol } = leg
@@ -215,8 +218,13 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
         winningLegs: []
       })
 
+      console.log('losingLegs', logDeep(losingLegs))
+      console.log('winningLegs', logDeep(winningLegs))
+
       const squareOffOrders = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
+      console.log('squareOffOrders', squareOffOrders)
       const bringToCostOrders = winningLegs.map(winningLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol))
+      console.log('bringToCostOrders', bringToCostOrders)
       // 1. square off losing legs
       await doSquareOffPositions(squareOffOrders as KiteOrder[], kite, initialJobData)
       // 2. bring the winning legs to cost
