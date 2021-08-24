@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { Dispatch } from 'react'
-import { ATM_STRADDLE_CONFIG, ATM_STRANGLE_CONFIG, AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../types/plans'
+import { ATM_STRADDLE_CONFIG, ATM_STRANGLE_CONFIG, AvailablePlansConfig, COMBINED_SL_EXIT_STRATEGY, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../types/plans'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../types/trade'
 
 import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from './constants'
@@ -78,6 +78,8 @@ const getSchedulingApiProps = ({
 })
 
 export const formatFormDataForApi = ({ strategy, data }: { strategy: string, data: AvailablePlansConfig }): SUPPORTED_TRADE_CONFIG | null => {
+  const getOnSquareOffSetAborted = ({ exitStrategy, combinedExitStrategy }) => exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD && combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL
+
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
       const {
@@ -119,7 +121,8 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         expireIfUnsuccessfulInMins,
         trailEveryPercentageChangeValue,
         trailingSlPercent,
-        exitStrategy
+        exitStrategy,
+        combinedExitStrategy
       } = data as ATM_STRADDLE_CONFIG
 
       const apiProps: ATM_STRADDLE_TRADE = {
@@ -128,7 +131,10 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         slmPercent: Number(slmPercent),
         trailEveryPercentageChangeValue: Number(trailEveryPercentageChangeValue),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
+        onSquareOffSetAborted: getOnSquareOffSetAborted({
+          exitStrategy,
+          combinedExitStrategy
+        }),
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
         ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
@@ -149,7 +155,8 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         trailEveryPercentageChangeValue,
         trailingSlPercent,
         exitStrategy,
-        expireIfUnsuccessfulInMins
+        expireIfUnsuccessfulInMins,
+        combinedExitStrategy
       } = data as ATM_STRANGLE_CONFIG
 
       const apiProps: ATM_STRANGLE_TRADE = {
@@ -158,7 +165,10 @@ export const formatFormDataForApi = ({ strategy, data }: { strategy: string, dat
         slmPercent: Number(slmPercent),
         trailEveryPercentageChangeValue: Number(trailEveryPercentageChangeValue),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
+        onSquareOffSetAborted: getOnSquareOffSetAborted({
+          exitStrategy,
+          combinedExitStrategy
+        }),
         inverted: Boolean(inverted),
         ...getSchedulingApiProps({ isAutoSquareOffEnabled, squareOffTime, exitStrategy, expireIfUnsuccessfulInMins, runAt, runNow })
       }

@@ -1,5 +1,4 @@
 import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES, PRODUCT_TYPE, VOLATILITY_TYPE } from '../lib/constants'
-import { DailyPlansDayKey, SignalXUser } from './misc'
 
 interface COMMON_TRADE_PROPS {
   productType: PRODUCT_TYPE
@@ -24,6 +23,16 @@ export interface ROLLBACK_TYPE {
   onBrokenExitOrders: boolean
 }
 
+export enum SL_ORDER_TYPE {
+  SLL = 'SLL',
+  SLM = 'SLM'
+}
+
+export enum COMBINED_SL_EXIT_STRATEGY {
+  EXIT_ALL = 'EXIT_ALL',
+  EXIT_LOSING = 'EXIT_LOSING'
+}
+
 export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   instruments: Record<INSTRUMENTS, boolean>
   lots: number
@@ -43,6 +52,9 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   isHedgeEnabled: boolean
   hedgeDistance?: number
   volatilityType: VOLATILITY_TYPE
+  slOrderType: SL_ORDER_TYPE
+  slLimitPricePercent?: number
+  combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -65,6 +77,9 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   distanceFromAtm: number
   deltaStrikes?: number
   volatilityType: VOLATILITY_TYPE
+  slOrderType: SL_ORDER_TYPE
+  slLimitPricePercent?: number
+  combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
@@ -82,6 +97,8 @@ export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
   disableInstrumentChange?: boolean
   strikeByPrice?: number | undefined
   rollback?: ROLLBACK_TYPE
+  slOrderType: SL_ORDER_TYPE
+  slLimitPricePercent?: number
 }
 
 export type AvailablePlansConfig = ATM_STRADDLE_CONFIG | ATM_STRANGLE_CONFIG | DIRECTIONAL_OPTION_SELLING_CONFIG

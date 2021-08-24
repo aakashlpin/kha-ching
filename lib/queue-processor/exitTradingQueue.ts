@@ -1,5 +1,4 @@
 import { Worker } from 'bullmq'
-import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE, SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
@@ -9,7 +8,7 @@ import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
 import minXPercentOrSupertrend, { DOS_TRAILING_INTERFACE } from '../exit-strategies/minXPercentOrSupertrend'
 import multiLegPremiumThreshold, { CombinedPremiumJobDataInterface } from '../exit-strategies/multiLegPremiumThreshold'
 import console from '../logging'
-import { addToNextQueue, EXIT_TRADING_Q_NAME, redisConnection, WATCHER_Q_NAME } from '../queue'
+import { EXIT_TRADING_Q_NAME, redisConnection } from '../queue'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
 function processJob (jobData: {
@@ -58,23 +57,6 @@ const worker = new Worker(
   async (job) => {
     try {
       const exitOrders = await processJob(job.data)
-      const { exitStrategy } = job.data.initialJobData
-      if (exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X) {
-        const watcherQueueJobs = exitOrders.map(async (exitOrder) => {
-          return addToNextQueue(job.data.initialJobData, {
-            _nextTradingQueue: WATCHER_Q_NAME,
-            rawKiteOrderResponse: exitOrder
-          })
-        })
-
-        try {
-          await Promise.all(watcherQueueJobs)
-        } catch (e) {
-          console.log('error adding to `watcherQueueJobs`')
-          console.log(e.message ? e.message : e)
-        }
-      }
-
       return exitOrders
     } catch (e) {
       console.log(e.message ? e.message : e)

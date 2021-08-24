@@ -3,6 +3,7 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE, SUPPORTED_TRADE_CONFIG } from '
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
+  // logDeep,
   patchDbTrade,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
@@ -64,7 +65,7 @@ export async function doSquareOffPositions (orders: KiteOrder[], kite: any, init
     })
     .filter((o) => o)
 
-  const remoteRes = await Promise.all(
+    const remoteRes = await Promise.all(
     openPositionsForOrders.map(async (order) => {
       const exitOrder = {
         tradingsymbol: order.tradingsymbol,

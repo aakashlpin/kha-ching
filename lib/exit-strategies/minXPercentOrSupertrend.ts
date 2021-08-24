@@ -4,7 +4,7 @@ import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
-import { addToNextQueue, EXIT_TRADING_Q_NAME, WATCHER_Q_NAME } from '../queue'
+import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
 import {
   attemptBrokerOrders,
   getCompletedOrderFromOrderHistoryById,
@@ -130,7 +130,7 @@ async function minXPercentOrSupertrend ({
           e.error_type === 'NetworkException' &&
           e.message === 'Maximum allowed order modifications exceeded.'
         ) {
-          // cancel this order, place a new SL order and then trail that
+          // place a new SL order
           try {
             const exitOrder = {
               trigger_price: newSL,
@@ -156,6 +156,9 @@ async function minXPercentOrSupertrend ({
               throw new Error('[minXPercentOrSupertrend] replacement order failed!')
             }
 
+            // once replacement is ensured, cancel the existing order
+            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
+
             const [newExitOrder] = statefulOrders
 
             console.log(
@@ -164,17 +167,10 @@ async function minXPercentOrSupertrend ({
               newExitOrder
             )
 
-            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
-
             const queueRes = await addToNextQueue(initialJobData, {
               _nextTradingQueue: EXIT_TRADING_Q_NAME,
               rawKiteOrdersResponse: [newExitOrder],
               optionInstrumentToken
-            })
-
-            await addToNextQueue(initialJobData, {
-              _nextTradingQueue: WATCHER_Q_NAME,
-              rawKiteOrderResponse: exitOrder
             })
 
             console.log('[minXPercentOrSupertrend] addToNextQueue', queueRes)

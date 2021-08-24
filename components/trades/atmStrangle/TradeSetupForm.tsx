@@ -2,7 +2,6 @@ import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
-  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -21,7 +20,6 @@ import React from 'react'
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
   STRATEGIES,
@@ -34,6 +32,7 @@ import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
+import SlManagerComponent from '../../lib/SlManagerComponent'
 
 interface ATMStrangleTradeSetupFormProps {
   formHeading?: string
@@ -120,27 +119,27 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
           </Grid>
 
           <Grid item>
-            { state.entryStrategy === STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM
+            {state.entryStrategy === STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM
               ? (
-              <DiscreteSlider
-                label={'Strikes away from ATM strike'}
-                defaultValue={1}
-                step={1}
-                min={1}
-                max={20}
-                value={state.distanceFromAtm}
-                onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
-              />
-                )
+                <DiscreteSlider
+                  label={'Strikes away from ATM strike'}
+                  defaultValue={1}
+                  step={1}
+                  min={1}
+                  max={20}
+                  value={state.distanceFromAtm}
+                  onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
+                />
+              )
               : (
-              <TextField
-                fullWidth
-                name='deltaStrikes'
-                value={state.deltaStrikes}
-                onChange={(e) => onChange({ deltaStrikes: +e.target.value || undefined })}
-                label='Strike delta'
-              />
-                )
+                <TextField
+                  fullWidth
+                  name='deltaStrikes'
+                  value={state.deltaStrikes}
+                  onChange={(e) => onChange({ deltaStrikes: +e.target.value || undefined })}
+                  label='Strike delta'
+                />
+              )
             }
           </Grid>
 
@@ -154,64 +153,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
             />
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio size='small' />}
-                    label={
-                      <Typography variant='body2'>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            ? (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailEveryPercentageChangeValue'
-                    value={state.trailEveryPercentageChangeValue}
-                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: +e.target.value || undefined })}
-                    label='Trail SL everytime combined premium decreases by %'
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailingSlPercent'
-                    value={state.trailingSlPercent}
-                    onChange={(e) => onChange({ trailingSlPercent: +e.target.value || undefined })}
-                    label='Trailing SL %'
-                  />
-                </Grid>
-              </>
-              )
-            : null}
-
-          <Grid item xs={12} style={{ marginBottom: '16px' }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
-            />
-          </Grid>
+          <SlManagerComponent state={state} onChange={onChange} exitStrategies={exitStrategies} />
 
           <Grid item xs={12}>
             <FormControl component='fieldset'>
@@ -269,7 +211,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                         }}
                       />
                     </MuiPickersUtilsProvider>
-                    )
+                  )
                   : null}
               </FormGroup>
             </FormControl>
@@ -291,7 +233,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                   Schedule now
                 </Button>
               </Grid>
-              )
+            )
             : null}
 
           <Grid item xs={12}>
@@ -335,7 +277,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                 >
                   Cancel
                 </Button>
-                )
+              )
               : null}
           </Grid>
         </Grid>
