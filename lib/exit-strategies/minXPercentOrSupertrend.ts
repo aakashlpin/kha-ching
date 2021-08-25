@@ -1,6 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
+import { SL_ORDER_TYPE } from '../../types/plans'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
@@ -17,6 +18,7 @@ import {
   withRemoteRetry
 } from '../utils'
 import { doSquareOffPositions } from './autoSquareOff'
+import { convertSlmToSll } from './individualLegExitOrders'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
@@ -33,7 +35,7 @@ async function minXPercentOrSupertrend ({
   optionInstrumentToken,
   hedgeOrderResponse
 }: DOS_TRAILING_INTERFACE) {
-  const { user, orderTag } = initialJobData
+  const { user, orderTag, slOrderType, slLimitPricePercent } = initialJobData
   try {
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
@@ -112,10 +114,20 @@ async function minXPercentOrSupertrend ({
       getPercentageChange(punchedTriggerPrice!, newSL) >= 3
     ) {
       try {
+        const sllOrderProps = slOrderType === SL_ORDER_TYPE.SLL
+          ? convertSlmToSll({
+                    trigger_price: newSL
+                  } as KiteOrder, slLimitPricePercent!, kite)
+          : null
         const res = await kite.modifyOrder(
           triggerPendingOrder!.variety,
           triggerPendingOrder!.order_id,
-          {
+          slOrderType === SL_ORDER_TYPE.SLL
+            ? {
+                trigger_price: sllOrderProps!.trigger_price,
+                price: sllOrderProps!.price
+              }
+            : {
             trigger_price: newSL
           }
         )
@@ -132,7 +144,7 @@ async function minXPercentOrSupertrend ({
         ) {
           // place a new SL order
           try {
-            const exitOrder = {
+            let exitOrder: KiteOrder = {
               trigger_price: newSL,
               tradingsymbol: triggerPendingOrder!.tradingsymbol,
               quantity: triggerPendingOrder!.quantity,
@@ -140,7 +152,11 @@ async function minXPercentOrSupertrend ({
               transaction_type: kite.TRANSACTION_TYPE_BUY,
               order_type: kite.ORDER_TYPE_SLM,
               product: triggerPendingOrder!.product,
-              tag: orderTag
+              tag: orderTag!
+            }
+
+            if (slOrderType === SL_ORDER_TYPE.SLL) {
+              exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
             }
 
             const remoteOrder = remoteOrderSuccessEnsurer({
