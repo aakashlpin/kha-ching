@@ -9,14 +9,20 @@ const useStyles = makeStyles({
   }
 })
 
-export default function DiscreteSlider ({ label, defaultValue, step, min, max, value, onChange }) {
+export default function DiscreteSlider ({
+  label,
+  defaultValue,
+  step,
+  min,
+  max,
+  value,
+  onChange
+}) {
   const classes = useStyles()
 
   return (
     <div className={classes.root}>
-      <Typography gutterBottom>
-        {label}
-      </Typography>
+      <Typography gutterBottom>{label}</Typography>
       <Slider
         value={value}
         defaultValue={defaultValue}
@@ -24,7 +30,7 @@ export default function DiscreteSlider ({ label, defaultValue, step, min, max, v
         marks
         min={min}
         max={max}
-        valueLabelDisplay="auto"
+        valueLabelDisplay='auto'
         onChange={onChange}
       />
     </div>

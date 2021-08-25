@@ -16,7 +16,8 @@ const Header = () => {
 
   useEffect(() => {
     async function fn () {
-      const url = 'https://api.github.com/repos/aakashlpin/kha-ching/commits?per_page=1'
+      const url =
+        'https://api.github.com/repos/aakashlpin/kha-ching/commits?per_page=1'
       try {
         const [commit] = await fetchJson(url)
         const { sha } = commit
@@ -83,7 +84,7 @@ const Header = () => {
               <li>
                 <a
                   href='/api/logout'
-                  onClick={async (e) => {
+                  onClick={async e => {
                     e.preventDefault()
                     await mutateUser(fetchJson('/api/logout'))
                     router.push('/')
@@ -94,45 +95,47 @@ const Header = () => {
               </li>
             </>
           )}
-          {isUpdateAvailable
-            ? (
-              <li>
-                <a href='https://cloud.digitalocean.com/apps' title='App update available'>
-                  <NotificationsActiveIcon color='inherit' />
-                </a>
-              </li>
-              )
-            : null}
+          {isUpdateAvailable ? (
+            <li>
+              <a
+                href='https://cloud.digitalocean.com/apps'
+                title='App update available'
+              >
+                <NotificationsActiveIcon color='inherit' />
+              </a>
+            </li>
+          ) : null}
         </ul>
       </nav>
-      <style jsx>{`
-        ul {
-          display: flex;
-          list-style: none;
-          margin-left: 0;
-          padding-left: 0;
-        }
-        li {
-          margin-right: 1rem;
-          display: flex;
-        }
-        li:first-child {
-          margin-left: auto;
-        }
-        a {
-          color: #fff;
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-        }
-        a img {
-          margin-right: 1em;
-        }
-        header {
-          padding: 0.2rem;
-          background-color: #19857b;
-        }
-      `}
+      <style jsx>
+        {`
+          ul {
+            display: flex;
+            list-style: none;
+            margin-left: 0;
+            padding-left: 0;
+          }
+          li {
+            margin-right: 1rem;
+            display: flex;
+          }
+          li:first-child {
+            margin-left: auto;
+          }
+          a {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+          }
+          a img {
+            margin-right: 1em;
+          }
+          header {
+            padding: 0.2rem;
+            background-color: #19857b;
+          }
+        `}
       </style>
     </header>
   )

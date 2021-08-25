@@ -40,36 +40,45 @@ async function minXPercentOrSupertrend ({
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
     // NB: rawKiteOrderResponse here is of pending SLM Order
-    const orderHistory: KiteOrder[] = await withRemoteRetry(() => kite.getOrderHistory(rawKiteOrderResponse.order_id))
+    const orderHistory: KiteOrder[] = await withRemoteRetry(() =>
+      kite.getOrderHistory(rawKiteOrderResponse.order_id)
+    )
     const byRecencyOrderHistory = orderHistory.reverse()
 
-    const isSlOrderCancelled = byRecencyOrderHistory.find((odr) => odr.status === 'CANCELLED')
+    const isSlOrderCancelled = byRecencyOrderHistory.find(
+      odr => odr.status === 'CANCELLED'
+    )
     if (isSlOrderCancelled) {
-      return Promise.resolve(
-        '🔴 [minXPercentOrSupertrend] SL order cancelled!'
-      )
+      return Promise.resolve('🔴 [minXPercentOrSupertrend] SL order cancelled!')
     }
 
-    const slTriggeredOrder = byRecencyOrderHistory.find((odr) => odr.status === 'COMPLETE')
+    const slTriggeredOrder = byRecencyOrderHistory.find(
+      odr => odr.status === 'COMPLETE'
+    )
     if (slTriggeredOrder) {
       if (hedgeOrderResponse) {
         // take off the hedge
         try {
-          const hedgeOrder: KiteOrder = await withRemoteRetry(async () => getCompletedOrderFromOrderHistoryById(
-            kite,
-            hedgeOrderResponse.order_id
-          ))
+          const hedgeOrder: KiteOrder = await withRemoteRetry(async () =>
+            getCompletedOrderFromOrderHistoryById(
+              kite,
+              hedgeOrderResponse.order_id
+            )
+          )
           // do this only if this buy position is still active
           await doSquareOffPositions([hedgeOrder], kite, initialJobData)
         } catch (e) {
-          console.log('🔴 [minXPercentOrSupertrend] error taking out the hedge!', e)
+          console.log(
+            '🔴 [minXPercentOrSupertrend] error taking out the hedge!',
+            e
+          )
         }
       }
       return Promise.resolve('SL triggered')
     }
 
     const triggerPendingOrder = byRecencyOrderHistory.find(
-      (odr) => odr.status === 'TRIGGER PENDING'
+      odr => odr.status === 'TRIGGER PENDING'
     )
     const punchedTriggerPrice = (triggerPendingOrder as KiteOrder).trigger_price
 
@@ -92,15 +101,13 @@ async function minXPercentOrSupertrend ({
     }
 
     // console.log('[minXPercentOrSupertrend] ST request', supertrendProps)
-    const { data: optionSuperTrend } = await withRemoteRetry(async () => axios.post(
-      `${SIGNALX_URL}/api/indicator/supertrend`,
-      supertrendProps,
-      {
+    const { data: optionSuperTrend } = await withRemoteRetry(async () =>
+      axios.post(`${SIGNALX_URL}/api/indicator/supertrend`, supertrendProps, {
         headers: {
           'X-API-KEY': process.env.SIGNALX_API_KEY
         }
-      }
-    ))
+      })
+    )
 
     // console.log('[minXPercentOrSupertrend] ST response', optionSuperTrend)
     const [latestST] = optionSuperTrend.slice(-1)
@@ -114,11 +121,16 @@ async function minXPercentOrSupertrend ({
       getPercentageChange(punchedTriggerPrice!, newSL) >= 3
     ) {
       try {
-        const sllOrderProps = slOrderType === SL_ORDER_TYPE.SLL
-          ? convertSlmToSll({
-                    trigger_price: newSL
-                  } as KiteOrder, slLimitPricePercent!, kite)
-          : null
+        const sllOrderProps =
+          slOrderType === SL_ORDER_TYPE.SLL
+            ? convertSlmToSll(
+                {
+                  trigger_price: newSL
+                } as KiteOrder,
+                slLimitPricePercent!,
+                kite
+              )
+            : null
         const res = await kite.modifyOrder(
           triggerPendingOrder!.variety,
           triggerPendingOrder!.order_id,
@@ -128,11 +140,13 @@ async function minXPercentOrSupertrend ({
                 price: sllOrderProps!.price
               }
             : {
-            trigger_price: newSL
-          }
+                trigger_price: newSL
+              }
         )
         console.log(
-          `🟢 [minXPercentOrSupertrend] SL modified from ${String(punchedTriggerPrice)} to ${newSL}`,
+          `🟢 [minXPercentOrSupertrend] SL modified from ${String(
+            punchedTriggerPrice
+          )} to ${newSL}`,
           res
         )
       } catch (e) {
@@ -165,15 +179,24 @@ async function minXPercentOrSupertrend ({
               user: user!
             })
 
-            const { allOk, statefulOrders } = await attemptBrokerOrders([remoteOrder])
+            const { allOk, statefulOrders } = await attemptBrokerOrders([
+              remoteOrder
+            ])
 
             if (!allOk) {
               logDeep(statefulOrders)
-              throw new Error('[minXPercentOrSupertrend] replacement order failed!')
+              throw new Error(
+                '[minXPercentOrSupertrend] replacement order failed!'
+              )
             }
 
             // once replacement is ensured, cancel the existing order
-            await withRemoteRetry(() => kite.cancelOrder(triggerPendingOrder!.variety, triggerPendingOrder!.order_id))
+            await withRemoteRetry(() =>
+              kite.cancelOrder(
+                triggerPendingOrder!.variety,
+                triggerPendingOrder!.order_id
+              )
+            )
 
             const [newExitOrder] = statefulOrders
 
@@ -210,7 +233,9 @@ async function minXPercentOrSupertrend ({
     return Promise.reject(new Error('SL not triggered'))
   } catch (e) {
     console.log('🔴 [minXPercentOrSupertrend] global caught error', e)
-    return Promise.reject(new Error('[minXPercentOrSupertrend] global caught error. Will retry!'))
+    return Promise.reject(
+      new Error('[minXPercentOrSupertrend] global caught error. Will retry!')
+    )
   }
 }
 

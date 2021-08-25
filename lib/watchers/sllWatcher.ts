@@ -11,21 +11,34 @@
 import { Promise } from 'bluebird'
 import { SignalXUser } from '../../types/misc'
 import console from '../logging'
-import { finiteStateChecker, ms, orderStateChecker, syncGetKiteInstance, withRemoteRetry } from '../utils'
+import {
+  finiteStateChecker,
+  ms,
+  orderStateChecker,
+  syncGetKiteInstance,
+  withRemoteRetry
+} from '../utils'
 
-const sllWatcher = async (
-  { sllOrderId, user }:
-  { sllOrderId: string, user: SignalXUser }
-) => {
+const sllWatcher = async ({
+  sllOrderId,
+  user
+}: {
+  sllOrderId: string
+  user: SignalXUser
+}) => {
   try {
     const kite = syncGetKiteInstance(user)
-    const orderHistory = (await withRemoteRetry(() => kite.getOrderHistory(sllOrderId))).reverse()
-    const isOrderCompleted = orderHistory.find((order) => order.status === kite.STATUS_COMPLETE)
+    const orderHistory = (
+      await withRemoteRetry(() => kite.getOrderHistory(sllOrderId))
+    ).reverse()
+    const isOrderCompleted = orderHistory.find(
+      order => order.status === kite.STATUS_COMPLETE
+    )
     if (isOrderCompleted) {
       return Promise.resolve('[sllWatcher] order Completed!')
     }
 
-    const cancelledOrder = orderHistory.find((order) =>
+    const cancelledOrder = orderHistory.find(order =>
       order.status.includes(kite.STATUS_CANCELLED)
     )
 
@@ -40,7 +53,11 @@ const sllWatcher = async (
     }
 
     const timeout = ms(30)
-    const orderCompletionCheckerPr = orderStateChecker(kite, sllOrderId, kite.STATUS_COMPLETE)
+    const orderCompletionCheckerPr = orderStateChecker(
+      kite,
+      sllOrderId,
+      kite.STATUS_COMPLETE
+    )
     try {
       await finiteStateChecker(orderCompletionCheckerPr, timeout)
       // order found to be completed after open
@@ -49,23 +66,34 @@ const sllWatcher = async (
       if (e instanceof Promise.TimeoutError) {
         // order not filled after timeout seconds
         // place market orders
-        console.log('🟢 [sllWatcher] squaring off open SLL order id', sllOrderId)
+        console.log(
+          '🟢 [sllWatcher] squaring off open SLL order id',
+          sllOrderId
+        )
         try {
-          await withRemoteRetry(() => kite.modifyOrder(
-            openOrder.variety,
-            sllOrderId,
-            {
+          await withRemoteRetry(() =>
+            kite.modifyOrder(openOrder.variety, sllOrderId, {
               order_type: kite.ORDER_TYPE_MARKET
-            }
-          ))
-          return Promise.resolve(`🟢 [sllWatcher] squared off open SLL order id ${sllOrderId}`)
+            })
+          )
+          return Promise.resolve(
+            `🟢 [sllWatcher] squared off open SLL order id ${sllOrderId}`
+          )
         } catch (error) {
-          console.log('🔴 [sllWatcher] error squaring off pending open SLL order id', sllOrderId, error)
-          return Promise.resolve(`🔴 [sllWatcher] error squaring off open SLL order id ${sllOrderId}`)
+          console.log(
+            '🔴 [sllWatcher] error squaring off pending open SLL order id',
+            sllOrderId,
+            error
+          )
+          return Promise.resolve(
+            `🔴 [sllWatcher] error squaring off open SLL order id ${sllOrderId}`
+          )
         }
       }
       console.log('🔴 [sllWatcher] unhandled orderStateChecker caught', e)
-      return Promise.resolve(`🔴 [sllWatcher] error squaring off open SLL order id ${sllOrderId}`)
+      return Promise.resolve(
+        `🔴 [sllWatcher] error squaring off open SLL order id ${sllOrderId}`
+      )
     }
   } catch (e) {
     console.log('🔴 [sllWatcher] error. Checker terminated!', e)

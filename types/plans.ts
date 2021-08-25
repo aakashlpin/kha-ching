@@ -1,4 +1,12 @@
-import { INSTRUMENTS, EXIT_STRATEGIES, DOS_ENTRY_STRATEGIES, STRATEGIES, STRANGLE_ENTRY_STRATEGIES, PRODUCT_TYPE, VOLATILITY_TYPE } from '../lib/constants'
+import {
+  INSTRUMENTS,
+  EXIT_STRATEGIES,
+  DOS_ENTRY_STRATEGIES,
+  STRATEGIES,
+  STRANGLE_ENTRY_STRATEGIES,
+  PRODUCT_TYPE,
+  VOLATILITY_TYPE
+} from '../lib/constants'
 
 interface COMMON_TRADE_PROPS {
   productType: PRODUCT_TYPE
@@ -11,7 +19,7 @@ export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
   // _collection?: DailyPlansDayKey
   isAutoSquareOffEnabled: boolean
   runNow?: boolean
-  autoSquareOffProps?: {time: string, deletePendingOrders: boolean}
+  autoSquareOffProps?: { time: string; deletePendingOrders: boolean }
   runAt?: string
   squareOffTime: string | undefined
   expiresAt?: string
@@ -101,4 +109,7 @@ export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
   slLimitPricePercent?: number
 }
 
-export type AvailablePlansConfig = ATM_STRADDLE_CONFIG | ATM_STRANGLE_CONFIG | DIRECTIONAL_OPTION_SELLING_CONFIG
+export type AvailablePlansConfig =
+  | ATM_STRADDLE_CONFIG
+  | ATM_STRANGLE_CONFIG
+  | DIRECTIONAL_OPTION_SELLING_CONFIG

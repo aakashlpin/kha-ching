@@ -20,44 +20,62 @@ test('it should work without hedge order', async () => {
 
   const getOrderHistoryMock = jest.fn()
 
-  when(getOrderHistoryMock).calledWith('slm order').mockResolvedValue([{
-    order_id: 'slm order',
-    status: 'TRIGGER PENDING',
-    variety: 'regular',
-    exchange: 'NFO',
-    tradingsymbol: 'BANKNIFTY2172234500PE',
-    order_type: 'SL-M',
-    trigger_price: 150,
-    transaction_type: 'BUY',
-    validity: 'DAY',
-    product: 'MIS',
-    quantity: 25,
-    tag: 'X0uE0cKR'
-  }])
+  when(getOrderHistoryMock)
+    .calledWith('slm order')
+    .mockResolvedValue([
+      {
+        order_id: 'slm order',
+        status: 'TRIGGER PENDING',
+        variety: 'regular',
+        exchange: 'NFO',
+        tradingsymbol: 'BANKNIFTY2172234500PE',
+        order_type: 'SL-M',
+        trigger_price: 150,
+        transaction_type: 'BUY',
+        validity: 'DAY',
+        product: 'MIS',
+        quantity: 25,
+        tag: 'X0uE0cKR'
+      }
+    ])
 
-  when(getOrderHistoryMock).calledWith('original order').mockResolvedValue([{
-    order_id: 'original order',
-    status: kite.STATUS_COMPLETE,
-    variety: 'regular',
-    exchange: 'NFO',
-    tradingsymbol: 'BANKNIFTY2172234500PE',
-    order_type: 'MARKET',
-    average_price: 100,
-    transaction_type: 'SELL',
-    validity: 'DAY',
-    product: 'MIS',
-    quantity: 25,
-    tag: 'X0uE0cKR'
-  }])
+  when(getOrderHistoryMock)
+    .calledWith('original order')
+    .mockResolvedValue([
+      {
+        order_id: 'original order',
+        status: kite.STATUS_COMPLETE,
+        variety: 'regular',
+        exchange: 'NFO',
+        tradingsymbol: 'BANKNIFTY2172234500PE',
+        order_type: 'MARKET',
+        average_price: 100,
+        transaction_type: 'SELL',
+        validity: 'DAY',
+        product: 'MIS',
+        quantity: 25,
+        tag: 'X0uE0cKR'
+      }
+    ])
 
   const placeOrderMock = jest.fn()
-  when(placeOrderMock).calledWith(expect.anything(), expect.objectContaining({ trigger_price: expect.any(Number) })).mockResolvedValue({
-    order_id: 'slm order'
-  })
+  when(placeOrderMock)
+    .calledWith(
+      expect.anything(),
+      expect.objectContaining({ trigger_price: expect.any(Number) })
+    )
+    .mockResolvedValue({
+      order_id: 'slm order'
+    })
 
-  when(placeOrderMock).calledWith(expect.anything(), expect.not.objectContaining({ trigger_price: expect.any(Number) })).mockResolvedValue({
-    order_id: 'original order'
-  })
+  when(placeOrderMock)
+    .calledWith(
+      expect.anything(),
+      expect.not.objectContaining({ trigger_price: expect.any(Number) })
+    )
+    .mockResolvedValue({
+      order_id: 'original order'
+    })
 
   kite = {
     ...kite,
@@ -78,8 +96,7 @@ test('it should work without hedge order', async () => {
       ST_10_3: 34955.0356717531,
       STX_10_3: 'up'
     }
-  ]
-  )
+  ])
 
   const res = await directionalOptionSelling({
     _kite: kite,

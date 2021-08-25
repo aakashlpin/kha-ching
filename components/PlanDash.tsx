@@ -48,7 +48,10 @@ const PlanDash = () => {
         if (Array.isArray(accum[updatedConfig._collection])) {
           return {
             ...accum,
-            [updatedConfig._collection]: [...accum[updatedConfig._collection], updatedConfig]
+            [updatedConfig._collection]: [
+              ...accum[updatedConfig._collection],
+              updatedConfig
+            ]
           }
         }
         return {
@@ -66,20 +69,23 @@ const PlanDash = () => {
   async function handleScheduleJob (plan) {
     const { runAt } = plan
     const runNow = dayjs().isAfter(dayjs(runAt))
-    await axios.post('/api/trades_day', formatFormDataForApi({
-      strategy: plan.strategy,
-      data: {
-        ...plan,
-        plan_ref: plan._id,
-        runNow
-      }
-    }))
+    await axios.post(
+      '/api/trades_day',
+      formatFormDataForApi({
+        strategy: plan.strategy,
+        data: {
+          ...plan,
+          plan_ref: plan._id,
+          runNow
+        }
+      })
+    )
     mutate('/api/trades_day')
   }
 
   const getPendingTrades = () =>
     plans[dayOfWeek]
-      ?.filter((plan) => !tradesDay?.find((trade) => trade.plan_ref === plan._id))
+      ?.filter(plan => !tradesDay?.find(trade => trade.plan_ref === plan._id))
       .filter(plan => STRATEGIES_DETAILS[plan.strategy])
 
   const getScheduleableTrades = () => {
@@ -88,7 +94,7 @@ const PlanDash = () => {
       return null
     }
 
-    return pendingTrades.filter((trade) => dayjs().isBefore(dayjs(trade.runAt)))
+    return pendingTrades.filter(trade => dayjs().isBefore(dayjs(trade.runAt)))
   }
 
   async function handleScheduleEverything () {
@@ -109,7 +115,8 @@ const PlanDash = () => {
     if (plans[dayOfWeek]) {
       return (
         <Typography>
-          You&apos;ve scheduled all trades as per plan. Check "Today" tab for details.
+          You&apos;ve scheduled all trades as per plan. Check &quot;Today&quot;
+          tab for details.
         </Typography>
       )
     }
@@ -125,11 +132,10 @@ const PlanDash = () => {
 
   return (
     <div>
-      {plans[dayOfWeek] && scheduleableTrades
-        ? (
-          <ActionButtonOrLoader>
-          {({ setLoading }) =>
-              <Button
+      {plans[dayOfWeek] && scheduleableTrades ? (
+        <ActionButtonOrLoader>
+          {({ setLoading }) => (
+            <Button
               style={{ marginBottom: 18 }}
               variant='contained'
               color='primary'
@@ -142,44 +148,42 @@ const PlanDash = () => {
             >
               Schedule all trades
             </Button>
-          }
-          </ActionButtonOrLoader>
-          )
-        : null}
+          )}
+        </ActionButtonOrLoader>
+      ) : null}
 
-      {pendingTrades
-        .map((plan: SUPPORTED_TRADE_CONFIG, idx: number) => {
-          const isPlanScheduleable = dayjs().isBefore(dayjs(plan.runAt))
-          return (
-            <div key={plan._id}>
-              <Paper style={{ padding: 16, marginBottom: 32 }}>
-                <h4>
-                  {`${idx + 1}`} · {STRATEGIES_DETAILS[plan.strategy].heading}
-                </h4>
+      {pendingTrades.map((plan: SUPPORTED_TRADE_CONFIG, idx: number) => {
+        const isPlanScheduleable = dayjs().isBefore(dayjs(plan.runAt))
+        return (
+          <div key={plan._id}>
+            <Paper style={{ padding: 16, marginBottom: 32 }}>
+              <h4>
+                {`${idx + 1}`} · {STRATEGIES_DETAILS[plan.strategy].heading}
+              </h4>
 
-                <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
+              <TradeDetails strategy={plan.strategy} tradeDetails={plan} />
 
-                <Grid item style={{ marginTop: 16 }}>
-                  <ActionButtonOrLoader>
-                    {({ setLoading }) =>
-                      <Button
-                        variant='contained'
-                        type='button'
-                        onClick={async () => {
-                          setLoading(true)
-                          await handleScheduleJob(plan)
-                          setLoading(false)
-                        }}
-                      >
+              <Grid item style={{ marginTop: 16 }}>
+                <ActionButtonOrLoader>
+                  {({ setLoading }) => (
+                    <Button
+                      variant='contained'
+                      type='button'
+                      onClick={async () => {
+                        setLoading(true)
+                        await handleScheduleJob(plan)
+                        setLoading(false)
+                      }}
+                    >
                       {isPlanScheduleable ? 'Schedule trade' : 'Run now'}
                     </Button>
-                    }
-                  </ActionButtonOrLoader>
-                </Grid>
-              </Paper>
-            </div>
-          )
-        })}
+                  )}
+                </ActionButtonOrLoader>
+              </Grid>
+            </Paper>
+          </div>
+        )
+      })}
     </div>
   )
 }

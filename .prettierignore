@@ -1,1 +1,7 @@
 node_modules
+.next
+.vscode
+.do
+public
+*.csv
+*.sh

@@ -1,11 +1,17 @@
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import csv from 'csvtojson'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
 import Bluebird, { Promise } from 'bluebird'
 import { allSettled, allSettledInterface } from './es6-promise'
 
-import { ERROR_STRINGS, EXIT_STRATEGIES, INSTRUMENT_DETAILS, STRATEGIES, USER_OVERRIDE } from './constants'
+import {
+  ERROR_STRINGS,
+  EXIT_STRATEGIES,
+  INSTRUMENT_DETAILS,
+  STRATEGIES,
+  USER_OVERRIDE
+} from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
@@ -20,42 +26,49 @@ const https = require('https')
 const fs = require('fs')
 const memoizer = require('memoizee')
 
-const MOCK_ORDERS = process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
-export const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
+const MOCK_ORDERS = process.env.MOCK_ORDERS
+  ? JSON.parse(process.env.MOCK_ORDERS)
+  : false
+export const SIGNALX_URL =
+  process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
 const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
 const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 const KITE_API_KEY = process.env.KITE_API_KEY
 
-export const logDeep = (object) => console.log(JSON.stringify(object, null, 2))
+export const logDeep = object => console.log(JSON.stringify(object, null, 2))
 
-export const ms = (seconds) => seconds * 1000
+export const ms = seconds => seconds * 1000
 
 const asyncGetIndexInstruments = (exchange = 'NFO') =>
   new Promise((resolve, reject) => {
     const filename = `instrument_${new Date().getTime()}.csv`
     const file = fs.createWriteStream(filename)
     console.log('downloading instruments file...')
-    https.get(`https://api.kite.trade/instruments/${exchange}`, function (response) {
+    https.get(`https://api.kite.trade/instruments/${exchange}`, function (
+      response
+    ) {
       const stream = response.pipe(file)
       stream.on('finish', async () => {
         try {
           const jsonArray = await csv().fromFile(filename)
           // sometimes 0d returns 200 status code but 502 gateway error in file
           if (Object.keys(jsonArray[0]).length === 12) {
-            fs.unlink(filename, (e) => {})
+            fs.unlink(filename, e => {})
             const indexesData =
               exchange === 'NFO'
                 ? jsonArray.filter(
-                  (item) =>
-                    item.name === 'NIFTY' || item.name === 'BANKNIFTY' || item.name === 'FINNIFTY'
-                )
+                    item =>
+                      item.name === 'NIFTY' ||
+                      item.name === 'BANKNIFTY' ||
+                      item.name === 'FINNIFTY'
+                  )
                 : jsonArray
 
             return resolve(indexesData)
           }
           // retry if that's the case
-          fs.unlink(filename, (e) => {})
+          fs.unlink(filename, e => {})
           console.log('🔴 Failed downloading instruments file! Retrying...')
           // resolve this promise with a recursive promise fn call
           resolve(asyncGetIndexInstruments())
@@ -72,15 +85,19 @@ export const getIndexInstruments = memoizer(asyncGetIndexInstruments, {
   promise: true
 })
 
-export const delay = (ms) =>
-  new Promise((resolve) =>
+export const delay = ms =>
+  new Promise(resolve =>
     setTimeout(() => {
       resolve()
     }, ms)
   )
 
 export const getMisOrderLastSquareOffTime = () =>
-  dayjs().set('hour', 15).set('minutes', 24).set('seconds', 0).format()
+  dayjs()
+    .set('hour', 15)
+    .set('minutes', 24)
+    .set('seconds', 0)
+    .format()
 
 export interface TradingSymbolInterface {
   tradingsymbol: string
@@ -106,13 +123,15 @@ export const getCurrentExpiryTradingSymbol = async ({
   const instrumentsData = await getIndexInstruments()
   const rows = instrumentsData
     .filter(
-      (item) =>
+      item =>
         (nfoSymbol ? item.name === nfoSymbol : true) &&
         (strike ? item.strike == strike : true) && // eslint-disable-line
         (tradingsymbol ? item.tradingsymbol === tradingsymbol : true) &&
         (instrumentType ? item.instrument_type === instrumentType : true)
     )
-    .sort((row1, row2) => (dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1))
+    .sort((row1, row2) =>
+      dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
+    )
 
   if (instrumentType) {
     return rows.length ? rows[0] : null
@@ -120,8 +139,10 @@ export const getCurrentExpiryTradingSymbol = async ({
 
   const relevantRows = rows.slice(0, 2)
 
-  const peStrike = relevantRows.find((item) => item.instrument_type === 'PE').tradingsymbol
-  const ceStrike = relevantRows.find((item) => item.instrument_type === 'CE').tradingsymbol
+  const peStrike = relevantRows.find(item => item.instrument_type === 'PE')
+    .tradingsymbol
+  const ceStrike = relevantRows.find(item => item.instrument_type === 'CE')
+    .tradingsymbol
 
   return {
     PE_STRING: peStrike,
@@ -129,12 +150,21 @@ export const getCurrentExpiryTradingSymbol = async ({
   }
 }
 
-export function getPercentageChange (price1: number, price2: number, mode: string = 'AGGRESIVE') {
-  const denominator = mode === 'AGGRESIVE' ? ((price1 + price2) / 2) : Math.min(price1, price2)
+export function getPercentageChange (
+  price1: number,
+  price2: number,
+  mode: string = 'AGGRESIVE'
+) {
+  const denominator =
+    mode === 'AGGRESIVE' ? (price1 + price2) / 2 : Math.min(price1, price2)
   return Math.floor((Math.abs(price1 - price2) / denominator) * 100)
 }
 
-export async function getInstrumentPrice (kite, underlying: string, exchange: string) {
+export async function getInstrumentPrice (
+  kite,
+  underlying: string,
+  exchange: string
+) {
   const instrumentString = `${exchange}:${underlying}`
   const underlyingRes = await kite.getLTP(instrumentString)
   return Number(underlyingRes[instrumentString].last_price)
@@ -157,7 +187,9 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
 export function syncGetKiteInstance (user) {
   const accessToken = user?.session?.access_token
   if (!accessToken) {
-    throw new Error('missing access_token in `user` object, or `user` is undefined')
+    throw new Error(
+      'missing access_token in `user` object, or `user` is undefined'
+    )
   }
   return new KiteConnect({
     api_key: KITE_API_KEY,
@@ -167,22 +199,27 @@ export function syncGetKiteInstance (user) {
 
 export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
   const orders = await kite.getOrderHistory(orderId)
-  return orders.find((odr) => odr.status === 'COMPLETE')
+  return orders.find(odr => odr.status === 'COMPLETE')
 }
 
-export async function getAllOrNoneCompletedOrdersByKiteResponse (kite, rawKiteOrdersResponse) {
+export async function getAllOrNoneCompletedOrdersByKiteResponse (
+  kite,
+  rawKiteOrdersResponse
+) {
   if (MOCK_ORDERS) {
-    return [...new Array(rawKiteOrdersResponse.length)].fill(COMPLETED_ORDER_RESPONSE)
+    return [...new Array(rawKiteOrdersResponse.length)].fill(
+      COMPLETED_ORDER_RESPONSE
+    )
   }
 
   try {
     const completedOrders = (
       await Promise.all(
-        rawKiteOrdersResponse.map(({ order_id }) => // eslint-disable-line
-          getCompletedOrderFromOrderHistoryById(kite, order_id)
-        )
+        rawKiteOrdersResponse.map((
+          { order_id } // eslint-disable-line
+        ) => getCompletedOrderFromOrderHistoryById(kite, order_id))
       )
-    ).filter((o) => o)
+    ).filter(o => o)
 
     if (completedOrders.length !== rawKiteOrdersResponse.length) {
       return null
@@ -190,7 +227,10 @@ export async function getAllOrNoneCompletedOrdersByKiteResponse (kite, rawKiteOr
 
     return completedOrders
   } catch (e) {
-    console.error('getAllOrNoneCompletedOrdersByKiteResponse error', { e, rawKiteOrdersResponse })
+    console.error('getAllOrNoneCompletedOrdersByKiteResponse error', {
+      e,
+      rawKiteOrdersResponse
+    })
     return null
   }
 }
@@ -238,9 +278,11 @@ export const getCustomBackoffStrategies = () => {
   }
 }
 
-export const getQueueOptionsForExitStrategy = (exitStrategy) => {
+export const getQueueOptionsForExitStrategy = exitStrategy => {
   if (!exitStrategy) {
-    throw new Error('getQueueOptionsForExitStrategy called without exitStrategy')
+    throw new Error(
+      'getQueueOptionsForExitStrategy called without exitStrategy'
+    )
   }
 
   switch (exitStrategy) {
@@ -347,7 +389,7 @@ const marketHolidays = [
 
 export const isDateHoliday = (date: Dayjs) => {
   const isMarketHoliday = marketHolidays.find(
-    (holidays) => holidays[0] === date.format('MMMM DD,YYYY')
+    holidays => holidays[0] === date.format('MMMM DD,YYYY')
   )
   if (isMarketHoliday) {
     return true
@@ -368,11 +410,13 @@ export const getLastOpenDateSince = (from: Dayjs) => {
 }
 
 export const checkHasSameAccessToken = async (accessToken: string) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
-    DATABASE_USER_KEY as string
-  }/tokens?limit=1`
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(
+    DATABASE_HOST_URL as string
+  )}/pvt_${DATABASE_USER_KEY as string}/tokens?limit=1`
   try {
-    const { data: [token] } = await axios(ACCESS_TOKEN_URL)
+    const {
+      data: [token]
+    } = await axios(ACCESS_TOKEN_URL)
     const { access_token: dbAccessToken } = token
     return dbAccessToken === accessToken
   } catch (e) {
@@ -381,10 +425,10 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
   }
 }
 
-export const storeAccessTokenRemotely = async (accessToken) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
-    DATABASE_USER_KEY as string
-  }/tokens`
+export const storeAccessTokenRemotely = async accessToken => {
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(
+    DATABASE_HOST_URL as string
+  )}/pvt_${DATABASE_USER_KEY as string}/tokens`
   try {
     await axios.post(
       ACCESS_TOKEN_URL,
@@ -398,13 +442,18 @@ export const storeAccessTokenRemotely = async (accessToken) => {
   }
 }
 
-export const getNearestCandleTime = (intervalMs, referenceDate = new Date()) => {
-  const nearestCandle = new Date(Math.floor(referenceDate.getTime() / intervalMs) * intervalMs)
+export const getNearestCandleTime = (
+  intervalMs,
+  referenceDate = new Date()
+) => {
+  const nearestCandle = new Date(
+    Math.floor(referenceDate.getTime() / intervalMs) * intervalMs
+  )
   // https://kite.trade/forum/discussion/7798/historical-data-candles-inaccurate-for-small-periods
   return dayjs(nearestCandle).subtract(1, 'second')
 }
 
-export const getNextNthMinute = (intervalMs) => {
+export const getNextNthMinute = intervalMs => {
   // ref: https://stackoverflow.com/a/10789415/721084
   const date = new Date()
   const rounded = new Date(Math.ceil(date.getTime() / intervalMs) * intervalMs)
@@ -425,7 +474,8 @@ export const ensureMarginForBasketOrder = async (user, orders) => {
     {
       headers: {
         'X-Kite-Version': 3,
-        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`,
+        Authorization: `token ${KITE_API_KEY as string}:${user.session
+          .access_token as string}`,
         'Content-Type': 'application/json'
       }
     }
@@ -448,8 +498,14 @@ export const isMarketOpen = (time = dayjs()) => {
     return false
   }
 
-  const startTime = time.set('hour', 9).set('minute', 15).set('second', 0)
-  const endTime = time.set('hour', 15).set('minute', 30).set('second', 0)
+  const startTime = time
+    .set('hour', 9)
+    .set('minute', 15)
+    .set('second', 0)
+  const endTime = time
+    .set('hour', 15)
+    .set('minute', 30)
+    .set('second', 0)
 
   return time.isAfter(startTime) && time.isBefore(endTime)
 }
@@ -459,21 +515,35 @@ export function randomIntFromInterval (min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-interface LTP_TYPE {tradingsymbol: string, strike: number, last_price: number}
+interface LTP_TYPE {
+  tradingsymbol: string
+  strike: number
+  last_price: number
+}
 
-export function closest (needle: number, haystack: Array<LTP_TYPE | any>, haystackKey: string, greaterThanEqualToPrice: boolean) {
-  const filtered = haystack.filter((item) => {
+export function closest (
+  needle: number,
+  haystack: Array<LTP_TYPE | any>,
+  haystackKey: string,
+  greaterThanEqualToPrice: boolean
+) {
+  const filtered = haystack.filter(item => {
     if (greaterThanEqualToPrice) {
       return item[haystackKey] >= needle
     }
-    return item[haystackKey] >= needle || getPercentageChange(item[haystackKey], needle) <= 10
+    return (
+      item[haystackKey] >= needle ||
+      getPercentageChange(item[haystackKey], needle) <= 10
+    )
   })
   /**
    * the above ensures that we pick up a price lower than needle price,
    * only if it's at most 10% lesser than the needle price
    */
   return filtered.reduce((prev, curr) =>
-    Math.abs(curr[haystackKey] - needle) < Math.abs(prev[haystackKey] - needle) ? curr : prev
+    Math.abs(curr[haystackKey] - needle) < Math.abs(prev[haystackKey] - needle)
+      ? curr
+      : prev
   )
 }
 
@@ -496,29 +566,42 @@ export interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
   lastPrice: number
 }
 
-export const getMultipleInstrumentPrices = async (instruments: GET_LTP_ARGS[], user: SignalXUser): Promise<GET_LTP_RESPONSE[]> => {
+export const getMultipleInstrumentPrices = async (
+  instruments: GET_LTP_ARGS[],
+  user: SignalXUser
+): Promise<GET_LTP_RESPONSE[]> => {
   const {
     data: { data: pricesDetailsof }
-  } = await withRemoteRetry(async () => axios(
-    `https://api.kite.trade/quote/ltp?${instruments.map(({ exchange, tradingSymbol }) => `i=${exchange}:${tradingSymbol}`).join('&')}`,
-    {
-      headers: {
-        'X-Kite-Version': 3,
-        Authorization: `token ${KITE_API_KEY as string}:${user.session.access_token as string}`
+  } = await withRemoteRetry(async () =>
+    axios(
+      `https://api.kite.trade/quote/ltp?${instruments
+        .map(({ exchange, tradingSymbol }) => `i=${exchange}:${tradingSymbol}`)
+        .join('&')}`,
+      {
+        headers: {
+          'X-Kite-Version': 3,
+          Authorization: `token ${KITE_API_KEY as string}:${user.session
+            .access_token as string}`
+        }
+      }
+    )
+  )
+
+  const formattedResponse = Object.keys(pricesDetailsof).map(
+    exchangeTradingSymbol => {
+      const [exchange, tradingSymbol] = exchangeTradingSymbol.split(':')
+      const {
+        instrument_token: instrumentToken,
+        last_price: lastPrice
+      } = pricesDetailsof[exchangeTradingSymbol]
+      return {
+        exchange,
+        tradingSymbol,
+        instrumentToken,
+        lastPrice
       }
     }
-  ))
-
-  const formattedResponse = Object.keys(pricesDetailsof).map(exchangeTradingSymbol => {
-    const [exchange, tradingSymbol] = exchangeTradingSymbol.split(':')
-    const { instrument_token: instrumentToken, last_price: lastPrice } = pricesDetailsof[exchangeTradingSymbol]
-    return {
-      exchange,
-      tradingSymbol,
-      instrumentToken,
-      lastPrice
-    }
-  })
+  )
 
   return formattedResponse
 }
@@ -536,17 +619,21 @@ export const getTradingSymbolsByOptionPrice = async ({
   const { strikeStepSize } = INSTRUMENT_DETAILS[nfoSymbol!]
   const strikes = [...new Array(totalStrikes)]
     .map((_, idx) =>
-      idx === 0 ? idx : idx < totalStrikes / 2 ? idx * -1 : idx - Math.floor(totalStrikes / 2)
+      idx === 0
+        ? idx
+        : idx < totalStrikes / 2
+        ? idx * -1
+        : idx - Math.floor(totalStrikes / 2)
     )
-    .map((idx) => pivotStrike + idx * strikeStepSize)
+    .map(idx => pivotStrike + idx * strikeStepSize)
     .sort((a, b) => a - b)
 
-  const instruments = await Promise.map(strikes, async (strike) => {
-    const { tradingsymbol } = await getCurrentExpiryTradingSymbol({
+  const instruments = await Promise.map(strikes, async strike => {
+    const { tradingsymbol } = (await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike,
       instrumentType
-    }) as TradingSymbolInterface
+    })) as TradingSymbolInterface
 
     return {
       exchange: kite.EXCHANGE_NFO,
@@ -556,18 +643,20 @@ export const getTradingSymbolsByOptionPrice = async ({
 
   const pricesData = await getMultipleInstrumentPrices(instruments, user)
 
-  const getStrike = (inst) => {
+  const getStrike = inst => {
     const withoutNfoSymbol = inst.replace(nfoSymbol, '')
     const withoutExpiryDetails = withoutNfoSymbol.substr(5, 5)
     return Number(withoutExpiryDetails)
   }
 
-  const formattedPrices: LTP_TYPE[] = pricesData.map(({ tradingSymbol, instrumentToken, lastPrice }) => ({
-    tradingsymbol: tradingSymbol,
-    strike: getStrike(tradingSymbol),
-    instrument_token: instrumentToken,
-    last_price: lastPrice
-  }))
+  const formattedPrices: LTP_TYPE[] = pricesData.map(
+    ({ tradingSymbol, instrumentToken, lastPrice }) => ({
+      tradingsymbol: tradingSymbol,
+      strike: getStrike(tradingSymbol),
+      instrument_token: instrumentToken,
+      last_price: lastPrice
+    })
+  )
 
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
@@ -601,12 +690,21 @@ export const SIGNALX_AXIOS_DB_AUTH = {
   }
 }
 
-export const baseTradeUrl: string = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATABASE_USER_KEY as string}`
+export const baseTradeUrl: string = `${withoutFwdSlash(
+  DATABASE_HOST_URL as string
+)}/day_${DATABASE_USER_KEY as string}`
 
-export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
-export const isUntestedFeaturesEnabled = () => process.env.ENABLE_UNTESTED_FEATURES ? JSON.parse(process.env.ENABLE_UNTESTED_FEATURES) : false
+export const isMockOrder = () =>
+  process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
+export const isUntestedFeaturesEnabled = () =>
+  process.env.ENABLE_UNTESTED_FEATURES
+    ? JSON.parse(process.env.ENABLE_UNTESTED_FEATURES)
+    : false
 
-export const finiteStateChecker = async (infinitePr: Bluebird<any>, checkDurationMs: number): Promise<any | Error> => {
+export const finiteStateChecker = async (
+  infinitePr: Bluebird<any>,
+  checkDurationMs: number
+): Promise<any | Error> => {
   return infinitePr.timeout(checkDurationMs).catch(e => {
     // cleanup infinitePr
     infinitePr.cancel()
@@ -615,7 +713,10 @@ export const finiteStateChecker = async (infinitePr: Bluebird<any>, checkDuratio
   })
 }
 
-export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): Promise<any> => {
+export const withRemoteRetry = async (
+  remoteFn: Function,
+  timeoutMs = ms(60)
+): Promise<any> => {
   const remoteFnExecution = () =>
     new Promise((resolve, reject, onCancel) => {
       let cancelled = false
@@ -624,7 +725,8 @@ export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): P
           return false
         }
         try {
-          const isRemoteFnPromise = remoteFn && typeof (remoteFn as any).then == 'function' // eslint-disable-line
+          const isRemoteFnPromise =
+            remoteFn && typeof (remoteFn as any).then == 'function' // eslint-disable-line
           const res = await (isRemoteFnPromise ? remoteFn : remoteFn())
           return res
         } catch (e) {
@@ -640,9 +742,11 @@ export const withRemoteRetry = async (remoteFn: Function, timeoutMs = ms(60)): P
         }
       }
 
-      fn().then(res => {
-        resolve(res)
-      }).catch(e => reject(e))
+      fn()
+        .then(res => {
+          resolve(res)
+        })
+        .catch(e => reject(e))
 
       onCancel!(() => {
         cancelled = true
@@ -667,27 +771,37 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
         return false
       }
       try {
-        const orderHistory = await withRemoteRetry(() => kite.getOrderHistory(orderId))
+        const orderHistory = await withRemoteRetry(() =>
+          kite.getOrderHistory(orderId)
+        )
         const byRecencyOrderHistory = orderHistory.reverse()
         // if it reaches here, then order exists in broker system
 
         const expectedStateOrder = byRecencyOrderHistory.find(
-          (odr) => odr.status === ensureOrderState
+          odr => odr.status === ensureOrderState
         )
 
         if (expectedStateOrder) {
           return expectedStateOrder
         }
 
-        console.log('🔴 [orderStateChecker] invalid state...', { orderId, ensureOrderState })
+        console.log('🔴 [orderStateChecker] invalid state...', {
+          orderId,
+          ensureOrderState
+        })
         logDeep(orderHistory)
 
         const wasOrderRejectedOrCancelled = byRecencyOrderHistory.find(
-          (odr) => odr.status === kite.STATUS_REJECTED || odr.status === kite.STATUS_CANCELLED
+          odr =>
+            odr.status === kite.STATUS_REJECTED ||
+            odr.status === kite.STATUS_CANCELLED
         )
 
         if (wasOrderRejectedOrCancelled) {
-          console.log('🔴 [orderStateChecker] rejected or cancelled', byRecencyOrderHistory)
+          console.log(
+            '🔴 [orderStateChecker] rejected or cancelled',
+            byRecencyOrderHistory
+          )
           throw new Error(kite.STATUS_REJECTED)
         }
 
@@ -696,7 +810,12 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
         return fn()
       } catch (e) {
         console.log('🔴 [orderStateChecker] caught', e)
-        if (e?.message === kite.STATUS_REJECTED || (e?.status === 'error' && e?.error_type === 'GeneralException' && e?.message === "Couldn't find that `order_id`.")) {
+        if (
+          e?.message === kite.STATUS_REJECTED ||
+          (e?.status === 'error' &&
+            e?.error_type === 'GeneralException' &&
+            e?.message === "Couldn't find that `order_id`.")
+        ) {
           throw new Error(kite.STATUS_REJECTED)
         }
         // for other exceptions like network layer, retry
@@ -707,7 +826,7 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
 
     fn()
       .then(resolve)
-      .catch((e) => {
+      .catch(e => {
         console.log('🔴 [orderStateChecker] checker error', e)
         if (e?.message === kite.STATUS_REJECTED) {
           reject(e)
@@ -761,7 +880,9 @@ export const remoteOrderSuccessEnsurer = async (args: {
   } = args
 
   if (attemptCount >= retryAttempts) {
-    console.log('🔴 [remoteOrderSuccessEnsurer] all attempts exhausted. Terminating!')
+    console.log(
+      '🔴 [remoteOrderSuccessEnsurer] all attempts exhausted. Terminating!'
+    )
     throw Promise.TimeoutError
   }
 
@@ -770,10 +891,16 @@ export const remoteOrderSuccessEnsurer = async (args: {
     console.log({ attemptCount: attemptCount + 1, retryAttempts })
   }
 
-  const { data: [tradeSettings] } = await withRemoteRetry(async () => axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag!}`))
+  const {
+    data: [tradeSettings]
+  } = await withRemoteRetry(async () =>
+    axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag!}`)
+  )
   const { user_override: userOverride } = tradeSettings
   if (userOverride === USER_OVERRIDE.ABORT) {
-    console.log('🔴 [remoteOrderSuccessEnsurer] user override ABORT. Terminating!')
+    console.log(
+      '🔴 [remoteOrderSuccessEnsurer] user override ABORT. Terminating!'
+    )
     throw Error(USER_OVERRIDE.ABORT)
   }
 
@@ -784,11 +911,20 @@ export const remoteOrderSuccessEnsurer = async (args: {
     if (mockOrders) {
       console.log('mock order', orderProps)
     }
-    const orderAckResponse = mockOrders ? { order_id: '' } : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)
+    const orderAckResponse = mockOrders
+      ? { order_id: '' }
+      : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps)
     const { order_id: ackOrderId } = orderAckResponse
-    const isOrderInUltimateStatePr = orderStateChecker(kite, ackOrderId, ensureOrderState)
+    const isOrderInUltimateStatePr = orderStateChecker(
+      kite,
+      ackOrderId,
+      ensureOrderState
+    )
     try {
-      const ultimateStateOrder = await finiteStateChecker(isOrderInUltimateStatePr, orderStatusCheckTimeout)
+      const ultimateStateOrder = await finiteStateChecker(
+        isOrderInUltimateStatePr,
+        orderStatusCheckTimeout
+      )
       return {
         successful: true,
         response: ultimateStateOrder
@@ -803,8 +939,14 @@ export const remoteOrderSuccessEnsurer = async (args: {
         }
       }
       if (e?.message === kite.STATUS_REJECTED) {
-        console.log('🟢 [remoteOrderSuccessEnsurer] retrying rejected order', orderProps)
-        return remoteOrderSuccessEnsurer({ ...args, attemptCount: attemptCount + 1 })
+        console.log(
+          '🟢 [remoteOrderSuccessEnsurer] retrying rejected order',
+          orderProps
+        )
+        return remoteOrderSuccessEnsurer({
+          ...args,
+          attemptCount: attemptCount + 1
+        })
       }
       throw e
     }
@@ -813,15 +955,20 @@ export const remoteOrderSuccessEnsurer = async (args: {
     console.log('🔴 [remoteOrderSuccessEnsurer] placeOrder failed?', e)
     if (
       e?.status === 'error' &&
-      (e?.error_type === 'NetworkException' || e?.error_type === 'OrderException' || e?.error_type === 'InputException')
+      (e?.error_type === 'NetworkException' ||
+        e?.error_type === 'OrderException' ||
+        e?.error_type === 'InputException')
     ) {
       // we cannot simply retry - don't know where the request failed inflight
       // check at the broker's end - if the order exists with that tag or not
 
       try {
-        const orders = await withRemoteRetry(() => kite.getOrders(), remoteRetryTimeout)
+        const orders = await withRemoteRetry(
+          () => kite.getOrders(),
+          remoteRetryTimeout
+        )
         const matchedOrder = orders.find(
-          (order) =>
+          order =>
             order.tag === orderProps.tag &&
             order.tradingsymbol === orderProps.tradingsymbol &&
             order.quantity === orderProps.quantity &&
@@ -833,27 +980,43 @@ export const remoteOrderSuccessEnsurer = async (args: {
         if (!matchedOrder) {
           // orders api responded successfully and we didn't find a matching order
           // so reattempt the order
-          return remoteOrderSuccessEnsurer({ ...args, attemptCount: attemptCount + 1 })
+          return remoteOrderSuccessEnsurer({
+            ...args,
+            attemptCount: attemptCount + 1
+          })
         }
 
         // order found
         // ensure that it's in the expected state
-        const isMatchedOrderInUltimateStatePr = orderStateChecker(kite, matchedOrder.order_id, ensureOrderState)
+        const isMatchedOrderInUltimateStatePr = orderStateChecker(
+          kite,
+          matchedOrder.order_id,
+          ensureOrderState
+        )
         try {
-          const ultimateStateOrder = await finiteStateChecker(isMatchedOrderInUltimateStatePr, orderStatusCheckTimeout)
+          const ultimateStateOrder = await finiteStateChecker(
+            isMatchedOrderInUltimateStatePr,
+            orderStatusCheckTimeout
+          )
           return {
             successful: true,
             response: ultimateStateOrder
           }
         } catch (e) {
           if (e?.message === kite.STATUS_REJECTED) {
-            return remoteOrderSuccessEnsurer({ ...args, attemptCount: attemptCount + 1 })
+            return remoteOrderSuccessEnsurer({
+              ...args,
+              attemptCount: attemptCount + 1
+            })
           }
           throw e
         }
       } catch (e) {
         // case - tried getting orders for 1 min, but no response from broker
-        console.log('🔴 [remoteOrderSuccessEnsurer] caught with no response from broker', e)
+        console.log(
+          '🔴 [remoteOrderSuccessEnsurer] caught with no response from broker',
+          e
+        )
         return { successful: false }
       }
     }
@@ -864,28 +1027,48 @@ export const remoteOrderSuccessEnsurer = async (args: {
 }
 
 // patches and returns stale data
-export const patchDbTrade = async ({ _id, patchProps }: {_id: string, patchProps: object}): Promise<object> => {
+export const patchDbTrade = async ({
+  _id,
+  patchProps
+}: {
+  _id: string
+  patchProps: object
+}): Promise<object> => {
   const endpoint = `${baseTradeUrl}/${_id}`
   const { data } = await axios(endpoint)
-  await axios.put(endpoint, {
-    ...data,
-    ...patchProps
-  }, SIGNALX_AXIOS_DB_AUTH)
+  await axios.put(
+    endpoint,
+    {
+      ...data,
+      ...patchProps
+    },
+    SIGNALX_AXIOS_DB_AUTH
+  )
 
   return data
 }
 
-export const attemptBrokerOrders = async (ordersPr: Array<Promise<any>>): Promise<{
+export const attemptBrokerOrders = async (
+  ordersPr: Array<Promise<any>>
+): Promise<{
   allOk: boolean
   statefulOrders: KiteOrder[]
 }> => {
   try {
     const brokerOrderResolutions = await allSettled(ordersPr)
     console.log('[attemptBrokerOrders] resolutions', brokerOrderResolutions)
-    const rejectedLegs = (brokerOrderResolutions as any).filter((res: allSettledInterface) => res.status === 'rejected')
-    const successfulOrders: Array<KiteOrder | null> = (brokerOrderResolutions as any).map((res: allSettledInterface) =>
-      res.status === 'fulfilled' && res.value.successful ? res.value.response : null
-    ).filter(o => o)
+    const rejectedLegs = (brokerOrderResolutions as any).filter(
+      (res: allSettledInterface) => res.status === 'rejected'
+    )
+    const successfulOrders: Array<
+      KiteOrder | null
+    > = (brokerOrderResolutions as any)
+      .map((res: allSettledInterface) =>
+        res.status === 'fulfilled' && res.value.successful
+          ? res.value.response
+          : null
+      )
+      .filter(o => o)
 
     if (rejectedLegs.length > 0 || successfulOrders.length < ordersPr.length) {
       return {
@@ -907,17 +1090,24 @@ export const attemptBrokerOrders = async (ordersPr: Array<Promise<any>>): Promis
   }
 }
 
-export const getHedgeForStrike = async (
-  { strike, distance, type, nfoSymbol }:
-  {strike: number, distance: number, type: string, nfoSymbol: string}
-): Promise<string> => {
+export const getHedgeForStrike = async ({
+  strike,
+  distance,
+  type,
+  nfoSymbol
+}: {
+  strike: number
+  distance: number
+  type: string
+  nfoSymbol: string
+}): Promise<string> => {
   const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
 
-  const { tradingsymbol } = await getCurrentExpiryTradingSymbol({
+  const { tradingsymbol } = (await getCurrentExpiryTradingSymbol({
     nfoSymbol,
     strike: hedgeStrike,
     instrumentType: type
-  }) as TradingSymbolInterface
+  })) as TradingSymbolInterface
 
   return tradingsymbol
 }
@@ -935,10 +1125,12 @@ export const getStrikeByDelta = (
     data: apiResponseObject[]
   },
   type?: 'PE' | 'CE'
-): apiResponseObject | {
-  putStrike: apiResponseObject
-  callStrike: apiResponseObject
-} => {
+):
+  | apiResponseObject
+  | {
+      putStrike: apiResponseObject
+      callStrike: apiResponseObject
+    } => {
   const { data } = apiResponse
   const putStrike = closest(delta, data, 'PutDelta', false)
   const callStrike = closest(delta, data, 'CallDelta', false)

@@ -4,12 +4,23 @@ import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
 import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
-import { attemptBrokerOrders, isMockOrder, remoteOrderSuccessEnsurer, round, syncGetKiteInstance } from '../utils'
+import {
+  attemptBrokerOrders,
+  isMockOrder,
+  remoteOrderSuccessEnsurer,
+  round,
+  syncGetKiteInstance
+} from '../utils'
 import { doDeletePendingOrders, doSquareOffPositions } from './autoSquareOff'
 
-export const convertSlmToSll = (slmOrder: KiteOrder, slLimitPricePercent: number, kite: any): KiteOrder => {
+export const convertSlmToSll = (
+  slmOrder: KiteOrder,
+  slLimitPricePercent: number,
+  kite: any
+): KiteOrder => {
   const sllOrder = { ...slmOrder }
-  const absoluteLimitPriceDelta = (slLimitPricePercent ?? 0) / 100 * sllOrder.trigger_price!
+  const absoluteLimitPriceDelta =
+    ((slLimitPricePercent ?? 0) / 100) * sllOrder.trigger_price!
   let absoluteLimitPrice
   if (sllOrder.transaction_type === kite.TRANSACTION_TYPE_SELL) {
     absoluteLimitPrice = sllOrder.trigger_price! - absoluteLimitPriceDelta
@@ -39,16 +50,30 @@ async function individualLegExitOrders ({
     return mockResponse
   }
 
-  const { slmPercent, user, orderTag, rollback, slOrderType = SL_ORDER_TYPE.SLM, slLimitPricePercent } = initialJobData
+  const {
+    slmPercent,
+    user,
+    orderTag,
+    rollback,
+    slOrderType = SL_ORDER_TYPE.SLM,
+    slLimitPricePercent
+  } = initialJobData
   const kite = _kite || syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
 
-  const exitOrders = completedOrders.map((order) => {
-    const { tradingsymbol, exchange, transaction_type: transactionType, product, quantity, average_price: avgOrderPrice } = order
+  const exitOrders = completedOrders.map(order => {
+    const {
+      tradingsymbol,
+      exchange,
+      transaction_type: transactionType,
+      product,
+      quantity,
+      average_price: avgOrderPrice
+    } = order
     let exitOrderTransactionType
     let exitOrderTriggerPrice
 
-    const absoluteSl: number = slmPercent / 100 * avgOrderPrice!
+    const absoluteSl: number = (slmPercent / 100) * avgOrderPrice!
     if (transactionType === kite.TRANSACTION_TYPE_SELL) {
       // original order is short positions
       // exit orders would be buy orders with prices slmPercent above the avg sell prices
@@ -80,12 +105,14 @@ async function individualLegExitOrders ({
     return exitOrder
   })
 
-  const exitOrderPrs = exitOrders.map(async (order) => remoteOrderSuccessEnsurer({
-    _kite: kite,
-    ensureOrderState: 'TRIGGER PENDING',
-    orderProps: order,
-    user: user!
-  }))
+  const exitOrderPrs = exitOrders.map(async order =>
+    remoteOrderSuccessEnsurer({
+      _kite: kite,
+      ensureOrderState: 'TRIGGER PENDING',
+      orderProps: order,
+      user: user!
+    })
+  )
 
   const { allOk, statefulOrders } = await attemptBrokerOrders(exitOrderPrs)
   if (!allOk && rollback?.onBrokenExitOrders) {
@@ -98,7 +125,7 @@ async function individualLegExitOrders ({
   }
 
   if (slOrderType === SL_ORDER_TYPE.SLL) {
-    const watcherQueueJobs = statefulOrders.map(async (exitOrder) => {
+    const watcherQueueJobs = statefulOrders.map(async exitOrder => {
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
         rawKiteOrderResponse: exitOrder

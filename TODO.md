@@ -5,7 +5,7 @@
 - [LATER] Reduce delay for everyone else. Save response in redis cache from signlax repo
 - [LATER] calculate skews of ATM+-<step> strikes and take trade in whatever has least skew
 
-/**
+/\*\*
 https://www.investopedia.com/terms/s/syntheticfuturescontract.asp
 
 A synthetic futures contract uses put and call options with the same strike price and expiration date to simulate a traditional futures contract.
@@ -17,8 +17,7 @@ Compute S2 closest to F
 Use S2 as the apex of your straddle. If S2 is different from S2, get prices of CE and PE again
 Then follow usual procedure
 
-**/
-
+\*\*/
 
 TODO
 
