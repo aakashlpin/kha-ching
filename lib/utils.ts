@@ -604,6 +604,7 @@ export const SIGNALX_AXIOS_DB_AUTH = {
 export const baseTradeUrl: string = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/day_${DATABASE_USER_KEY as string}`
 
 export const isMockOrder = () => process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
+export const isUntestedFeaturesEnabled = () => process.env.ENABLE_UNTESTED_FEATURES ? JSON.parse(process.env.ENABLE_UNTESTED_FEATURES) : false
 
 export const finiteStateChecker = async (infinitePr: Bluebird<any>, checkDurationMs: number): Promise<any | Error> => {
   return infinitePr.timeout(checkDurationMs).catch(e => {
