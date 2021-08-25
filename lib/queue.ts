@@ -14,7 +14,7 @@ import {
   ms
 } from './utils'
 
-const redisUrl = process.env.REDIS_URL
+const redisUrl = `${process.env.REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
 export const TRADING_Q_NAME = 'tradingQueue'
 export const EXIT_TRADING_Q_NAME = 'exitTradingQueue'
 export const AUTO_SQUARE_OFF_Q_NAME = 'autoSquareOffQueue'
