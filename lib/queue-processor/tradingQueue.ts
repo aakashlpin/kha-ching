@@ -42,7 +42,7 @@ async function processJob (job: Job) {
 
 const worker = new Worker(
   TRADING_Q_NAME,
-  async (job) => {
+  async job => {
     // console.log(`processing tradingQueue id ${job.id}`, omit(job.data, ['user']))
     const result = await processJob(job)
     // console.log(`processed tradingQueue id ${job.id}`, result)
@@ -68,10 +68,14 @@ const worker = new Worker(
     const { isAutoSquareOffEnabled, strategy } = job.data
     // can't enable auto square off for DOS
     // because we don't know upfront how many orders would get punched
-    if (strategy !== STRATEGIES.DIRECTIONAL_OPTION_SELLING && isAutoSquareOffEnabled) {
+    if (
+      strategy !== STRATEGIES.DIRECTIONAL_OPTION_SELLING &&
+      isAutoSquareOffEnabled
+    ) {
       try {
         // console.log('enabling auto square off...')
-        const asoResponse = await addToAutoSquareOffQueue({ //eslint-disable-line
+        const asoResponse = await addToAutoSquareOffQueue({
+          //eslint-disable-line
           initialJobData: job.data,
           jobResponse: result
         })
@@ -93,7 +97,7 @@ const worker = new Worker(
   }
 )
 
-worker.on('completed', (job) => {
+worker.on('completed', job => {
   const { data, returnvalue } = job
   try {
     if (job.returnvalue?._nextTradingQueue) {
@@ -105,7 +109,7 @@ worker.on('completed', (job) => {
   }
 })
 
-worker.on('error', (err) => {
+worker.on('error', err => {
   // log the error
   console.log('🔴 [tradingQueue] worker error', err)
 })

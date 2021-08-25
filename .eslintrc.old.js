@@ -6,11 +6,7 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.json'
   },
-  extends: [
-    'standard-with-typescript',
-    'next',
-    'next/core-web-vitals'
-  ],
+  extends: ['standard-with-typescript', 'next', 'next/core-web-vitals'],
   parser: '@typescript-eslint/parser',
   // plugins: [
   //   "react",

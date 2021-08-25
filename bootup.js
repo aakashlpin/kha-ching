@@ -8,7 +8,7 @@ const options = {
 }
 
 setTimeout(() => {
-  const request = http.request(options, (res) => {
+  const request = http.request(options, res => {
     console.log(`STATUS: ${res.statusCode}`)
     if (res.statusCode == 200) {
       process.exit(0)

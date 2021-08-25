@@ -12,7 +12,7 @@ export default withSession(async (req, res) => {
   const positions = await kite.getPositions()
 
   const { net } = positions
-  const misPositions = net.filter((position) => position.product === 'MIS')
+  const misPositions = net.filter(position => position.product === 'MIS')
 
   res.json(misPositions)
 })

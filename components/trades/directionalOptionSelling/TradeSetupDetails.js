@@ -3,7 +3,7 @@ import commonDetailsRows from '../../lib/commonDetailsRows'
 
 import OrdersTable from '../../lib/ordersTable'
 
-const Details = (args) => {
+const Details = args => {
   const {
     lots,
     martingaleIncrementSize,

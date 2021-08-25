@@ -1,30 +1,30 @@
 /**
-     * Trailing SL method
-     * 1. initial total SL = initialPremiumReceived + sl% * initialPremiumReceived
-     * 2. trailing SL
-     *    on every decrease in combined premium by X%, trail the SL by initial SL %
-     *
-     * e.g. at 9.20am
-     * initial premium = 400 = lastInflectionPoint
-     * initial SL = 10%
-     * total SL = 440
-     *
-     *
-     * At 10.00am
-     * combined premium = 380
-     * decrease in premium = 5%
-     * new SL = 380 + 10% * 380 = 418
-     *  terminate this job, add a replica to same queue
-     *  with lastTrailingSlTriggerAtPremium = 380
-     *
-     *
-     * At 10.15am
-     * combined premium = 390
-     * ideal SL = 400 + 10%*440 = 440
-     * trailing SL = 418
-     * SL = min(ideal SL, trailing SL)
-     * no changes
-     */
+ * Trailing SL method
+ * 1. initial total SL = initialPremiumReceived + sl% * initialPremiumReceived
+ * 2. trailing SL
+ *    on every decrease in combined premium by X%, trail the SL by initial SL %
+ *
+ * e.g. at 9.20am
+ * initial premium = 400 = lastInflectionPoint
+ * initial SL = 10%
+ * total SL = 440
+ *
+ *
+ * At 10.00am
+ * combined premium = 380
+ * decrease in premium = 5%
+ * new SL = 380 + 10% * 380 = 418
+ *  terminate this job, add a replica to same queue
+ *  with lastTrailingSlTriggerAtPremium = 380
+ *
+ *
+ * At 10.15am
+ * combined premium = 390
+ * ideal SL = 400 + 10%*440 = 440
+ * trailing SL = 418
+ * SL = min(ideal SL, trailing SL)
+ * no changes
+ */
 
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
@@ -33,7 +33,14 @@ import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
 import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
-import { getTimeLeftInMarketClosingMs, syncGetKiteInstance, withRemoteRetry, patchDbTrade, getMultipleInstrumentPrices, GET_LTP_RESPONSE } from '../utils'
+import {
+  getTimeLeftInMarketClosingMs,
+  syncGetKiteInstance,
+  withRemoteRetry,
+  patchDbTrade,
+  getMultipleInstrumentPrices,
+  GET_LTP_RESPONSE
+} from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 
@@ -51,7 +58,7 @@ const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
   }
 }
 
-const tradeHeartbeat = async (dbId) => {
+const tradeHeartbeat = async dbId => {
   const data = await patchDbTrade({
     _id: dbId,
     patchProps: {
@@ -62,11 +69,18 @@ const tradeHeartbeat = async (dbId) => {
   return data
 }
 
-export type CombinedPremiumJobDataInterface = (ATM_STRADDLE_TRADE | ATM_STRANGLE_TRADE) & {
+export type CombinedPremiumJobDataInterface = (
+  | ATM_STRADDLE_TRADE
+  | ATM_STRANGLE_TRADE
+) & {
   lastTrailingSlTriggerAtPremium?: number
 }
 
-async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse, squareOffOrders }: {
+async function multiLegPremiumThreshold ({
+  initialJobData,
+  rawKiteOrdersResponse,
+  squareOffOrders
+}: {
   initialJobData: CombinedPremiumJobDataInterface
   rawKiteOrdersResponse: KiteOrder[]
   squareOffOrders?: KiteOrder[]
@@ -108,56 +122,77 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
     // and quantities should be greater than equal to `legsOrders`
     // if not, resolve this checker assuming the user has squared off the positions themselves
 
-    const tradingSymbols = legsOrders.map((order) => order.tradingsymbol)
+    const tradingSymbols = legsOrders.map(order => order.tradingsymbol)
 
-    const averageOrderPrices = legsOrders.map((order) => order.average_price)
-    const initialPremiumReceived = averageOrderPrices.reduce((sum, price) => sum! + price!, 0)
+    const averageOrderPrices = legsOrders.map(order => order.average_price)
+    const initialPremiumReceived = averageOrderPrices.reduce(
+      (sum, price) => sum! + price!,
+      0
+    )
 
     let liveSymbolPrices: GET_LTP_RESPONSE[]
     try {
-      liveSymbolPrices = await getMultipleInstrumentPrices(tradingSymbols.map(symbol => ({
-        exchange: kite.EXCHANGE_NFO,
-        tradingSymbol: symbol
-      })), user!)
+      liveSymbolPrices = await getMultipleInstrumentPrices(
+        tradingSymbols.map(symbol => ({
+          exchange: kite.EXCHANGE_NFO,
+          tradingSymbol: symbol
+        })),
+        user!
+      )
     } catch (error) {
-      console.log('🔴 [multiLegPremiumThreshold] getInstrumentPrice error', error)
+      console.log(
+        '🔴 [multiLegPremiumThreshold] getInstrumentPrice error',
+        error
+      )
       return Promise.reject(new Error('Kite APIs acting up'))
     }
 
-    const liveTotalPremium = liveSymbolPrices.reduce((sum, priceData) => sum + priceData.lastPrice, 0)
-    const initialSlTotalPremium = initialPremiumReceived! + (slmPercent / 100 * initialPremiumReceived!) // 440
+    const liveTotalPremium = liveSymbolPrices.reduce(
+      (sum, priceData) => sum + priceData.lastPrice,
+      0
+    )
+    const initialSlTotalPremium =
+      initialPremiumReceived! + (slmPercent / 100) * initialPremiumReceived! // 440
 
     let checkAgainstSl = initialSlTotalPremium
 
     if (trailEveryPercentageChangeValue) {
       const trailingSlTotalPremium = lastTrailingSlTriggerAtPremium
-        ? (lastTrailingSlTriggerAtPremium + ((trailingSlPercent ?? slmPercent) / 100 * lastTrailingSlTriggerAtPremium))
+        ? lastTrailingSlTriggerAtPremium +
+          ((trailingSlPercent ?? slmPercent) / 100) *
+            lastTrailingSlTriggerAtPremium
         : null // 418
       checkAgainstSl = trailingSlTotalPremium ?? initialSlTotalPremium // 418
 
       if (liveTotalPremium < checkAgainstSl) {
-        const lastInflectionPoint = lastTrailingSlTriggerAtPremium ?? initialPremiumReceived // 380
+        const lastInflectionPoint =
+          lastTrailingSlTriggerAtPremium ?? initialPremiumReceived // 380
         // liveTotalPremium = 360
         const changeFromLastInflectionPoint =
-          ((liveTotalPremium - lastInflectionPoint!) / lastInflectionPoint!) * 100
+          ((liveTotalPremium - lastInflectionPoint!) / lastInflectionPoint!) *
+          100
         // continue the checker
         if (
           changeFromLastInflectionPoint < 0 &&
-          Math.abs(changeFromLastInflectionPoint) >= trailEveryPercentageChangeValue
+          Math.abs(changeFromLastInflectionPoint) >=
+            trailEveryPercentageChangeValue
         ) {
           // update lastTrailingSlTriggerAtPremium
           // if current liveTotalPremium is X% lesser than trailEveryPercentageChangeValue
 
           // add to same queue with updated params
           try {
-            await addToNextQueue({
-              ...initialJobData,
-              lastTrailingSlTriggerAtPremium: liveTotalPremium
-            }, {
-              _nextTradingQueue: EXIT_TRADING_Q_NAME,
-              rawKiteOrdersResponse,
-              squareOffOrders
-            })
+            await addToNextQueue(
+              {
+                ...initialJobData,
+                lastTrailingSlTriggerAtPremium: liveTotalPremium
+              },
+              {
+                _nextTradingQueue: EXIT_TRADING_Q_NAME,
+                rawKiteOrdersResponse,
+                squareOffOrders
+              }
+            )
           } catch (e) {
             console.log('🔴 [multiLegPremiumThreshold] addToNextQueue error', e)
           }
@@ -165,13 +200,20 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
           // update db trade with new combined SL property
           // and expose it in the UI
           try {
-            await withRemoteRetry(async () => patchTradeWithTrailingSL({
-              dbId,
-              trailingSl: (liveTotalPremium + ((trailingSlPercent! ?? slmPercent) / 100 * liveTotalPremium))
-            }))
+            await withRemoteRetry(async () =>
+              patchTradeWithTrailingSL({
+                dbId,
+                trailingSl:
+                  liveTotalPremium +
+                  ((trailingSlPercent! ?? slmPercent) / 100) * liveTotalPremium
+              })
+            )
           } catch (error) {
             // harmless error, move on
-            console.log('🔴 [multiLegPremiumThreshold] patchTradeWithTrailingSL error', error)
+            console.log(
+              '🔴 [multiLegPremiumThreshold] patchTradeWithTrailingSL error',
+              error
+            )
           }
 
           const resolveMsg = `⚡️ [multiLegPremiumThreshold] trailing new inflection point ${liveTotalPremium}`
@@ -193,50 +235,71 @@ async function multiLegPremiumThreshold ({ initialJobData, rawKiteOrdersResponse
 
     if (combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING) {
       // get the avg entry prices
-      const avgSymbolPrice = legsOrders.reduce((accum, order) => ({
-        ...accum,
-        [order.tradingsymbol]: order.average_price
-      }), {})
+      const avgSymbolPrice = legsOrders.reduce(
+        (accum, order) => ({
+          ...accum,
+          [order.tradingsymbol]: order.average_price
+        }),
+        {}
+      )
 
       // console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
 
       // future proofing by allowing for any number of positions to be trailed together
-      const { losingLegs, winningLegs } = liveSymbolPrices.reduce((accum, leg) => {
-        const { lastPrice, tradingSymbol } = leg
-        if (avgSymbolPrice[tradingSymbol] < lastPrice) {
+      const { losingLegs, winningLegs } = liveSymbolPrices.reduce(
+        (accum, leg) => {
+          const { lastPrice, tradingSymbol } = leg
+          if (avgSymbolPrice[tradingSymbol] < lastPrice) {
+            return {
+              ...accum,
+              losingLegs: [...accum.losingLegs, leg]
+            }
+          }
           return {
             ...accum,
-            losingLegs: [...accum.losingLegs, leg]
+            winningLegs: [...accum.winningLegs, leg]
           }
+        },
+        {
+          losingLegs: [],
+          winningLegs: []
         }
-        return {
-          ...accum,
-          winningLegs: [...accum.winningLegs, leg]
-        }
-      }, {
-        losingLegs: [],
-        winningLegs: []
-      })
+      )
 
       // console.log('losingLegs', logDeep(losingLegs))
       // console.log('winningLegs', logDeep(winningLegs))
 
-      const squareOffLosingLegs = losingLegs.map(losingLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol))
+      const squareOffLosingLegs = losingLegs.map(losingLeg =>
+        legsOrders.find(
+          legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
+        )
+      )
       // console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
-      const bringToCostOrders = winningLegs.map(winningLeg => legsOrders.find(legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol))
+      const bringToCostOrders = winningLegs.map(winningLeg =>
+        legsOrders.find(
+          legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol
+        )
+      )
       // console.log('bringToCostOrders', logDeep(bringToCostOrders))
       // 1. square off losing legs
-      await doSquareOffPositions(squareOffLosingLegs as KiteOrder[], kite, initialJobData)
+      await doSquareOffPositions(
+        squareOffLosingLegs as KiteOrder[],
+        kite,
+        initialJobData
+      )
       // 2. bring the winning legs to cost
-      return await addToNextQueue({
-        ...initialJobData,
-        // override the slmPercent and exitStrategy in initialJobData
-        slmPercent: 0,
-        exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X
-      }, {
-        _nextTradingQueue: EXIT_TRADING_Q_NAME,
-        rawKiteOrdersResponse: bringToCostOrders
-      })
+      return await addToNextQueue(
+        {
+          ...initialJobData,
+          // override the slmPercent and exitStrategy in initialJobData
+          slmPercent: 0,
+          exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X
+        },
+        {
+          _nextTradingQueue: EXIT_TRADING_Q_NAME,
+          rawKiteOrdersResponse: bringToCostOrders
+        }
+      )
     }
 
     return doSquareOffPositions(squareOffOrders!, kite, initialJobData)

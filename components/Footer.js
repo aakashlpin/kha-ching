@@ -11,7 +11,14 @@ const Footer = () => (
         <Link target='_blank' rel='noreferrer' href='https://signalx.club'>
           SignalX
         </Link>
-        . | By using SignalX you agree to the <Link target='_blank' rel='noreferrer' href='https://signalx.club/SignalX-User-Agreement-ac65c4c19279457ba7d133fdcaf2b21d'>terms and conditions.</Link>
+        . | By using SignalX you agree to the{' '}
+        <Link
+          target='_blank'
+          rel='noreferrer'
+          href='https://signalx.club/SignalX-User-Agreement-ac65c4c19279457ba7d133fdcaf2b21d'
+        >
+          terms and conditions.
+        </Link>
       </Box>
     </Typography>
   </div>

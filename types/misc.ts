@@ -2,7 +2,12 @@ import { STRATEGIES } from '../lib/constants'
 import { KiteOrder, KiteProfile } from './kite'
 import { AvailablePlansConfig } from './plans'
 
-export type DailyPlansDayKey = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday'
+export type DailyPlansDayKey =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
 
 export interface DailyPlansDisplayValue {
   heading: string

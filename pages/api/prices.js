@@ -1,7 +1,5 @@
 import withSession from '../../lib/session'
-import {
-  getTradingSymbolsByOptionPrice
-} from '../../lib/utils'
+import { getTradingSymbolsByOptionPrice } from '../../lib/utils'
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')

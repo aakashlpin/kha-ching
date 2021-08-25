@@ -17,7 +17,11 @@ const Strategy = () => {
       return (
         <StratLayout>
           <AtmStraddleSetup
-            enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]}
+            enabledInstruments={[
+              INSTRUMENTS.NIFTY,
+              INSTRUMENTS.BANKNIFTY,
+              INSTRUMENTS.FINNIFTY
+            ]}
             exitStrategies={[
               EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
               EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
@@ -31,9 +35,7 @@ const Strategy = () => {
         <StratLayout>
           <AtmStrangleSetup
             enabledInstruments={[INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY]}
-            exitStrategies={[
-              EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X
-            ]}
+            exitStrategies={[EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]}
           />
         </StratLayout>
       )

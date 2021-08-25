@@ -9,14 +9,12 @@ function ActionButtonOrLoader ({ children }) {
   }
 
   if (isLoading) {
-    return (<CircularProgress size={28} thickness={2} color='inherit' disableShrink />)
+    return (
+      <CircularProgress size={28} thickness={2} color='inherit' disableShrink />
+    )
   }
 
-  return (
-    <>
-      {children({ setLoading: setLoadingState })}
-    </>
-  )
+  return <>{children({ setLoading: setLoadingState })}</>
 }
 
 export default ActionButtonOrLoader

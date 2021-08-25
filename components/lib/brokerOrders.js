@@ -11,7 +11,7 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120
@@ -64,7 +64,11 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
       {orders.map((order, idx) => {
         return (
           <div key={order._id}>
-            <Divider style={idx === 0 ? { margin: '0 0 12px 0' } : { margin: '12px 0' }} />
+            <Divider
+              style={
+                idx === 0 ? { margin: '0 0 12px 0' } : { margin: '12px 0' }
+              }
+            />
             <Box display='flex' justifyContent='space-between'>
               <Box
                 display='flex'
@@ -72,13 +76,21 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                 justifyContent='space-between'
                 style={{ marginRight: 8 }}
               >
-                <Box display='flex' alignItems='center' style={{ marginBottom: 4 }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  style={{ marginBottom: 4 }}
+                >
                   <div style={{ marginRight: 8 }}>
                     <Chip
                       size='small'
                       disabled={order.status !== 'COMPLETE'}
                       label={order.transaction_type}
-                      color={order.transaction_type === 'SELL' ? 'primary' : 'secondary'}
+                      color={
+                        order.transaction_type === 'SELL'
+                          ? 'primary'
+                          : 'secondary'
+                      }
                     />
                   </div>
                   <Typography variant='body2'>
@@ -92,7 +104,11 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                   {order.exchange}
                 </Typography>
               </Box>
-              <Box display='flex' flexDirection='column' justifyContent='space-between'>
+              <Box
+                display='flex'
+                flexDirection='column'
+                justifyContent='space-between'
+              >
                 <Box
                   display='flex'
                   justifyContent='space-between'
@@ -106,7 +122,11 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                       alignItems='center'
                       style={{ marginBottom: 4 }}
                     >
-                      <ScheduleIcon fontSize='small' color='disabled' style={{ marginRight: 2 }} />
+                      <ScheduleIcon
+                        fontSize='small'
+                        color='disabled'
+                        style={{ marginRight: 2 }}
+                      />
                       <Typography variant='body2'>
                         {dayjs(order.order_timestamp).format('hh:mm:ss')}
                       </Typography>
@@ -116,16 +136,24 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                     size='small'
                     label={order.status}
                     disabled
-                    color={order.status === 'COMPLETE' ? 'secondary' : 'disabled'}
+                    color={
+                      order.status === 'COMPLETE' ? 'secondary' : 'disabled'
+                    }
                   />
                 </Box>
                 <Box>
                   <Box display='flex' justifyContent='space-between'>
                     <Typography variant='body2' className={classes.greyColor}>
-                      {order.average_price ? 'Avg.' : order.trigger_price ? 'SL Trigger' : null}
+                      {order.average_price
+                        ? 'Avg.'
+                        : order.trigger_price
+                        ? 'SL Trigger'
+                        : null}
                     </Typography>
                     <Typography>
-                      {order.average_price?.toFixed(2) || order.trigger_price || ''}
+                      {order.average_price?.toFixed(2) ||
+                        order.trigger_price ||
+                        ''}
                     </Typography>
                   </Box>
                   <Box display='flex' justifyContent='space-between'>
@@ -137,8 +165,7 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                 </Box>
               </Box>
             </Box>
-            {trades
-              ? (
+            {trades ? (
               <Box>
                 <Grid item xs={6}>
                   <FormControl className={classes.formControl}>
@@ -148,16 +175,17 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                       labelId={`tag_${idx}`}
                       id={`tag_${idx}`}
                       value={order.tag}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleChange({
                           orderId: order.order_id,
                           orderTag: e.target.value
-                        })}
+                        })
+                      }
                     >
                       <MenuItem key={`tag_${idx}_null`} value={null}>
                         Delete tag
                       </MenuItem>
-                      {allTags.map((tag) => (
+                      {allTags.map(tag => (
                         <MenuItem key={`tag_${idx}_${tag}`} value={tag}>
                           ({tag}) {tradeMapByOrderTag[tag]?.selectDisplayName}
                         </MenuItem>
@@ -168,27 +196,26 @@ export default function BrokerOrders ({ orders, trades, dbOrders }) {
                 <Grid item xs={6}>
                   <Typography variant='subtitle2'>
                     System tag:{' '}
-                    {dbOrders.find((dbOrder) => dbOrder.order_id === order.order_id)?.tag ||
-                      'Untagged'}
-                    {order.tag
-                      ? (
+                    {dbOrders.find(
+                      dbOrder => dbOrder.order_id === order.order_id
+                    )?.tag || 'Untagged'}
+                    {order.tag ? (
                       <Button
                         variant='contained'
                         onClick={() =>
                           handleChange({
                             orderTag: order.tag,
                             orderId: order.order_id
-                          })}
+                          })
+                        }
                       >
                         Copy broker tag
                       </Button>
-                        )
-                      : null}
+                    ) : null}
                   </Typography>
                 </Grid>
               </Box>
-                )
-              : null}
+            ) : null}
           </div>
         )
       })}

@@ -24,7 +24,9 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
 
   const onSubmit = async (formattedStateForApiProps = {}) => {
     if (state.runNow) {
-      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?')
+      const yes = await window.confirm(
+        'This will schedule this trade immediately. Are you sure?'
+      )
       if (!yes) {
         setState({
           ...state,
@@ -35,16 +37,21 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
     }
 
     function handleSyncJob (props) {
-      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }))
+      return axios.post(
+        '/api/trades_day',
+        formatFormDataForApi({ strategy, data: props })
+      )
     }
 
     try {
       await Promise.all(
         Object.keys(state.instruments)
-          .filter((key) => state.instruments[key])
-          .map((instrument) =>
+          .filter(key => state.instruments[key])
+          .map(instrument =>
             handleSyncJob({
-              ...omit({ ...state, ...formattedStateForApiProps }, ['instruments']),
+              ...omit({ ...state, ...formattedStateForApiProps }, [
+                'instruments'
+              ]),
               instrument,
               strategy
             })
@@ -57,7 +64,7 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
     }
   }
 
-  const onChange = (props) => commonOnChangeHandler(props, state, setState)
+  const onChange = props => commonOnChangeHandler(props, state, setState)
 
   useEffect(() => {
     if (state.runNow) {
@@ -68,7 +75,12 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
   return (
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
-      <Form strategy={strategy} state={state} onChange={onChange} onSubmit={onSubmit} />
+      <Form
+        strategy={strategy}
+        state={state}
+        onChange={onChange}
+        onSubmit={onSubmit}
+      />
     </div>
   )
 }

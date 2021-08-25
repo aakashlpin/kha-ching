@@ -19,7 +19,9 @@ const Details = ({ job, strategy, onDeleteJob }) => {
   function handleDeleteJob ({ jobId }) {
     const currentState = jobDetails?.current_state
     if (currentState === 'delayed' || currentState === 'waiting') {
-      const userResponse = window.confirm('This will delete the scheduled task. Are you sure?')
+      const userResponse = window.confirm(
+        'This will delete the scheduled task. Are you sure?'
+      )
       if (userResponse) {
         onDeleteJob({ jobId })
       }
@@ -35,15 +37,13 @@ const Details = ({ job, strategy, onDeleteJob }) => {
   const Heading = () => (
     <>
       #{job.id} · {strategyDetails.heading}{' '}
-      {runNow
-        ? (
+      {runNow ? (
         <>
           was run <TimeAgo date={new Date(job.timestamp)} />.
         </>
-          )
-        : (
+      ) : (
         <>is scheduled to run at {humanTime}.</>
-          )}
+      )}
     </>
   )
 
@@ -73,7 +73,9 @@ const Details = ({ job, strategy, onDeleteJob }) => {
       />
 
       <div>
-        <h3>Status: {jobDetails?.current_state?.toUpperCase() || 'Loading...'}</h3>
+        <h3>
+          Status: {jobDetails?.current_state?.toUpperCase() || 'Loading...'}
+        </h3>
       </div>
 
       <Grid item style={{ marginTop: 16 }}>
@@ -85,11 +87,10 @@ const Details = ({ job, strategy, onDeleteJob }) => {
         >
           Cleanup Job
         </Button>
-        {['delayed', 'waiting'].includes(jobDetails?.current_state) && deleteDisclaimer
-          ? (
+        {['delayed', 'waiting'].includes(jobDetails?.current_state) &&
+        deleteDisclaimer ? (
           <p>{deleteDisclaimer}</p>
-            )
-          : null}
+        ) : null}
       </Grid>
     </Paper>
   )
