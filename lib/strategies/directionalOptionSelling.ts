@@ -1,6 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
+import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import { INSTRUMENT_DETAILS, PRODUCT_TYPE, STRATEGIES_DETAILS } from '../constants'
@@ -21,6 +22,7 @@ import {
   getNextNthMinute,
   getTimeLeftInMarketClosingMs,
   getTradingSymbolsByOptionPrice,
+  isUntestedFeaturesEnabled,
   ms,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
@@ -61,6 +63,7 @@ async function fetchSuperTrend ({ instrument_token, from_date, to_date, ...other
 
 export default async function directionalOptionSelling (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
   lastTrend: string
+  lastTradeOrders: KiteOrder[]
 }) {
   try {
     const {
@@ -69,7 +72,9 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       martingaleIncrementSize = 0,
       maxTrades = 0,
       entryStrategy = STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
-      lastTrend
+      lastTrend,
+      lastTradeOrders,
+      user
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
@@ -103,8 +108,54 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       const lastTrendAsPerST = supertrendResponse.slice(-2)[0].STX_10_3
       const wasLastTrendAccurate = lastTrend === lastTrendAsPerST
       if (!wasLastTrendAccurate) {
-        console.log('🔴 [dos] wasLastTrendAccurate = false')
+        // only if currentTrend is not same as the previous position that was taken
+        /**
+         * possible scenarios
+         * on incorrect trend,
+         *
+         * say at 9.45am
+         * ST data comes in as [up, up, down]
+         * a short position gets taken
+         *
+         * then at 9.50am
+         * Case 1. ST data comes in as [up, up, up, down]
+         * then it's all okay - even though previous trend was inaccurate,
+         * the new position would have been same as existing positon
+         * Action: No action required
+         *
+         * Case 2. ST data comes in as [up, up, up, up]
+         * then it's a problem as now a new long position will be taken
+         * even though nothing has changed on the futures chart
+         * but 3 trades would have been taken already
+         * Action: Revert previous trade, and retain lot size and maxTrades from incoming initialJobData
+         */
+
+        console.log('🔴 [dos] last trend was inaccurate')
+        if (currentTrendAsPerST !== lastTrend && lastTradeOrders?.length) {
+          // [NB] let this happen at least once before enabling it for everyone else
+          if (isUntestedFeaturesEnabled()) {
+            console.log('🔴 [dos black swan] reverting bad position')
+            const kite = syncGetKiteInstance(user)
+            // 1. square off last trade
+            await doSquareOffPositions(lastTradeOrders, kite, initialJobData)
+            // 2. prevent next trade from happening
+            // 3. increase back maxTrades by 1
+            return await addToNextQueue(
+              {
+                ...initialJobData,
+                entryStrategy: STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE,
+                lastTrend: currentTrendAsPerST,
+                runNow: false,
+                runAt: getNextNthMinute(ms(5 * 60))
+              },
+              {
+                _nextTradingQueue: TRADING_Q_NAME
+              }
+            )
+          }
+        }
       }
+
       const compareWithTrendValue = lastTrend || lastTrendAsPerST
       if (compareWithTrendValue === currentTrendAsPerST) {
         const error = `[dos] no change in ST ("${currentTrendAsPerST as string}")`
@@ -112,7 +163,7 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       }
     }
 
-    const res = await punchOrders(initialJobData, currentTrendData)
+    const punchedOrders = await punchOrders(initialJobData, currentTrendData)
 
     if (maxTrades > 1) {
       // flow should never reach here if the orders haven't been punched in
@@ -124,7 +175,8 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
           maxTrades: maxTrades - 1,
           lots: Number(lots) + Number(martingaleIncrementSize),
           runNow: false,
-          runAt: getNextNthMinute(ms(5 * 60))
+          runAt: getNextNthMinute(ms(5 * 60)),
+          lastTradeOrders: punchedOrders
         },
         {
           _nextTradingQueue: TRADING_Q_NAME
@@ -132,7 +184,7 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       )
     }
 
-    return res
+    return punchedOrders
   } catch (e) {
     console.log('🔴 [dos] parent caught', e)
     // [TODO] update db job with `status`: ERROR and an appropriate `reason`
@@ -301,12 +353,13 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
   const { id, name, data } = queueRes!
   console.log('🟢 [directionalOptionSelling] trailing SL now..', { id, name, data })
 
+  const allPunchedOrders = [rawKiteOrderResponse, hedgeOrderResponse].filter((o) => o)
   if (isAutoSquareOffEnabled) {
     try {
       const asoResponse = await addToAutoSquareOffQueue({
         initialJobData: nextQueueData,
         jobResponse: {
-          rawKiteOrdersResponse: [rawKiteOrderResponse, hedgeOrderResponse].filter((o) => o)
+          rawKiteOrdersResponse: allPunchedOrders
         }
       })
       const { data, name } = asoResponse
@@ -315,5 +368,5 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
       console.log('🔴 [directionalOptionSelling] failed to enable auto square off', e)
     }
   }
-  return queueRes
+  return allPunchedOrders
 }
