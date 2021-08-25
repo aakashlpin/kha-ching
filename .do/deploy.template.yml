@@ -2,9 +2,10 @@ spec:
   name: kha-ching
   services:
   - name: web
-    git:
-      repo_clone_url: https://github.com/aakashlpin/kha-ching
+    github:
+      repo: https://github.com/aakashlpin/kha-ching
       branch: master
+      deploy_on_push: true
     build_command: yarn build
     run_command: yarn start
     envs:
