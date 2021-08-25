@@ -35,7 +35,7 @@ async function minXPercentOrSupertrend ({
   optionInstrumentToken,
   hedgeOrderResponse
 }: DOS_TRAILING_INTERFACE) {
-  const { user, orderTag } = initialJobData
+  const { user, orderTag, slOrderType, slLimitPricePercent } = initialJobData
   try {
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
@@ -114,10 +114,20 @@ async function minXPercentOrSupertrend ({
       getPercentageChange(punchedTriggerPrice!, newSL) >= 3
     ) {
       try {
+        const sllOrderProps = slOrderType === SL_ORDER_TYPE.SLL
+          ? convertSlmToSll({
+                    trigger_price: newSL
+                  } as KiteOrder, slLimitPricePercent!, kite)
+          : null
         const res = await kite.modifyOrder(
           triggerPendingOrder!.variety,
           triggerPendingOrder!.order_id,
-          {
+          slOrderType === SL_ORDER_TYPE.SLL
+            ? {
+                trigger_price: sllOrderProps!.trigger_price,
+                price: sllOrderProps!.price
+              }
+            : {
             trigger_price: newSL
           }
         )
@@ -145,8 +155,8 @@ async function minXPercentOrSupertrend ({
               tag: orderTag!
             }
 
-            if (initialJobData.slOrderType === SL_ORDER_TYPE.SLL) {
-              exitOrder = convertSlmToSll(exitOrder, initialJobData.slLimitPricePercent!, kite)
+            if (slOrderType === SL_ORDER_TYPE.SLL) {
+              exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
             }
 
             const remoteOrder = remoteOrderSuccessEnsurer({
