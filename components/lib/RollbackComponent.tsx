@@ -15,8 +15,12 @@ interface RollbackComponentProps {
 }
 
 const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {
-  const getIsSomeRollbackOptionEnabled = () => !!Object.keys(rollback).find(key => rollback[key])
-  const [isSomeRollbackOptionEnabled, setIsSomeRollbackOptionEnabled] = useState(() => getIsSomeRollbackOptionEnabled())
+  const getIsSomeRollbackOptionEnabled = () =>
+    !!Object.keys(rollback).find(key => rollback[key])
+  const [
+    isSomeRollbackOptionEnabled,
+    setIsSomeRollbackOptionEnabled
+  ] = useState(() => getIsSomeRollbackOptionEnabled())
 
   useEffect(() => {
     setIsSomeRollbackOptionEnabled(getIsSomeRollbackOptionEnabled())
@@ -34,16 +38,20 @@ const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {
                 checked={isSomeRollbackOptionEnabled}
                 onChange={() =>
                   onChange({
-                    rollback: Object.keys(rollback).reduce((accum, key) => ({
-                      ...accum,
-                      [key]: !isSomeRollbackOptionEnabled
-                    }), {})
-                  })}
+                    rollback: Object.keys(rollback).reduce(
+                      (accum, key) => ({
+                        ...accum,
+                        [key]: !isSomeRollbackOptionEnabled
+                      }),
+                      {}
+                    )
+                  })
+                }
               />
             }
           />
           <FormGroup style={{ marginLeft: 24 }}>
-            {Object.keys(rollback).map((rollbackKey) => (
+            {Object.keys(rollback).map(rollbackKey => (
               <FormControlLabel
                 key={rollbackKey}
                 label={ROLLBACK_KEY_MAP[rollbackKey]}
@@ -67,7 +75,6 @@ const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {
         </FormGroup>
       </FormControl>
     </Grid>
-
   )
 }
 

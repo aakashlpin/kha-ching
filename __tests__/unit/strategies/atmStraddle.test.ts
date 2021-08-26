@@ -17,9 +17,13 @@ test('it should work when everything is okay', async () => {
     placeOrder: jest.fn().mockResolvedValue({
       order_id: '45834234213'
     }),
-    getOrderHistory: jest.fn().mockImplementation(async () => Promise.resolve([{
-      status: kite.STATUS_COMPLETE
-    }]))
+    getOrderHistory: jest.fn().mockImplementation(async () =>
+      Promise.resolve([
+        {
+          status: kite.STATUS_COMPLETE
+        }
+      ])
+    )
   }
 
   // const orderTag = nanoid()
@@ -28,7 +32,9 @@ test('it should work when everything is okay', async () => {
     instrument: INSTRUMENTS.NIFTY,
     lots: 1,
     user,
-    expiresAt: dayjs().add(1, 'minutes').format(),
+    expiresAt: dayjs()
+      .add(1, 'minutes')
+      .format(),
     orderTag: 'alKOiwR2',
     maxSkewPercent: 60,
     thresholdSkewPercent: 100,

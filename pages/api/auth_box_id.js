@@ -8,7 +8,9 @@ export default async (req, res) => {
     const { data } = await axios(
       `https://api.airtable.com/v0/${
         process.env.AIRTABLE_USERS_BASE_ID
-      }/Members?filterByFormula=${encodeURIComponent(`{API Key} = '${req.body.box}'`)}`,
+      }/Members?filterByFormula=${encodeURIComponent(
+        `{API Key} = '${req.body.box}'`
+      )}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`

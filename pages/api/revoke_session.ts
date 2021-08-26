@@ -10,7 +10,9 @@ export default withSession(async (req, res) => {
   }
 
   await axios.delete(
-    `https://api.kite.trade/session/token?api_key=${process.env.KITE_API_KEY as string}&access_token=${user.session.access_token as string}`,
+    `https://api.kite.trade/session/token?api_key=${process.env
+      .KITE_API_KEY as string}&access_token=${user.session
+      .access_token as string}`,
     {
       headers: {
         'X-Kite-Version': 3

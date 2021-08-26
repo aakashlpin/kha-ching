@@ -1,7 +1,10 @@
 import dayjs from 'dayjs'
+import { COMBINED_SL_EXIT_STRATEGY, SL_ORDER_TYPE } from '../types/plans'
 const NEXT_PUBLIC_DEFAULT_LOTS = process.env.NEXT_PUBLIC_DEFAULT_LOTS
-const NEXT_PUBLIC_DEFAULT_SKEW_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
-const NEXT_PUBLIC_DEFAULT_SLM_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
+const NEXT_PUBLIC_DEFAULT_SKEW_PERCENT =
+  process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
+const NEXT_PUBLIC_DEFAULT_SLM_PERCENT =
+  process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
 
 export enum INSTRUMENTS {
   NIFTY = 'NIFTY',
@@ -84,6 +87,12 @@ export enum ANCILLARY_TASKS {
   CLEANUP_COMPLETED_JOBS = 'CLEANUP_COMPLETED_JOBS'
 }
 
+export const COMBINED_SL_EXIT_STRATEGY_LABEL = {
+  [COMBINED_SL_EXIT_STRATEGY.EXIT_ALL]: 'Exit all legs',
+  [COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING]:
+    'Exit losing legs only and bring others to cost'
+}
+
 const getInstrumentsDefaultState = (): Record<INSTRUMENTS, boolean> =>
   Object.values(INSTRUMENTS).reduce<Record<string, boolean>>(
     (accum, item) => ({
@@ -97,7 +106,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRADDLE]: {
     premium: false,
     heading: 'Long/Short Straddle — ATM',
-    defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 12)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 145000,
       [INSTRUMENTS.BANKNIFTY]: 150000,
@@ -117,6 +130,9 @@ export const STRATEGIES_DETAILS = {
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -127,7 +143,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRANGLE]: {
     premium: false,
     heading: 'Long/Short Strangle',
-    defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 12)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 420000,
       [INSTRUMENTS.BANKNIFTY]: 425000
@@ -146,6 +166,9 @@ export const STRATEGIES_DETAILS = {
       volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -165,7 +188,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: {
     premium: true,
     heading: 'Directional Option Selling',
-    defaultRunAt: dayjs().set('hour', 9).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 9)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 675000,
       [INSTRUMENTS.BANKNIFTY]: 750000
@@ -181,6 +208,8 @@ export const STRATEGIES_DETAILS = {
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
+      slOrderType: SL_ORDER_TYPE.SLM,
+      slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -192,23 +221,44 @@ export const STRATEGIES_DETAILS = {
       label: 'at the scheduled time and then every time trend reverses'
     },
     [DOS_ENTRY_STRATEGIES.ST_CHANGE]: {
-      label: 'when trend reverses from live trend and then every time trend reverses'
+      label:
+        'when trend reverses from live trend and then every time trend reverses'
     }
   },
   [STRATEGIES.OPTION_BUYING_STRATEGY]: {
     premium: true,
     heading: 'Option Buying Strategy',
-    defaultRunAt: dayjs().set('hour', 9).set('minutes', 30).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 9)
+      .set('minutes', 30)
+      .set('seconds', 0)
+      .format(),
     schedule: [
       {
         afterTime: () =>
-          dayjs().set('hour', 9).set('minutes', 30).set('seconds', 0).subtract(1, 'second'),
-        beforeTime: () => dayjs().set('hour', 11).set('minutes', 0).set('seconds', 0)
+          dayjs()
+            .set('hour', 9)
+            .set('minutes', 30)
+            .set('seconds', 0)
+            .subtract(1, 'second'),
+        beforeTime: () =>
+          dayjs()
+            .set('hour', 11)
+            .set('minutes', 0)
+            .set('seconds', 0)
       },
       {
         afterTime: () =>
-          dayjs().set('hour', 13).set('minutes', 0).set('seconds', 0).subtract(1, 'second'),
-        beforeTime: () => dayjs().set('hour', 15).set('minutes', 0).set('seconds', 0)
+          dayjs()
+            .set('hour', 13)
+            .set('minutes', 0)
+            .set('seconds', 0)
+            .subtract(1, 'second'),
+        beforeTime: () =>
+          dayjs()
+            .set('hour', 15)
+            .set('minutes', 0)
+            .set('seconds', 0)
       }
     ],
     defaultFormState: {}

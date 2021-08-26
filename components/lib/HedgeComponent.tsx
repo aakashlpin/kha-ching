@@ -9,7 +9,12 @@ import {
 } from '@material-ui/core'
 import { VOLATILITY_TYPE } from '../../lib/constants'
 
-const HedgeComponent = ({ volatilityType, isHedgeEnabled, hedgeDistance, onChange }) => {
+const HedgeComponent = ({
+  volatilityType,
+  isHedgeEnabled,
+  hedgeDistance,
+  onChange
+}) => {
   if (volatilityType === VOLATILITY_TYPE.LONG) {
     return null
   }
@@ -27,25 +32,25 @@ const HedgeComponent = ({ volatilityType, isHedgeEnabled, hedgeDistance, onChang
                 onChange={() =>
                   onChange({
                     isHedgeEnabled: !isHedgeEnabled
-                  })}
+                  })
+                }
               />
-          }
+            }
           />
-          {isHedgeEnabled
-            ? (
-              <TextField
-                fullWidth
-                name='hedgeDistance'
-                value={hedgeDistance}
-                onChange={(e) => onChange({ hedgeDistance: +e.target.value || undefined })}
-                label='Hedge Distance'
-              />
-              )
-            : null}
+          {isHedgeEnabled ? (
+            <TextField
+              fullWidth
+              name='hedgeDistance'
+              value={hedgeDistance}
+              onChange={e =>
+                onChange({ hedgeDistance: +e.target.value || undefined })
+              }
+              label='Hedge Distance'
+            />
+          ) : null}
         </FormGroup>
       </FormControl>
     </Grid>
-
   )
 }
 

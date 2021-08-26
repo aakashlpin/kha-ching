@@ -19,17 +19,19 @@ import {
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
 
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8)
+const nanoid = customAlphabet(
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+  8
+)
 
-async function createJob (
-  { jobData, user }:
-  { jobData: SUPPORTED_TRADE_CONFIG, user: SignalXUser}
-) {
-  const {
-    runAt,
-    runNow,
-    strategy
-  } = jobData
+async function createJob ({
+  jobData,
+  user
+}: {
+  jobData: SUPPORTED_TRADE_CONFIG
+  user: SignalXUser
+}) {
+  const { runAt, runNow, strategy } = jobData
 
   if (STRATEGIES_DETAILS[strategy].premium) {
     if (!process.env.SIGNALX_API_KEY?.length) {
@@ -59,7 +61,9 @@ async function createJob (
   }
 
   if (!isMockOrder() && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
-    return Promise.reject(new Error('Exchange would be offline at the scheduled time.'))
+    return Promise.reject(
+      new Error('Exchange would be offline at the scheduled time.')
+    )
   }
 
   return addToNextQueue(
@@ -79,7 +83,7 @@ async function deleteJob (id) {
       await tradingQueue.removeRepeatableByKey(id)
     } else {
       const job = await tradingQueue.getJob(id)
-      job && await job.remove()
+      job && (await job.remove())
     }
   } catch (e) {
     console.log('🔴 [deleteJob] failed', e)
@@ -114,7 +118,9 @@ export default withSession(async (req, res) => {
       data = response.data
     } catch (e) {
       console.log('🔴 failed to post', e)
-      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
+      return res
+        .status(e?.response?.status || 500)
+        .json(e?.response?.data || {})
     }
 
     try {
@@ -129,7 +135,14 @@ export default withSession(async (req, res) => {
         {
           ...data,
           status: 'QUEUE',
-          queue: pick(qRes, ['id', 'name', 'opts', 'timestamp', 'stacktrace', 'returnvalue'])
+          queue: pick(qRes, [
+            'id',
+            'name',
+            'opts',
+            'timestamp',
+            'stacktrace',
+            'returnvalue'
+          ])
         },
         SIGNALX_AXIOS_DB_AUTH
       )
@@ -157,11 +170,16 @@ export default withSession(async (req, res) => {
       if (data.queue?.id) {
         await deleteJob(data.queue.id)
       }
-      await axios.delete(`${endpoint}/${req.body._id as string}`, SIGNALX_AXIOS_DB_AUTH)
+      await axios.delete(
+        `${endpoint}/${req.body._id as string}`,
+        SIGNALX_AXIOS_DB_AUTH
+      )
       return res.end()
     } catch (e) {
       console.log('🔴 failed to delete', e)
-      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
+      return res
+        .status(e?.response?.status || 500)
+        .json(e?.response?.data || {})
     }
   }
 
@@ -169,14 +187,20 @@ export default withSession(async (req, res) => {
     try {
       const { _id, ...props } = req.body
       const { data } = await axios(`${endpoint}/${_id as string}`)
-      await axios.put(`${endpoint}/${_id as string}`, {
-        ...data,
-        ...props
-      }, SIGNALX_AXIOS_DB_AUTH)
+      await axios.put(
+        `${endpoint}/${_id as string}`,
+        {
+          ...data,
+          ...props
+        },
+        SIGNALX_AXIOS_DB_AUTH
+      )
       return res.end()
     } catch (e) {
       console.log('🔴 failed to put', e)
-      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
+      return res
+        .status(e?.response?.status || 500)
+        .json(e?.response?.data || {})
     }
   }
 
@@ -186,7 +210,9 @@ export default withSession(async (req, res) => {
       return res.json(data)
     } catch (e) {
       console.log('🔴 failed to get', e)
-      return res.status(e?.response?.status || 500).json(e?.response?.data || {})
+      return res
+        .status(e?.response?.status || 500)
+        .json(e?.response?.data || {})
     }
   }
 
