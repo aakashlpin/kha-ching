@@ -696,6 +696,7 @@ export const baseTradeUrl: string = `${withoutFwdSlash(
 
 export const isMockOrder = () =>
   process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
+
 export const isUntestedFeaturesEnabled = () =>
   process.env.ENABLE_UNTESTED_FEATURES
     ? JSON.parse(process.env.ENABLE_UNTESTED_FEATURES)

@@ -7,6 +7,7 @@ import orderResponse from '../strategies/mockData/orderResponse'
 import {
   attemptBrokerOrders,
   isMockOrder,
+  isUntestedFeaturesEnabled,
   remoteOrderSuccessEnsurer,
   round,
   syncGetKiteInstance
@@ -30,6 +31,14 @@ export const convertSlmToSll = (
 
   sllOrder.order_type = kite.ORDER_TYPE_SL
   sllOrder.price = round(absoluteLimitPrice)
+
+  if (sllOrder.price === sllOrder.trigger_price) {
+    // keep a min delta of 0.1 from trigger_price
+    sllOrder.price =
+      sllOrder.transaction_type === kite.TRANSACTION_TYPE_BUY
+        ? sllOrder.price + 0.1
+        : sllOrder.price - 0.1
+  }
 
   return sllOrder
 }
@@ -124,7 +133,7 @@ async function individualLegExitOrders ({
     throw Error('rolled back onBrokenExitOrders')
   }
 
-  if (slOrderType === SL_ORDER_TYPE.SLL) {
+  if (slOrderType === SL_ORDER_TYPE.SLL && isUntestedFeaturesEnabled()) {
     const watcherQueueJobs = statefulOrders.map(async exitOrder => {
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
