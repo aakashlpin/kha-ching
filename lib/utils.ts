@@ -10,7 +10,7 @@ import { ERROR_STRINGS, EXIT_STRATEGIES, STRATEGIES, USER_OVERRIDE } from './con
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
 import { SignalXUser } from '../types/misc'
-import { KiteOrder } from '../types/kite'
+import { KiteOrder, KiteProfile } from '../types/kite'
 
 Promise.config({ cancellation: true, warnings: true })
 const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
@@ -43,7 +43,7 @@ const asyncGetIndexInstruments = (exchange = 'NFO') =>
           const jsonArray = await csv().fromFile(filename)
           // sometimes 0d returns 200 status code but 502 gateway error in file
           if (Object.keys(jsonArray[0]).length === 12) {
-            fs.unlink(filename, (e) => {})
+            fs.unlink(filename, (e) => { })
             const indexesData =
               exchange === 'NFO'
                 ? jsonArray.filter(
@@ -55,7 +55,7 @@ const asyncGetIndexInstruments = (exchange = 'NFO') =>
             return resolve(indexesData)
           }
           // retry if that's the case
-          fs.unlink(filename, (e) => {})
+          fs.unlink(filename, (e) => { })
           console.log('🔴 Failed downloading instruments file! Retrying...')
           // resolve this promise with a recursive promise fn call
           resolve(asyncGetIndexInstruments())
@@ -129,18 +129,18 @@ export const getCurrentExpiryTradingSymbol = async ({
   }
 }
 
-export function getPercentageChange (price1: number, price2: number, mode: string = 'AGGRESIVE') {
+export function getPercentageChange(price1: number, price2: number, mode: string = 'AGGRESIVE') {
   const denominator = mode === 'AGGRESIVE' ? ((price1 + price2) / 2) : Math.min(price1, price2)
   return Math.floor((Math.abs(price1 - price2) / denominator) * 100)
 }
 
-export async function getInstrumentPrice (kite, underlying: string, exchange: string) {
+export async function getInstrumentPrice(kite, underlying: string, exchange: string) {
   const instrumentString = `${exchange}:${underlying}`
   const underlyingRes = await kite.getLTP(instrumentString)
   return Number(underlyingRes[instrumentString].last_price)
 }
 
-export async function getSkew (kite, instrument1, instrument2, exchange) {
+export async function getSkew(kite, instrument1, instrument2, exchange) {
   const [price1, price2] = await Promise.all([
     getInstrumentPrice(kite, instrument1, exchange),
     getInstrumentPrice(kite, instrument2, exchange)
@@ -154,7 +154,7 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
   }
 }
 
-export function syncGetKiteInstance (user) {
+export function syncGetKiteInstance(user) {
   const accessToken = user?.session?.access_token
   if (!accessToken) {
     throw new Error('missing access_token in `user` object, or `user` is undefined')
@@ -165,12 +165,12 @@ export function syncGetKiteInstance (user) {
   })
 }
 
-export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
+export async function getCompletedOrderFromOrderHistoryById(kite, orderId) {
   const orders = await kite.getOrderHistory(orderId)
   return orders.find((odr) => odr.status === 'COMPLETE')
 }
 
-export async function getAllOrNoneCompletedOrdersByKiteResponse (kite, rawKiteOrdersResponse) {
+export async function getAllOrNoneCompletedOrdersByKiteResponse(kite, rawKiteOrdersResponse) {
   if (MOCK_ORDERS) {
     return [...new Array(rawKiteOrdersResponse.length)].fill(COMPLETED_ORDER_RESPONSE)
   }
@@ -229,10 +229,10 @@ export const getBackoffStrategy = ({ strategy }) => {
 
 export const getCustomBackoffStrategies = () => {
   return {
-    backOffToNearest5thMinute () {
+    backOffToNearest5thMinute() {
       return dayjs(getNextNthMinute(5 * 60 * 1000)).diff(dayjs())
     },
-    backOffToNearestMinute () {
+    backOffToNearestMinute() {
       return dayjs(getNextNthMinute(1 * 60 * 1000)).diff(dayjs())
     }
   }
@@ -368,9 +368,8 @@ export const getLastOpenDateSince = (from: Dayjs) => {
 }
 
 export const checkHasSameAccessToken = async (accessToken: string) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
-    DATABASE_USER_KEY as string
-  }/tokens?limit=1`
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${DATABASE_USER_KEY as string
+    }/tokens?limit=1`
   try {
     const { data: [token] } = await axios(ACCESS_TOKEN_URL)
     const { access_token: dbAccessToken } = token
@@ -382,9 +381,8 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
 }
 
 export const storeAccessTokenRemotely = async (accessToken) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${
-    DATABASE_USER_KEY as string
-  }/tokens`
+  const ACCESS_TOKEN_URL = `${withoutFwdSlash(DATABASE_HOST_URL as string)}/pvt_${DATABASE_USER_KEY as string
+    }/tokens`
   try {
     await axios.post(
       ACCESS_TOKEN_URL,
@@ -454,14 +452,14 @@ export const isMarketOpen = (time = dayjs()) => {
   return time.isAfter(startTime) && time.isBefore(endTime)
 }
 
-export function randomIntFromInterval (min: number, max: number) {
+export function randomIntFromInterval(min: number, max: number) {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-interface LTP_TYPE {tradingsymbol: string, strike: string, last_price: number}
+interface LTP_TYPE { tradingsymbol: string, strike: string, last_price: number }
 
-export function closest (needle: number, haystack: Array<LTP_TYPE | any>, haystackKey: string, greaterThanEqualToPrice: boolean) {
+export function closest(needle: number, haystack: Array<LTP_TYPE | any>, haystackKey: string, greaterThanEqualToPrice: boolean) {
   const filtered = haystack.filter((item) => {
     if (greaterThanEqualToPrice) {
       return item[haystackKey] >= needle
@@ -542,14 +540,14 @@ export const getTradingSymbolsByOptionPrice = async ({
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
 
-export function withoutFwdSlash (url: string): string {
+export function withoutFwdSlash(url: string): string {
   if (url.endsWith('/')) {
     return url.slice(0, url.length - 1)
   }
   return url
 }
 
-export async function premiumAuthCheck (): Promise<any> {
+export async function premiumAuthCheck(): Promise<any> {
   if (!process.env.SIGNALX_API_KEY) {
     return false
   }
@@ -833,7 +831,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
 }
 
 // patches and returns stale data
-export const patchDbTrade = async ({ _id, patchProps }: {_id: string, patchProps: object}): Promise<object> => {
+export const patchDbTrade = async ({ _id, patchProps }: { _id: string, patchProps: object }): Promise<object> => {
   const endpoint = `${baseTradeUrl}/${_id}`
   const { data } = await axios(endpoint)
   await axios.put(endpoint, {
@@ -878,7 +876,7 @@ export const attemptBrokerOrders = async (ordersPr: Array<Promise<any>>): Promis
 
 export const getHedgeForStrike = async (
   { strike, distance, type, nfoSymbol }:
-  {strike: number, distance: number, type: string, nfoSymbol: string}
+    { strike: number, distance: number, type: string, nfoSymbol: string }
 ): Promise<string> => {
   const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
 
@@ -923,4 +921,13 @@ export const getStrikeByDelta = (
     putStrike,
     callStrike
   }
+}
+
+export const setUserSession = async (req, userData: KiteProfile) => {
+  const user: SignalXUser = {
+    isLoggedIn: true,
+    session: userData
+  };
+  req.session.set('user', user)
+  await req.session.save()
 }

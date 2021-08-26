@@ -6,6 +6,7 @@ import { KiteConnect } from 'kiteconnect'
 import './queue-processor'
 import './exit-strategies'
 import './watchers'
+import { setUserSession } from './utils'
 
 const withAdminCheck = (handler) => {
   return async function withAdminWrapper(req, res) {
@@ -20,9 +21,7 @@ const withAdminCheck = (handler) => {
         });
 
         const kiteProfile = await kc.getProfile();
-        const user = { isLoggedIn: true, session: { access_token: kiteToken, ...kiteProfile } }
-        req.session.set('user', user)
-        await req.session.save()
+        await setUserSession(req, { access_token: kiteToken, ...kiteProfile });
         console.log('session generated')
       } catch (error) {
         console.log(error)

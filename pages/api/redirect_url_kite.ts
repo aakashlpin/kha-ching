@@ -3,7 +3,7 @@ import { KiteConnect } from 'kiteconnect'
 import { cleanupQueues } from '../../lib/queue'
 
 import withSession from '../../lib/session'
-import { getIndexInstruments, premiumAuthCheck, storeAccessTokenRemotely, checkHasSameAccessToken } from '../../lib/utils'
+import { getIndexInstruments, premiumAuthCheck, storeAccessTokenRemotely, checkHasSameAccessToken, setUserSession } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
 
@@ -22,9 +22,7 @@ export default withSession(async (req, res) => {
 
   try {
     const sessionData: KiteProfile = await kc.generateSession(requestToken, kiteSecret)
-    const user: SignalXUser = { isLoggedIn: true, session: sessionData }
-    req.session.set('user', user)
-    await req.session.save()
+    await setUserSession(req, sessionData);
 
     // prepare the day
     // fire and forget
