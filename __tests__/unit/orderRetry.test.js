@@ -7,6 +7,7 @@ import {
   withRemoteRetry
 } from '../../lib/utils'
 import { Promise } from 'bluebird'
+import { INSTRUMENTS } from '../../lib/constants'
 
 jest.setTimeout(ms(60))
 
@@ -43,32 +44,37 @@ test('should return true for successful order', async () => {
   expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '210722200439620'
+    order_id: '210827200359595'
   })
 
-  kite.getOrderHistory = jest.fn().mockImplementation(() =>
-    Promise.resolve([
-      {
-        status: kite.STATUS_COMPLETE
-      }
-    ])
-  )
+  // kite.getOrderHistory = jest.fn().mockImplementation(() =>
+  //   Promise.resolve([
+  //     {
+  //       status: kite.STATUS_COMPLETE
+  //     }
+  //   ])
+  // )
 
   const ensured = await remoteOrderSuccessEnsurer({
     _kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
-    orderProps: {},
+    orderProps: {
+      quantity: 200
+    },
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 5,
     orderStatusCheckTimeout: ms(5),
     remoteRetryTimeout: ms(5),
+    instrument: INSTRUMENTS.NIFTY,
     user
   })
 
-  expect(ensured).toStrictEqual({
-    response: { status: kite.STATUS_COMPLETE },
-    successful: true
-  })
+  console.log(ensured)
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: kite.STATUS_COMPLETE },
+  //   successful: true
+  // })
 })
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
