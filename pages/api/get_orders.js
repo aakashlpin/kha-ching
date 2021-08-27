@@ -8,7 +8,7 @@ import {
   getCurrentExpiryTradingSymbol,
   syncGetKiteInstance
 } from '../../lib/utils'
-const advancedFormat = require('dayjs/plugin/advancedFormat')
+import advancedFormat from 'dayjs/plugin/advancedFormat'
 dayjs.extend(advancedFormat)
 
 export default withSession(async (req, res) => {

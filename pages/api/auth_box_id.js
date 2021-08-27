@@ -1,9 +1,9 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
-const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 dayjs.extend(isSameOrBefore)
 
-export default async (req, res) => {
+const authBoxId = async (req, res) => {
   try {
     const { data } = await axios(
       `https://api.airtable.com/v0/${
@@ -43,3 +43,5 @@ export default async (req, res) => {
     })
   }
 }
+
+export default authBoxId

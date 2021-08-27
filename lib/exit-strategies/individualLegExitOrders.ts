@@ -65,7 +65,8 @@ async function individualLegExitOrders ({
     orderTag,
     rollback,
     slOrderType = SL_ORDER_TYPE.SLM,
-    slLimitPricePercent
+    slLimitPricePercent,
+    instrument
   } = initialJobData
   const kite = _kite || syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
@@ -119,6 +120,7 @@ async function individualLegExitOrders ({
       _kite: kite,
       ensureOrderState: 'TRIGGER PENDING',
       orderProps: order,
+      instrument,
       user: user!
     })
   )
