@@ -14,7 +14,10 @@ import {
   STRATEGIES,
   STRATEGIES_DETAILS
 } from '../../../lib/constants'
-import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
+import {
+  AvailablePlansConfig,
+  DIRECTIONAL_OPTION_SELLING_CONFIG
+} from '../../../types/plans'
 import Form from './TradeSetupForm'
 
 const DirectionTradeSetup = ({
@@ -28,51 +31,70 @@ const DirectionTradeSetup = ({
   const router = useRouter()
   const strategy = STRATEGIES.DIRECTIONAL_OPTION_SELLING
   const { heading } = STRATEGIES_DETAILS[strategy]
-  const getDefaultState = useCallback((): Partial<DIRECTIONAL_OPTION_SELLING_CONFIG> => ({
-    ...STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING].defaultFormState,
-    ...getSchedulingStateProps(strategy)
-  }), [strategy])
+  const getDefaultState = useCallback(
+    (): Partial<DIRECTIONAL_OPTION_SELLING_CONFIG> => ({
+      ...STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING]
+        .defaultFormState,
+      ...getSchedulingStateProps(strategy)
+    }),
+    [strategy]
+  )
 
   const [state, setState] = useState(getDefaultState())
 
-  const onSubmit = useCallback(async (formattedStateForApiProps = {}) => {
-    if (state.runNow) {
-      const yes = await window.confirm('This will schedule this trade immediately. Are you sure?')
-      if (!yes) {
-        setState({
-          ...state,
-          runNow: false
-        })
-        return
+  const onSubmit = useCallback(
+    async (formattedStateForApiProps = {}) => {
+      if (state.runNow) {
+        const yes = await window.confirm(
+          'This will schedule this trade immediately. Are you sure?'
+        )
+        if (!yes) {
+          setState({
+            ...state,
+            runNow: false
+          })
+          return
+        }
       }
-    }
 
-    async function handleSyncJob (props) {
-      return axios.post('/api/trades_day', formatFormDataForApi({ strategy, data: props }))
-    }
+      async function handleSyncJob (props) {
+        return axios.post(
+          '/api/trades_day',
+          formatFormDataForApi({ strategy, data: props })
+        )
+      }
 
-    try {
-      await Promise.all(
-        Object.keys(state.instruments as {})
-          .filter((key) => state.instruments![key])
-          .map(async (instrument) =>
-            handleSyncJob({
-              ...omit({ ...state, ...formattedStateForApiProps }, ['instruments']),
-              instrument,
-              strategy
-            })
-          )
-      )
+      try {
+        await Promise.all(
+          Object.keys(state.instruments as {})
+            .filter(key => state.instruments![key])
+            .map(async instrument =>
+              handleSyncJob({
+                ...omit({ ...state, ...formattedStateForApiProps }, [
+                  'instruments'
+                ]),
+                instrument,
+                strategy
+              })
+            )
+        )
 
-      setState(getDefaultState())
+        setState(getDefaultState())
 
-      router.push('/dashboard?tabId=0')
-    } catch (e) {
-      console.error(e)
-    }
-  }, [getDefaultState, router, state, strategy])
+        router.push('/dashboard?tabId=0')
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    [getDefaultState, router, state, strategy]
+  )
 
-  const onChange = (props) => commonOnChangeHandler(props, state as AvailablePlansConfig, setState as Dispatch<AvailablePlansConfig>)
+  const onChange = props =>
+    commonOnChangeHandler(
+      props,
+      state as AvailablePlansConfig,
+      setState as Dispatch<AvailablePlansConfig>
+    )
 
   useEffect(() => {
     if (state.runNow) {

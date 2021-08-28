@@ -8,7 +8,9 @@ export default withSession(async (req, res) => {
 
   if (user && user?.fyers?.access_token) {
     try {
-      const profile = await fyers.get_profile({ token: user.fyers.access_token })
+      const profile = await fyers.get_profile({
+        token: user.fyers.access_token
+      })
       return res.json(profile)
     } catch (e) {
       console.log('error', e)

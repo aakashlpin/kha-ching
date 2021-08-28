@@ -2,7 +2,6 @@ import DateFnsUtils from '@date-io/date-fns'
 import {
   Button,
   Checkbox,
-  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -14,14 +13,16 @@ import {
   TextField,
   Typography
 } from '@material-ui/core'
-import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import {
+  KeyboardTimePicker,
+  MuiPickersUtilsProvider
+} from '@material-ui/pickers'
 import dayjs from 'dayjs'
 import React from 'react'
 
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
   STRATEGIES,
@@ -34,6 +35,7 @@ import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
+import SlManagerComponent from '../../lib/SlManagerComponent'
 
 interface ATMStrangleTradeSetupFormProps {
   formHeading?: string
@@ -45,14 +47,32 @@ interface ATMStrangleTradeSetupFormProps {
   onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
-const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStrangleTradeSetupFormProps) => {
+const TradeSetupForm = ({
+  formHeading,
+  strategy = STRATEGIES.ATM_STRANGLE,
+  state,
+  onChange,
+  onSubmit,
+  onCancel,
+  isRunnable = true
+}: ATMStrangleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
-  const enabledInstruments = [INSTRUMENTS.NIFTY, INSTRUMENTS.BANKNIFTY, INSTRUMENTS.FINNIFTY]
-  const entryStrategies = [STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM, STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]
-  const exitStrategies = [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
+  const enabledInstruments = [
+    INSTRUMENTS.NIFTY,
+    INSTRUMENTS.BANKNIFTY,
+    INSTRUMENTS.FINNIFTY
+  ]
+  const entryStrategies = [
+    STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
+    STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES
+  ]
+  const exitStrategies = [
+    EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+    EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+  ]
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = e => {
     e.preventDefault()
     onSubmit(formatFormDataForApi({ strategy, data: state }))
   }
@@ -60,13 +80,15 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
+        <Typography variant='h6' style={{ marginBottom: 16 }}>
+          {formHeading ?? 'Setup new trade'}
+        </Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Instruments</FormLabel>
               <FormGroup row>
-                {enabledInstruments.map((instrument) => (
+                {enabledInstruments.map(instrument => (
                   <FormControlLabel
                     key={instrument}
                     label={INSTRUMENT_DETAILS[instrument].displayName}
@@ -101,16 +123,23 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                 aria-label='entryStrategy'
                 name='entryStrategy'
                 value={state.entryStrategy}
-                onChange={(e) => onChange({ entryStrategy: e.target.value as STRANGLE_ENTRY_STRATEGIES })}
+                onChange={e =>
+                  onChange({
+                    entryStrategy: e.target.value as STRANGLE_ENTRY_STRATEGIES
+                  })
+                }
               >
-                {entryStrategies.map((entryStrategy) => (
+                {entryStrategies.map(entryStrategy => (
                   <FormControlLabel
                     key={entryStrategy}
                     value={entryStrategy}
                     control={<Radio size='small' />}
                     label={
                       <Typography variant='body2'>
-                        {STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE].ENTRY_STRATEGY_DETAILS[entryStrategy].label}
+                        {
+                          STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE]
+                            .ENTRY_STRATEGY_DETAILS[entryStrategy].label
+                        }
                       </Typography>
                     }
                   />
@@ -120,8 +149,8 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
           </Grid>
 
           <Grid item>
-            { state.entryStrategy === STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM
-              ? (
+            {state.entryStrategy ===
+            STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
               <DiscreteSlider
                 label={'Strikes away from ATM strike'}
                 defaultValue={1}
@@ -129,19 +158,21 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                 min={1}
                 max={20}
                 value={state.distanceFromAtm}
-                onChange={(e, newValue) => onChange({ distanceFromAtm: newValue })}
+                onChange={(e, newValue) =>
+                  onChange({ distanceFromAtm: newValue })
+                }
               />
-                )
-              : (
+            ) : (
               <TextField
                 fullWidth
                 name='deltaStrikes'
                 value={state.deltaStrikes}
-                onChange={(e) => onChange({ deltaStrikes: +e.target.value || undefined })}
+                onChange={e =>
+                  onChange({ deltaStrikes: +e.target.value || undefined })
+                }
                 label='Strike delta'
               />
-                )
-            }
+            )}
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 8 }}>
@@ -149,69 +180,16 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
+              onChange={e => onChange({ lots: +e.target.value || undefined })}
               label='# Lots'
             />
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio size='small' />}
-                    label={
-                      <Typography variant='body2'>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            ? (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailEveryPercentageChangeValue'
-                    value={state.trailEveryPercentageChangeValue}
-                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: +e.target.value || undefined })}
-                    label='Trail SL everytime combined premium decreases by %'
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailingSlPercent'
-                    value={state.trailingSlPercent}
-                    onChange={(e) => onChange({ trailingSlPercent: +e.target.value || undefined })}
-                    label='Trailing SL %'
-                  />
-                </Grid>
-              </>
-              )
-            : null}
-
-          <Grid item xs={12} style={{ marginBottom: '16px' }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
-            />
-          </Grid>
+          <SlManagerComponent
+            state={state}
+            onChange={onChange}
+            exitStrategies={exitStrategies}
+          />
 
           <Grid item xs={12}>
             <FormControl component='fieldset'>
@@ -249,50 +227,47 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                       onChange={() =>
                         onChange({
                           isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
-                        })}
+                        })
+                      }
                     />
                   }
                 />
-                {state.isAutoSquareOffEnabled
-                  ? (
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <KeyboardTimePicker
-                        margin='normal'
-                        id='time-picker'
-                        label='Square off time'
-                        value={state.squareOffTime}
-                        onChange={(selectedDate) => {
-                          onChange({ squareOffTime: ensureIST(selectedDate) })
-                        }}
-                        KeyboardButtonProps={{
-                          'aria-label': 'change square off time'
-                        }}
-                      />
-                    </MuiPickersUtilsProvider>
-                    )
-                  : null}
+                {state.isAutoSquareOffEnabled ? (
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <KeyboardTimePicker
+                      margin='normal'
+                      id='time-picker'
+                      label='Square off time'
+                      value={state.squareOffTime}
+                      onChange={selectedDate => {
+                        onChange({ squareOffTime: ensureIST(selectedDate) })
+                      }}
+                      KeyboardButtonProps={{
+                        'aria-label': 'change square off time'
+                      }}
+                    />
+                  </MuiPickersUtilsProvider>
+                ) : null}
               </FormGroup>
             </FormControl>
           </Grid>
 
           <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
-          {isRunnable
-            ? (
-              <Grid item xs={12}>
-                <Button
-                  variant='contained'
-                  color='secondary'
-                  type='button'
-                  onClick={(e) => {
-                    onChange({ runNow: true })
-                  }}
-                >
-                  Schedule now
-                </Button>
-              </Grid>
-              )
-            : null}
+          {isRunnable ? (
+            <Grid item xs={12}>
+              <Button
+                variant='contained'
+                color='secondary'
+                type='button'
+                onClick={e => {
+                  onChange({ runNow: true })
+                }}
+              >
+                Schedule now
+              </Button>
+            </Grid>
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -302,7 +277,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                 label='Schedule run'
                 value={isSchedulingDisabled ? null : state.runAt}
                 disabled={isSchedulingDisabled}
-                onChange={(selectedDate) => {
+                onChange={selectedDate => {
                   onChange({ runAt: ensureIST(selectedDate) })
                 }}
                 KeyboardButtonProps={{
@@ -324,19 +299,17 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRANGLE, state
                 ? 'Schedule run'
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
-            {!isRunnable
-              ? (
-                <Button
-                  variant='contained'
-                  color='default'
-                  type='button'
-                  onClick={onCancel}
-                  style={{ marginLeft: 8 }}
-                >
-                  Cancel
-                </Button>
-                )
-              : null}
+            {!isRunnable ? (
+              <Button
+                variant='contained'
+                color='default'
+                type='button'
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}
+              >
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
         </Grid>
       </Paper>

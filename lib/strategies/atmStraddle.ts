@@ -3,7 +3,12 @@ import { KiteOrder } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
-import { INSTRUMENT_DETAILS, INSTRUMENT_PROPERTIES, PRODUCT_TYPE, VOLATILITY_TYPE } from '../constants'
+import {
+  INSTRUMENT_DETAILS,
+  INSTRUMENT_PROPERTIES,
+  PRODUCT_TYPE,
+  VOLATILITY_TYPE
+} from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import console from '../logging'
 import { EXIT_TRADING_Q_NAME } from '../queue'
@@ -26,13 +31,17 @@ const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
 
 dayjs.extend(isSameOrBefore)
 
-interface GET_ATM_STRADDLE_ARGS extends ATM_STRADDLE_TRADE, INSTRUMENT_PROPERTIES{
+interface GET_ATM_STRADDLE_ARGS
+  extends ATM_STRADDLE_TRADE,
+    INSTRUMENT_PROPERTIES {
   startTime: ConfigType
   attempt?: number
-  instrumentsData: [any]
+  instrumentsData: any[]
 }
 
-export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Promise<{
+export async function getATMStraddle (
+  args: Partial<GET_ATM_STRADDLE_ARGS>
+): Promise<{
   PE_STRING: string
   CE_STRING: string
   atmStrike: number
@@ -78,18 +87,21 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
       ? fractionalTimeRemaining >= 0.5
         ? maxSkewPercent
         : Math.round(
-          fractionalTimeRemaining * maxSkewPercent! +
+            fractionalTimeRemaining * maxSkewPercent! +
               (1 - fractionalTimeRemaining) * thresholdSkewPercent
-        )
+          )
       : maxSkewPercent
 
-    const underlyingLTP = await withRemoteRetry(async () => getInstrumentPrice(kite, underlyingSymbol!, exchange!))
-    const atmStrike = Math.round(underlyingLTP / strikeStepSize!) * strikeStepSize!
+    const underlyingLTP = await withRemoteRetry(async () =>
+      getInstrumentPrice(kite, underlyingSymbol!, exchange!)
+    )
+    const atmStrike =
+      Math.round(underlyingLTP / strikeStepSize!) * strikeStepSize!
 
-    const { PE_STRING, CE_STRING } = await getCurrentExpiryTradingSymbol({
+    const { PE_STRING, CE_STRING } = (await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike: atmStrike
-    }) as StrikeInterface
+    })) as StrikeInterface
 
     // if time has expired
     if (timeExpired) {
@@ -104,24 +116,33 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
         }
       }
 
-      return Promise.reject(new Error('[atmStraddle] time expired and takeTradeIrrespectiveSkew is false'))
+      return Promise.reject(
+        new Error(
+          '[atmStraddle] time expired and takeTradeIrrespectiveSkew is false'
+        )
+      )
     }
 
     // if time hasn't expired
-    const { skew } = await withRemoteRetry(async () => getSkew(kite, PE_STRING, CE_STRING, 'NFO'))
+    const { skew } = await withRemoteRetry(async () =>
+      getSkew(kite, PE_STRING, CE_STRING, 'NFO')
+    )
     // if skew not fitting in, try again
     if (skew > updatedSkewPercent!) {
       console.log(
-        `Retry #${
-          attempt + 1
-        }... Live skew (${skew as string}%) > Skew consideration (${String(updatedSkewPercent)}%)`
+        `Retry #${attempt +
+          1}... Live skew (${skew as string}%) > Skew consideration (${String(
+          updatedSkewPercent
+        )}%)`
       )
       await delay(ms(2))
       return getATMStraddle({ ...args, attempt: attempt + 1 })
     }
 
     console.log(
-      `[atmStraddle] punching with current skew ${String(skew)}%, and last skew threshold was ${String(updatedSkewPercent)}`
+      `[atmStraddle] punching with current skew ${String(
+        skew
+      )}%, and last skew threshold was ${String(updatedSkewPercent)}`
     )
 
     // if skew is fitting in, return
@@ -139,10 +160,23 @@ export async function getATMStraddle (args: Partial<GET_ATM_STRADDLE_ARGS>): Pro
   }
 }
 
-export const createOrder = (
-  { symbol, lots, lotSize, user, orderTag, transactionType, productType }:
-  { symbol: string, lots: number, lotSize: number, user: SignalXUser, orderTag: string, transactionType?: string, productType: PRODUCT_TYPE }
-): KiteOrder => {
+export const createOrder = ({
+  symbol,
+  lots,
+  lotSize,
+  user,
+  orderTag,
+  transactionType,
+  productType
+}: {
+  symbol: string
+  lots: number
+  lotSize: number
+  user: SignalXUser
+  orderTag: string
+  transactionType?: string
+  productType: PRODUCT_TYPE
+}): KiteOrder => {
   const kite = syncGetKiteInstance(user)
   return {
     tradingsymbol: symbol,
@@ -172,17 +206,24 @@ async function atmStraddle ({
   productType = PRODUCT_TYPE.MIS,
   volatilityType = VOLATILITY_TYPE.SHORT,
   _nextTradingQueue = EXIT_TRADING_Q_NAME
-}: ATM_STRADDLE_TRADE): Promise<{
-    _nextTradingQueue: string
-    straddle: {}
-    rawKiteOrdersResponse: KiteOrder[]
-    squareOffOrders: KiteOrder[]
-  } | undefined> {
+}: ATM_STRADDLE_TRADE): Promise<
+  | {
+      _nextTradingQueue: string
+      straddle: {}
+      rawKiteOrdersResponse: KiteOrder[]
+      squareOffOrders: KiteOrder[]
+    }
+  | undefined
+> {
   const kite = _kite || syncGetKiteInstance(user)
 
-  const { underlyingSymbol, exchange, nfoSymbol, lotSize, strikeStepSize } = INSTRUMENT_DETAILS[
-    instrument
-  ]
+  const {
+    underlyingSymbol,
+    exchange,
+    nfoSymbol,
+    lotSize,
+    strikeStepSize
+  } = INSTRUMENT_DETAILS[instrument]
 
   const instrumentsData = await getIndexInstruments()
 
@@ -210,15 +251,30 @@ async function atmStraddle ({
 
     if (volatilityType === VOLATILITY_TYPE.SHORT && isHedgeEnabled) {
       const [putHedge, callHedge] = await Promise.all(
-        ['PE', 'CE'].map(async (type) => getHedgeForStrike({ strike: atmStrike, distance: hedgeDistance!, type, nfoSymbol }))
+        ['PE', 'CE'].map(async type =>
+          getHedgeForStrike({
+            strike: atmStrike,
+            distance: hedgeDistance!,
+            type,
+            nfoSymbol
+          })
+        )
       )
-      hedgeOrdersLocal = [putHedge, callHedge].map(symbol => createOrder({
-        symbol, lots, lotSize, user: user!, orderTag: orderTag!, transactionType: kite.TRANSACTION_TYPE_BUY, productType
-      }))
+      hedgeOrdersLocal = [putHedge, callHedge].map(symbol =>
+        createOrder({
+          symbol,
+          lots,
+          lotSize,
+          user: user!,
+          orderTag: orderTag!,
+          transactionType: kite.TRANSACTION_TYPE_BUY,
+          productType
+        })
+      )
       allOrdersLocal = [...hedgeOrdersLocal]
     }
 
-    const orders: KiteOrder[] = [PE_STRING, CE_STRING].map((symbol) =>
+    const orders: KiteOrder[] = [PE_STRING, CE_STRING].map(symbol =>
       createOrder({
         symbol,
         lots,
@@ -226,24 +282,31 @@ async function atmStraddle ({
         user: user!,
         orderTag: orderTag!,
         productType,
-        transactionType: volatilityType === VOLATILITY_TYPE.SHORT ? kite.TRANSACTION_TYPE_SELL : kite.TRANSACTION_TYPE_BUY
+        transactionType:
+          volatilityType === VOLATILITY_TYPE.SHORT
+            ? kite.TRANSACTION_TYPE_SELL
+            : kite.TRANSACTION_TYPE_BUY
       })
     )
 
     allOrdersLocal = [...allOrdersLocal, ...orders]
 
-    const hasMargin = await withRemoteRetry(async () => ensureMarginForBasketOrder(user, allOrdersLocal))
+    const hasMargin = await withRemoteRetry(async () =>
+      ensureMarginForBasketOrder(user, allOrdersLocal)
+    )
     if (!hasMargin) {
       throw Error('insufficient margin!')
     }
 
     if (hedgeOrdersLocal.length) {
-      const hedgeOrdersPr = hedgeOrdersLocal.map(async (order) => remoteOrderSuccessEnsurer({
-        _kite: kite,
-        orderProps: order,
-        ensureOrderState: kite.STATUS_COMPLETE,
-        user: user!
-      }))
+      const hedgeOrdersPr = hedgeOrdersLocal.map(async order =>
+        remoteOrderSuccessEnsurer({
+          _kite: kite,
+          orderProps: order,
+          ensureOrderState: kite.STATUS_COMPLETE,
+          user: user!
+        })
+      )
 
       const { allOk, statefulOrders } = await attemptBrokerOrders(hedgeOrdersPr)
       if (!allOk && rollback?.onBrokenHedgeOrders) {
@@ -257,12 +320,14 @@ async function atmStraddle ({
       allOrders = [...statefulOrders]
     }
 
-    const brokerOrdersPr = orders.map(async (order) => remoteOrderSuccessEnsurer({
-      _kite: kite,
-      orderProps: order,
-      ensureOrderState: kite.STATUS_COMPLETE,
-      user: user!
-    }))
+    const brokerOrdersPr = orders.map(async order =>
+      remoteOrderSuccessEnsurer({
+        _kite: kite,
+        orderProps: order,
+        ensureOrderState: kite.STATUS_COMPLETE,
+        user: user!
+      })
+    )
 
     const { allOk, statefulOrders } = await attemptBrokerOrders(brokerOrdersPr)
     allOrders = [...allOrders, ...statefulOrders]

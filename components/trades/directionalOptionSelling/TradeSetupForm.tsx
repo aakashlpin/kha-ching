@@ -13,14 +13,16 @@ import {
   TextField,
   Typography
 } from '@material-ui/core'
-import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import {
+  KeyboardTimePicker,
+  MuiPickersUtilsProvider
+} from '@material-ui/pickers'
 import dayjs from 'dayjs'
 import React from 'react'
 
 import { ensureIST, formatFormDataForApi } from '../../../lib/browserUtils'
 import {
   EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS,
   INSTRUMENT_DETAILS,
   INSTRUMENTS,
   STRATEGIES,
@@ -28,10 +30,14 @@ import {
   DOS_ENTRY_STRATEGIES,
   VOLATILITY_TYPE
 } from '../../../lib/constants'
-import { AvailablePlansConfig, DIRECTIONAL_OPTION_SELLING_CONFIG } from '../../../types/plans'
+import {
+  AvailablePlansConfig,
+  DIRECTIONAL_OPTION_SELLING_CONFIG
+} from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
+import SlManagerComponent from '../../lib/SlManagerComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
@@ -61,23 +67,28 @@ const TradeSetupForm = ({
 }: DOSTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = e => {
     e.preventDefault()
     onSubmit(
-      formatFormDataForApi({ strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING, data: state as AvailablePlansConfig }) as Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
+      formatFormDataForApi({
+        strategy: STRATEGIES.DIRECTIONAL_OPTION_SELLING,
+        data: state as AvailablePlansConfig
+      }) as Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
     )
   }
 
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
+        <Typography variant='h6' style={{ marginBottom: 16 }}>
+          {formHeading ?? 'Setup new trade'}
+        </Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Instruments</FormLabel>
               <FormGroup row>
-                {enabledInstruments.map((instrument) => (
+                {enabledInstruments.map(instrument => (
                   <FormControlLabel
                     key={instrument}
                     label={INSTRUMENT_DETAILS[instrument].displayName}
@@ -108,7 +119,7 @@ const TradeSetupForm = ({
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
+              onChange={e => onChange({ lots: +e.target.value || undefined })}
               label='Initial lots'
             />
           </Grid>
@@ -117,7 +128,11 @@ const TradeSetupForm = ({
               fullWidth
               name='martingaleIncrementSize'
               value={state.martingaleIncrementSize}
-              onChange={(e) => onChange({ martingaleIncrementSize: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({
+                  martingaleIncrementSize: +e.target.value || undefined
+                })
+              }
               label='Martingale additional lots'
             />
           </Grid>
@@ -126,7 +141,9 @@ const TradeSetupForm = ({
               fullWidth
               name='maxTrades'
               value={state.maxTrades}
-              onChange={(e) => onChange({ maxTrades: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({ maxTrades: +e.target.value || undefined })
+              }
               label='Maximum trades'
             />
           </Grid>
@@ -135,7 +152,9 @@ const TradeSetupForm = ({
               fullWidth
               name='strikeByPrice'
               value={state.strikeByPrice}
-              onChange={(e) => onChange({ strikeByPrice: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({ strikeByPrice: +e.target.value || undefined })
+              }
               label='(Optional) Select strikes close to price'
             />
           </Grid>
@@ -146,16 +165,24 @@ const TradeSetupForm = ({
                 aria-label='entryStrategy'
                 name='entryStrategy'
                 value={state.entryStrategy}
-                onChange={(e) => onChange({ entryStrategy: e.target.value as DOS_ENTRY_STRATEGIES })}
+                onChange={e =>
+                  onChange({
+                    entryStrategy: e.target.value as DOS_ENTRY_STRATEGIES
+                  })
+                }
               >
-                {entryStrategies.map((entryStrategy) => (
+                {entryStrategies.map(entryStrategy => (
                   <FormControlLabel
                     key={entryStrategy}
                     value={entryStrategy}
                     control={<Radio />}
                     label={
                       <Typography style={{ fontSize: '14px' }}>
-                        {STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING[entryStrategy].label}
+                        {
+                          STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING[
+                            entryStrategy
+                          ].label
+                        }
                       </Typography>
                     }
                   />
@@ -163,39 +190,12 @@ const TradeSetupForm = ({
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio />}
-                    label={
-                      <Typography style={{ fontSize: '14px' }}>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} style={{ marginBottom: 16 }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label='SLM %'
-            />
-          </Grid>
+
+          <SlManagerComponent
+            state={state}
+            onChange={onChange}
+            exitStrategies={exitStrategies}
+          />
 
           <HedgeComponent
             volatilityType={VOLATILITY_TYPE.SHORT}
@@ -216,19 +216,19 @@ const TradeSetupForm = ({
                       onChange={() =>
                         onChange({
                           isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
-                        })}
+                        })
+                      }
                     />
                   }
                 />
-                {state.isAutoSquareOffEnabled
-                  ? (
+                {state.isAutoSquareOffEnabled ? (
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardTimePicker
                       margin='normal'
                       id='time-picker'
                       label='Square off time'
                       value={state.squareOffTime}
-                      onChange={(selectedDate) => {
+                      onChange={selectedDate => {
                         onChange({ squareOffTime: ensureIST(selectedDate) })
                       }}
                       KeyboardButtonProps={{
@@ -236,16 +236,14 @@ const TradeSetupForm = ({
                       }}
                     />
                   </MuiPickersUtilsProvider>
-                    )
-                  : null}
+                ) : null}
               </FormGroup>
             </FormControl>
           </Grid>
 
           <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
-          {isRunnable
-            ? (
+          {isRunnable ? (
             <Grid item xs={12}>
               <Button
                 variant='contained'
@@ -258,8 +256,7 @@ const TradeSetupForm = ({
                 Schedule now
               </Button>
             </Grid>
-              )
-            : null}
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -269,7 +266,7 @@ const TradeSetupForm = ({
                 label='Schedule run'
                 value={isSchedulingDisabled ? null : state.runAt}
                 disabled={isSchedulingDisabled}
-                onChange={(selectedDate) => {
+                onChange={selectedDate => {
                   onChange({ runAt: ensureIST(selectedDate) })
                 }}
                 KeyboardButtonProps={{
@@ -291,8 +288,7 @@ const TradeSetupForm = ({
                 ? 'Schedule run'
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
-            {!isRunnable
-              ? (
+            {!isRunnable ? (
               <Button
                 variant='contained'
                 color='default'
@@ -303,8 +299,7 @@ const TradeSetupForm = ({
               >
                 Cancel
               </Button>
-                )
-              : null}
+            ) : null}
           </Grid>
         </Grid>
       </Paper>

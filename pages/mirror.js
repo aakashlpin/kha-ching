@@ -61,12 +61,12 @@ const Mirror = () => {
         <h1>Trade Mirror</h1>
 
         <h4>
-          Socket status: {subsDetails?.connected ? '🟢 Connected' : '🔴 Disconnected'} |{' '}
+          Socket status:{' '}
+          {subsDetails?.connected ? '🟢 Connected' : '🔴 Disconnected'} |{' '}
           {mirrorDetails?.userType}
         </h4>
 
-        {subsDetails?.access_token
-          ? (
+        {subsDetails?.access_token ? (
           <>
             <Button
               variant='contained'
@@ -83,20 +83,20 @@ const Mirror = () => {
               </Button>
             ) : null} */}
           </>
-            )
-          : mirrorDetails?.userType === 'CONSUMER'
-            ? (
-          <Button variant='contained' color='primary' type='button' onClick={handleStartMirror}>
+        ) : mirrorDetails?.userType === 'CONSUMER' ? (
+          <Button
+            variant='contained'
+            color='primary'
+            type='button'
+            onClick={handleStartMirror}
+          >
             Start mirroring
           </Button>
-              )
-            : mirrorDetails?.userType === 'PUBLISHER'
-              ? (
+        ) : mirrorDetails?.userType === 'PUBLISHER' ? (
           <h2>Waiting for subscriber!</h2>
-                )
-              : (
+        ) : (
           <i>No idea why I&apos;m here!</i>
-                )}
+        )}
 
         {/* {mirrorDetails?.userType === 'PUBLISHER' && subsDetails?.access_token ? (
           <p>

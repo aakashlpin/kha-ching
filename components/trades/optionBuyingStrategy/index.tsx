@@ -5,7 +5,11 @@ import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 import { toast, ToastContainer } from 'react-toastify'
 
-import { EXIT_STRATEGIES, STRATEGIES, STRATEGIES_DETAILS } from '../../../lib/constants'
+import {
+  EXIT_STRATEGIES,
+  STRATEGIES,
+  STRATEGIES_DETAILS
+} from '../../../lib/constants'
 import Details from './TradeSetupDetails'
 import Form from './TradeSetupForm'
 const TESTING = true
@@ -30,7 +34,7 @@ const TESTING = true
 //   }
 // }
 
-const notify = (message) =>
+const notify = message =>
   toast.error(message, {
     position: 'bottom-center',
     autoClose: 5000,
@@ -100,7 +104,9 @@ const OptionBuyingStrategy = ({
 
     if (TESTING) {
       const jobProps = {
-        instruments: Object.keys(instruments).filter((key) => state.instruments[key]),
+        instruments: Object.keys(instruments).filter(
+          key => state.instruments[key]
+        ),
         lots: Number(lots),
         runNow: true,
         strategy,
@@ -110,7 +116,8 @@ const OptionBuyingStrategy = ({
       return
     }
 
-    const allowedTimes = STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].schedule
+    const allowedTimes =
+      STRATEGIES_DETAILS[STRATEGIES.OPTION_BUYING_STRATEGY].schedule
 
     /**
      * 9.29am or before
@@ -123,14 +130,18 @@ const OptionBuyingStrategy = ({
      * no trade can be taken
      */
 
-    const runnableSlots = allowedTimes.map(({ afterTime }) => dayjs().isBefore(afterTime()))
+    const runnableSlots = allowedTimes.map(({ afterTime }) =>
+      dayjs().isBefore(afterTime())
+    )
 
     let message
     let isScheduleable = true
-    if (runnableSlots.every((val) => val)) {
-      message = 'This strategy will take trades between 9.30-11am and between 1-3pm. Okay?'
+    if (runnableSlots.every(val => val)) {
+      message =
+        'This strategy will take trades between 9.30-11am and between 1-3pm. Okay?'
     } else if (runnableSlots[1]) {
-      message = 'You\'ve missed the 9.30-11am slot. Trade will now be attempted between 1-3pm. Okay?'
+      message =
+        "You've missed the 9.30-11am slot. Trade will now be attempted between 1-3pm. Okay?"
     } else {
       message = 'Sorry! No further trades can be taken today.'
       isScheduleable = false
@@ -143,7 +154,7 @@ const OptionBuyingStrategy = ({
     const yes = await window.confirm(message)
 
     if (!yes) {
-      return notify('No trade taken as you didn\'t confirm!')
+      return notify("No trade taken as you didn't confirm!")
     }
 
     const jobs = runnableSlots
@@ -152,7 +163,9 @@ const OptionBuyingStrategy = ({
           return null
         }
         const jobProps = {
-          instruments: Object.keys(state.instruments).filter((key) => state.instruments[key]),
+          instruments: Object.keys(state.instruments).filter(
+            key => state.instruments[key]
+          ),
           lots: Number(lots),
           runNow: false,
           runAt: allowedTimes[idx].afterTime().add(1, 'second'),
@@ -161,12 +174,15 @@ const OptionBuyingStrategy = ({
         }
         return axios.post('/api/create_job', jobProps)
       })
-      .filter((i) => i)
+      .filter(i => i)
 
     try {
       const responses = await Promise.all(jobs)
-      const data = responses.reduce((accum, res) => [...accum, ...res?.data], [])
-      setDb((exDb) => ({
+      const data = responses.reduce(
+        (accum, res) => [...accum, ...res?.data],
+        []
+      )
+      setDb(exDb => ({
         queue: Array.isArray(exDb.queue) ? [...data, ...exDb.queue] : data
       }))
       setState(getDefaultState())
@@ -183,7 +199,7 @@ const OptionBuyingStrategy = ({
     }
   }
 
-  const onChange = (props) => {
+  const onChange = props => {
     if (props.instruments) {
       setState({
         ...state,
@@ -205,8 +221,8 @@ const OptionBuyingStrategy = ({
       throw new Error('onDeleteJob called without jobId')
     }
 
-    const queueWithoutJobId = db.queue.filter((job) => job.id !== jobId)
-    setDb((exDb) => ({
+    const queueWithoutJobId = db.queue.filter(job => job.id !== jobId)
+    setDb(exDb => ({
       ...exDb,
       queue: queueWithoutJobId
     }))
@@ -230,9 +246,14 @@ const OptionBuyingStrategy = ({
     <div style={{ marginBottom: '60px' }}>
       <h3>{heading}</h3>
       {db.queue?.length
-        ? db.queue.map((job) => (
-          <Details key={job.name} job={job} strategy={strategy} onDeleteJob={onDeleteJob} />
-        ))
+        ? db.queue.map(job => (
+            <Details
+              key={job.name}
+              job={job}
+              strategy={strategy}
+              onDeleteJob={onDeleteJob}
+            />
+          ))
         : null}
       <Form
         state={state}

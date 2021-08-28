@@ -50,7 +50,9 @@ function a11yProps (index) {
 const Dashboard = ({ hasDbSetup }) => {
   const { user } = useUser({ redirectTo: '/' })
   const router = useRouter()
-  const [value, setValue] = useState(() => (router.query?.tabId ? Number(router.query.tabId) : 1))
+  const [value, setValue] = useState(() =>
+    router.query?.tabId ? Number(router.query.tabId) : 1
+  )
 
   useEffect(() => {
     if (router.query?.tabId && router.query?.tabId !== value) {
@@ -66,26 +68,29 @@ const Dashboard = ({ hasDbSetup }) => {
     setValue(newValue)
   }
 
-  const handleChangeIndex = (index) => {
+  const handleChangeIndex = index => {
     setValue(index)
   }
 
   return (
     <Layout>
-      <Typography component='h1' variant='h6' style={{ marginBottom: 24, textAlign: 'center' }}>
+      <Typography
+        component='h1'
+        variant='h6'
+        style={{ marginBottom: 24, textAlign: 'center' }}
+      >
         {dayjs().format('dddd')} / {dayjs().format('DD MMM YYYY')}
       </Typography>
 
-      {!hasDbSetup
-        ? (
-          <Alert variant='outlined' severity='error' style={{ marginBottom: 24 }}>
-            [IMP] Your app no longer works. Follow upgrade instruction{' '}
-            <Link href='https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2'>
-              here
-            </Link>
-            .
-          </Alert>)
-        : null}
+      {!hasDbSetup ? (
+        <Alert variant='outlined' severity='error' style={{ marginBottom: 24 }}>
+          [IMP] Your app no longer works. Follow upgrade instruction{' '}
+          <Link href='https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2'>
+            here
+          </Link>
+          .
+        </Alert>
+      ) : null}
 
       <AppBar position='static' color='default'>
         <Tabs
@@ -119,7 +124,10 @@ const Dashboard = ({ hasDbSetup }) => {
             </ListItem>
             <ListItem>
               <Link href='/strat/dos'>
-                {STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING].heading}
+                {
+                  STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING]
+                    .heading
+                }
               </Link>
             </ListItem>
             {/* <ListItem>
@@ -144,7 +152,11 @@ export async function getStaticProps (context) {
   const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
   const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 
-  const hasDbSetup = !!(DATABASE_HOST_URL && DATABASE_USER_KEY && DATABASE_API_KEY)
+  const hasDbSetup = !!(
+    DATABASE_HOST_URL &&
+    DATABASE_USER_KEY &&
+    DATABASE_API_KEY
+  )
   return {
     props: {
       hasDbSetup
