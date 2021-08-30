@@ -23,14 +23,14 @@ const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
 export interface DOS_TRAILING_INTERFACE {
   initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE
-  rawKiteOrderResponse: KiteOrder
+  rawKiteOrdersResponse: KiteOrder[]
   optionInstrumentToken: string
   hedgeOrderResponse: KiteOrder
 }
 
 async function minXPercentOrSupertrend ({
   initialJobData,
-  rawKiteOrderResponse,
+  rawKiteOrdersResponse,
   optionInstrumentToken,
   hedgeOrderResponse
 }: DOS_TRAILING_INTERFACE): Promise<any> {
@@ -43,6 +43,7 @@ async function minXPercentOrSupertrend ({
   } = initialJobData
   try {
     const kite = syncGetKiteInstance(user)
+    const [rawKiteOrderResponse] = rawKiteOrdersResponse
     // NB: rawKiteOrderResponse here is of pending SLM Order
     const orderHistory: KiteOrder[] = await withRemoteRetry(() =>
       kite.getOrderHistory(rawKiteOrderResponse.order_id)
