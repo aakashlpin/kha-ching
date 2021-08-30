@@ -32,7 +32,7 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     strikeStepSize: 50,
     // [TODO] change it to actual freeze qty before merging
     // [11501-17250]
-    freezeQty: 100
+    freezeQty: 50
     // freezeQty: 2800
   },
   [INSTRUMENTS.BANKNIFTY]: {
@@ -43,7 +43,7 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     exchange: 'NSE',
     strikeStepSize: 100,
     // [27501-40000]
-    freezeQty: 50
+    freezeQty: 25
     // freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {

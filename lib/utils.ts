@@ -959,6 +959,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
             : null
         )
         .filter(o => o)
+        .reduce((accum, ordersArr) => [...accum, ...ordersArr], [])
     }
   }
 
@@ -983,7 +984,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
       )
       return {
         successful: true,
-        response: ultimateStateOrder
+        response: [ultimateStateOrder]
       }
     } catch (e) {
       // should only reach here if it had a rejected status or finiteStateChecker timedout
@@ -991,7 +992,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
       if (e instanceof Promise.TimeoutError) {
         return {
           successful: false,
-          response: orderAckResponse
+          response: [orderAckResponse]
         }
       }
       if (e?.message === kite.STATUS_REJECTED) {
@@ -1056,7 +1057,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
           )
           return {
             successful: true,
-            response: ultimateStateOrder
+            response: [ultimateStateOrder]
           }
         } catch (e) {
           if (e?.message === kite.STATUS_REJECTED) {
