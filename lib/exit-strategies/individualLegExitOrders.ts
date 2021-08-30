@@ -110,7 +110,7 @@ async function individualLegExitOrders ({
       exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
     }
 
-    exitOrder.trigger_price = round(exitOrder.trigger_price)
+    exitOrder.trigger_price = round(exitOrder.trigger_price!)
     console.log('placing exit orders...', exitOrder)
     return exitOrder
   })
