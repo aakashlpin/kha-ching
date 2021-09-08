@@ -30,7 +30,7 @@ import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import { COMBINED_SL_EXIT_STRATEGY } from '../../types/plans'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
-import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
+import { EXIT_STRATEGIES, USER_OVERRIDE, VOLATILITY_TYPE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
 import {
@@ -76,7 +76,7 @@ export type CombinedPremiumJobDataInterface = (
   lastTrailingSlTriggerAtPremium?: number
 }
 
-async function multiLegPremiumThreshold ({
+async function multiLegPremiumThreshold({
   initialJobData,
   rawKiteOrdersResponse,
   squareOffOrders
@@ -99,6 +99,9 @@ async function multiLegPremiumThreshold ({
       trailEveryPercentageChangeValue,
       lastTrailingSlTriggerAtPremium,
       combinedExitStrategy = COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      combinedExitStrategyLosing,
+      combinedExitStrategyWinning,
+      volatilityType = VOLATILITY_TYPE.SHORT,
       _id: dbId
     } = initialJobData
     const kite = syncGetKiteInstance(user)
@@ -159,8 +162,8 @@ async function multiLegPremiumThreshold ({
     if (trailEveryPercentageChangeValue) {
       const trailingSlTotalPremium = lastTrailingSlTriggerAtPremium
         ? lastTrailingSlTriggerAtPremium +
-          ((trailingSlPercent ?? slmPercent) / 100) *
-            lastTrailingSlTriggerAtPremium
+        ((trailingSlPercent ?? slmPercent) / 100) *
+        lastTrailingSlTriggerAtPremium
         : null // 418
       checkAgainstSl = trailingSlTotalPremium ?? initialSlTotalPremium // 418
 
@@ -175,7 +178,7 @@ async function multiLegPremiumThreshold ({
         if (
           changeFromLastInflectionPoint < 0 &&
           Math.abs(changeFromLastInflectionPoint) >=
-            trailEveryPercentageChangeValue
+          trailEveryPercentageChangeValue
         ) {
           // update lastTrailingSlTriggerAtPremium
           // if current liveTotalPremium is X% lesser than trailEveryPercentageChangeValue
@@ -233,42 +236,50 @@ async function multiLegPremiumThreshold ({
     const exitMsg = `☢️ [multiLegPremiumThreshold] triggered! liveTotalPremium (${liveTotalPremium}) > threshold (${checkAgainstSl})`
     console.log(exitMsg)
 
-    if (combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING) {
-      // get the avg entry prices
-      const avgSymbolPrice = legsOrders.reduce(
-        (accum, order) => ({
-          ...accum,
-          [order.tradingsymbol]: order.average_price
-        }),
-        {}
-      )
+    // get the avg entry prices
+    const avgSymbolPriceAndQty = legsOrders.reduce(
+      (accum, order) => ({
+        ...accum,
+        [order.tradingsymbol]: {
+          price: order.average_price,
+          qty: order.quantity
+        }
+      }),
+      {}
+    )
 
-      // console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
+    // console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
+    let totalLoss = 0, totalProfit = 0;
+    // future proofing by allowing for any number of positions to be trailed together
+    const { losingLegs, winningLegs } = liveSymbolPrices.reduce(
+      (accum, leg) => {
+        const { lastPrice, tradingSymbol } = leg
+        const isLosingLeg = volatilityType === VOLATILITY_TYPE.SHORT ? avgSymbolPriceAndQty[tradingSymbol].price < lastPrice : avgSymbolPriceAndQty[tradingSymbol].price > lastPrice
 
-      // future proofing by allowing for any number of positions to be trailed together
-      const { losingLegs, winningLegs } = liveSymbolPrices.reduce(
-        (accum, leg) => {
-          const { lastPrice, tradingSymbol } = leg
-          if (avgSymbolPrice[tradingSymbol] < lastPrice) {
-            return {
-              ...accum,
-              losingLegs: [...accum.losingLegs, leg]
-            }
-          }
+        if (isLosingLeg) {
+          totalLoss += Math.abs((lastPrice - avgSymbolPriceAndQty[tradingSymbol].price) * avgSymbolPriceAndQty[tradingSymbol].quantity)
           return {
             ...accum,
-            winningLegs: [...accum.winningLegs, leg]
+            losingLegs: [...accum.losingLegs, leg]
           }
-        },
-        {
-          losingLegs: [],
-          winningLegs: []
         }
-      )
 
-      // console.log('losingLegs', logDeep(losingLegs))
-      // console.log('winningLegs', logDeep(winningLegs))
+        totalProfit += Math.abs((lastPrice - avgSymbolPriceAndQty[tradingSymbol].price) * avgSymbolPriceAndQty[tradingSymbol].quantity)
+        return {
+          ...accum,
+          winningLegs: [...accum.winningLegs, leg]
+        }
+      },
+      {
+        losingLegs: [],
+        winningLegs: []
+      }
+    )
 
+    // console.log('losingLegs', logDeep(losingLegs))
+    // console.log('winningLegs', logDeep(winningLegs))
+
+    const handleExitLosingLeg = async () => {
       const squareOffLosingLegs = losingLegs.map(losingLeg =>
         legsOrders.find(
           legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
@@ -300,6 +311,28 @@ async function multiLegPremiumThreshold ({
           rawKiteOrdersResponse: bringToCostOrders
         }
       )
+
+    }
+
+    if (combinedExitStrategyLosing && combinedExitStrategyWinning) {
+      const isPositionLosing = (totalLoss - totalProfit > 0) ? true : false;
+
+      if (isPositionLosing) {
+        if (combinedExitStrategyLosing === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL) {
+          return doSquareOffPositions(squareOffOrders!, kite, initialJobData)
+        }
+        return handleExitLosingLeg();
+      } else {
+        if (combinedExitStrategyWinning === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL) {
+          return doSquareOffPositions(squareOffOrders!, kite, initialJobData)
+        }
+        return handleExitLosingLeg();
+      }
+
+    }
+
+    if (combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING) {
+      return handleExitLosingLeg();
     }
 
     return doSquareOffPositions(squareOffOrders!, kite, initialJobData)

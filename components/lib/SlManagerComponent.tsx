@@ -7,13 +7,16 @@ import {
   RadioGroup,
   Radio,
   Grid,
-  TextField
+  TextField,
+  Box
 } from '@material-ui/core'
 import { COMBINED_SL_EXIT_STRATEGY, SL_ORDER_TYPE } from '../../types/plans'
 import {
   COMBINED_SL_EXIT_STRATEGY_LABEL,
   EXIT_STRATEGIES,
-  EXIT_STRATEGIES_DETAILS
+  EXIT_STRATEGIES_DETAILS,
+  POSITION_STATE,
+  POSITION_STATE_LABEL
 } from '../../lib/constants'
 
 const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
@@ -52,33 +55,45 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
             <FormLabel component='legend'>
               When Combined trailing SL triggers
             </FormLabel>
-            <RadioGroup
-              aria-label='combinedExitStrategy'
-              name='combinedExitStrategy'
-              value={state.combinedExitStrategy}
-              onChange={e =>
-                onChange({
-                  combinedExitStrategy: e.target
-                    .value as COMBINED_SL_EXIT_STRATEGY
-                })
-              }
-            >
-              {[
-                COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
-                COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING
-              ].map(combinedExitStrategy => (
-                <FormControlLabel
-                  key={combinedExitStrategy}
-                  value={combinedExitStrategy}
-                  control={<Radio size='small' />}
-                  label={
-                    <Typography variant='body2'>
-                      {COMBINED_SL_EXIT_STRATEGY_LABEL[combinedExitStrategy]}
-                    </Typography>
+            {[POSITION_STATE.WINNING, POSITION_STATE.LOSING].map(item =>
+              <Box pl={2} pt={1} key={item}>
+                <FormLabel component="legend">
+                  {POSITION_STATE_LABEL[item]}
+                </FormLabel>
+                <RadioGroup
+                  aria-label='combinedExitStrategy'
+                  name='combinedExitStrategy'
+                  value={item === POSITION_STATE.WINNING ? state.combinedExitStrategyWinning : state.combinedExitStrategyLosing}
+                  style={{ paddingLeft: '4px' }}
+                  onChange={e =>
+                    onChange(item === POSITION_STATE.WINNING ? {
+                      combinedExitStrategyWinning: e.target
+                        .value as COMBINED_SL_EXIT_STRATEGY
+                    } : {
+                      combinedExitStrategyLosing: e.target
+                        .value as COMBINED_SL_EXIT_STRATEGY
+                    })
                   }
-                />
-              ))}
-            </RadioGroup>
+                >
+                  {[
+                    COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+                    COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING
+                  ].map(combinedExitStrategy => (
+                    <FormControlLabel
+                      key={combinedExitStrategy}
+                      value={combinedExitStrategy}
+                      control={<Radio size='small' />}
+                      label={
+                        <Typography variant='body2'>
+                          {COMBINED_SL_EXIT_STRATEGY_LABEL[combinedExitStrategy]}
+                        </Typography>
+                      }
+                    />
+                  ))}
+                </RadioGroup>
+
+              </Box>
+            )}
           </Grid>
 
           <Grid item xs={12}>
@@ -123,8 +138,8 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
       </Grid>
 
       {state.exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ||
-      (state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD &&
-        state.combinedExitStrategy ===
+        (state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD &&
+          state.combinedExitStrategy ===
           COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING) ? (
         <Grid item xs={12}>
           <FormControl component='fieldset'>
