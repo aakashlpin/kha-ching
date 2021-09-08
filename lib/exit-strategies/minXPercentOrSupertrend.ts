@@ -125,6 +125,7 @@ async function minXPercentOrSupertrend ({
           slOrderType === SL_ORDER_TYPE.SLL
             ? convertSlmToSll(
                 {
+                  transaction_type: kite.TRANSACTION_TYPE_BUY,
                   trigger_price: newSL
                 } as KiteOrder,
                 slLimitPricePercent!,
