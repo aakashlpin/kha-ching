@@ -36,8 +36,8 @@ export const convertSlmToSll = (
     // keep a min delta of 0.1 from trigger_price
     sllOrder.price =
       sllOrder.transaction_type === kite.TRANSACTION_TYPE_BUY
-        ? sllOrder.price! + 0.1
-        : sllOrder.price! - 0.1
+        ? sllOrder.price + 0.1
+        : sllOrder.price - 0.1
   }
 
   return sllOrder
