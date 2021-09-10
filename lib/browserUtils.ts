@@ -117,11 +117,6 @@ export const formatFormDataForApi = ({
   strategy: string
   data: AvailablePlansConfig
 }): SUPPORTED_TRADE_CONFIG | null => {
-  // TODO: Ask aakash what to do here?
-  const getOnSquareOffSetAborted = ({ exitStrategy, combinedExitStrategy }) =>
-    exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD &&
-    combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL
-
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
       const {
@@ -183,10 +178,6 @@ export const formatFormDataForApi = ({
           trailEveryPercentageChangeValue
         ),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: getOnSquareOffSetAborted({
-          exitStrategy,
-          combinedExitStrategy
-        }),
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
         combinedExitStrategyLosing,
@@ -230,10 +221,6 @@ export const formatFormDataForApi = ({
           trailEveryPercentageChangeValue
         ),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: getOnSquareOffSetAborted({
-          exitStrategy,
-          combinedExitStrategy
-        }),
         inverted: Boolean(inverted),
         combinedExitStrategyLosing,
         combinedExitStrategyWinning,
