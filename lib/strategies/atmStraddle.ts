@@ -4,6 +4,7 @@ import { SignalXUser } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import {
+  EXPIRY_TYPE,
   INSTRUMENT_DETAILS,
   INSTRUMENT_PROPERTIES,
   PRODUCT_TYPE,
@@ -16,7 +17,7 @@ import {
   attemptBrokerOrders,
   delay,
   ensureMarginForBasketOrder,
-  getCurrentExpiryTradingSymbol,
+  getExpiryTradingSymbol,
   getHedgeForStrike,
   getIndexInstruments,
   getInstrumentPrice,
@@ -33,13 +34,13 @@ dayjs.extend(isSameOrBefore)
 
 interface GET_ATM_STRADDLE_ARGS
   extends ATM_STRADDLE_TRADE,
-    INSTRUMENT_PROPERTIES {
+  INSTRUMENT_PROPERTIES {
   startTime: ConfigType
   attempt?: number
   instrumentsData: any[]
 }
 
-export async function getATMStraddle (
+export async function getATMStraddle(
   args: Partial<GET_ATM_STRADDLE_ARGS>
 ): Promise<{
   PE_STRING: string
@@ -58,6 +59,7 @@ export async function getATMStraddle (
     thresholdSkewPercent,
     takeTradeIrrespectiveSkew,
     expiresAt,
+    expiryType,
     attempt = 0
   } = args
   try {
@@ -87,9 +89,9 @@ export async function getATMStraddle (
       ? fractionalTimeRemaining >= 0.5
         ? maxSkewPercent
         : Math.round(
-            fractionalTimeRemaining * maxSkewPercent! +
-              (1 - fractionalTimeRemaining) * thresholdSkewPercent
-          )
+          fractionalTimeRemaining * maxSkewPercent! +
+          (1 - fractionalTimeRemaining) * thresholdSkewPercent
+        )
       : maxSkewPercent
 
     const underlyingLTP = await withRemoteRetry(async () =>
@@ -98,11 +100,12 @@ export async function getATMStraddle (
     const atmStrike =
       Math.round(underlyingLTP / strikeStepSize!) * strikeStepSize!
 
-    const { PE_STRING, CE_STRING } = (await getCurrentExpiryTradingSymbol({
+    const { PE_STRING, CE_STRING } = (await getExpiryTradingSymbol({
       nfoSymbol,
-      strike: atmStrike
+      strike: atmStrike,
+      expiry: expiryType
     })) as StrikeInterface
-
+    console.log(`Expiry ${expiryType} strikes: ${PE_STRING} & ${CE_STRING}`)
     // if time has expired
     if (timeExpired) {
       console.log(
@@ -131,7 +134,7 @@ export async function getATMStraddle (
     if (skew > updatedSkewPercent!) {
       console.log(
         `Retry #${attempt +
-          1}... Live skew (${skew as string}%) > Skew consideration (${String(
+        1}... Live skew (${skew as string}%) > Skew consideration (${String(
           updatedSkewPercent
         )}%)`
       )
@@ -190,7 +193,7 @@ export const createOrder = ({
   }
 }
 
-async function atmStraddle ({
+async function atmStraddle({
   _kite,
   instrument,
   lots,
@@ -205,14 +208,15 @@ async function atmStraddle ({
   hedgeDistance,
   productType = PRODUCT_TYPE.MIS,
   volatilityType = VOLATILITY_TYPE.SHORT,
+  expiryType = EXPIRY_TYPE.CURRENT,
   _nextTradingQueue = EXIT_TRADING_Q_NAME
 }: ATM_STRADDLE_TRADE): Promise<
   | {
-      _nextTradingQueue: string
-      straddle: {}
-      rawKiteOrdersResponse: KiteOrder[]
-      squareOffOrders: KiteOrder[]
-    }
+    _nextTradingQueue: string
+    straddle: {}
+    rawKiteOrdersResponse: KiteOrder[]
+    squareOffOrders: KiteOrder[]
+  }
   | undefined
 > {
   const kite = _kite || syncGetKiteInstance(user)
@@ -240,7 +244,8 @@ async function atmStraddle ({
       maxSkewPercent,
       thresholdSkewPercent,
       takeTradeIrrespectiveSkew,
-      expiresAt
+      expiresAt,
+      expiryType
     })
 
     const { PE_STRING, CE_STRING, atmStrike } = straddle
@@ -256,7 +261,8 @@ async function atmStraddle ({
             strike: atmStrike,
             distance: hedgeDistance!,
             type,
-            nfoSymbol
+            nfoSymbol,
+            expiryType
           })
         )
       )

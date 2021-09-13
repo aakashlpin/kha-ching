@@ -35,8 +35,8 @@ const AtmStraddle = ({ strategy = STRATEGIES.ATM_STRADDLE }) => {
         return
       }
     }
-
-    function handleSyncJob (props) {
+    console.log({ state })
+    function handleSyncJob(props) {
       return axios.post(
         '/api/trades_day',
         formatFormDataForApi({ strategy, data: props })

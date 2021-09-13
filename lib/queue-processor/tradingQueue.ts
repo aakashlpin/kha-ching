@@ -16,11 +16,12 @@ import optionBuyingStrategy from '../strategies/optionBuyingStrategy'
 import strangle from '../strategies/strangle'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
-async function processJob (job: Job) {
+async function processJob(job: Job) {
   const {
     data,
     data: { strategy }
   } = job
+  console.log(`[job processing] Beginning job processing for ${strategy}`)
   switch (strategy) {
     case STRATEGIES.ATM_STRADDLE: {
       return atmStraddle(data)

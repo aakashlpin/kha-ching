@@ -30,7 +30,7 @@ export const ensureIST = date => {
   return datetimeInIST
 }
 
-export function getScheduleableTradeTime (strategy: STRATEGIES) {
+export function getScheduleableTradeTime(strategy: STRATEGIES) {
   const defaultDate = dayjs(STRATEGIES_DETAILS[strategy].defaultRunAt).format()
 
   if (dayjs().isAfter(dayjs(defaultDate))) {
@@ -42,7 +42,7 @@ export function getScheduleableTradeTime (strategy: STRATEGIES) {
   return defaultDate
 }
 
-export function getDefaultSquareOffTime () {
+export function getDefaultSquareOffTime() {
   const [hours, minutes] = (
     process.env.NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME ?? '15:20'
   ).split(':')
@@ -52,7 +52,7 @@ export function getDefaultSquareOffTime () {
     .format()
 }
 
-export function getSchedulingStateProps (strategy: STRATEGIES) {
+export function getSchedulingStateProps(strategy: STRATEGIES) {
   return {
     runNow: false,
     isAutoSquareOffEnabled: true,
@@ -61,7 +61,7 @@ export function getSchedulingStateProps (strategy: STRATEGIES) {
   }
 }
 
-export function commonOnChangeHandler (
+export function commonOnChangeHandler(
   changedProps: Partial<AvailablePlansConfig>,
   state: AvailablePlansConfig,
   setState: Dispatch<AvailablePlansConfig>
@@ -93,20 +93,20 @@ const getSchedulingApiProps = ({
   runAt: runNow
     ? dayjs().format()
     : dayjs(runAt)
-        .set('seconds', 0)
-        .format(),
+      .set('seconds', 0)
+      .format(),
   autoSquareOffProps: isAutoSquareOffEnabled
     ? {
-        time: squareOffTime,
-        deletePendingOrders:
-          exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-      }
+      time: squareOffTime,
+      deletePendingOrders:
+        exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+    }
     : undefined,
   expiresAt: expireIfUnsuccessfulInMins
     ? dayjs(runNow ? new Date() : runAt)
-        .add(Number(expireIfUnsuccessfulInMins), 'minutes')
-        .set('seconds', 0)
-        .format()
+      .add(Number(expireIfUnsuccessfulInMins), 'minutes')
+      .set('seconds', 0)
+      .format()
     : undefined
 })
 
@@ -169,9 +169,10 @@ export const formatFormDataForApi = ({
         trailEveryPercentageChangeValue,
         trailingSlPercent,
         exitStrategy,
-        combinedExitStrategy
+        combinedExitStrategy,
+        expiryType
       } = data as ATM_STRADDLE_CONFIG
-
+      console.log('expiry type: ', expiryType);
       const apiProps: ATM_STRADDLE_TRADE = {
         ...(data as ATM_STRADDLE_CONFIG),
         lots: Number(lots),
@@ -184,6 +185,7 @@ export const formatFormDataForApi = ({
           exitStrategy,
           combinedExitStrategy
         }),
+        expiryType,
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
         ...getSchedulingApiProps({

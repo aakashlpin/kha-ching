@@ -36,6 +36,7 @@ import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
 import SlManagerComponent from '../../lib/SlManagerComponent'
+import ExpiryTypeComponent from '../../lib/ExpiryTypeComponent'
 
 interface ATMStrangleTradeSetupFormProps {
   formHeading?: string
@@ -116,6 +117,8 @@ const TradeSetupForm = ({
 
           <ProductTypeComponent state={state} onChange={onChange} />
 
+          <ExpiryTypeComponent state={state} onChange={onChange} />
+
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Entry strategy</FormLabel>
@@ -150,7 +153,7 @@ const TradeSetupForm = ({
 
           <Grid item>
             {state.entryStrategy ===
-            STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
+              STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
               <DiscreteSlider
                 label={'Strikes away from ATM strike'}
                 defaultValue={1}

@@ -38,6 +38,7 @@ import HedgeComponent from '../../lib/HedgeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import SlManagerComponent from '../../lib/SlManagerComponent'
+import ExpiryTypeComponent from '../../lib/ExpiryTypeComponent'
 
 interface DOSTradeSetupFormProps {
   state: Partial<DIRECTIONAL_OPTION_SELLING_CONFIG>
@@ -113,6 +114,8 @@ const TradeSetupForm = ({
           </Grid>
 
           <ProductTypeComponent state={state} onChange={onChange} />
+
+          <ExpiryTypeComponent state={state} onChange={onChange} />
 
           <Grid item xs={12}>
             <TextField

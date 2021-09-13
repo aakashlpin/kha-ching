@@ -19,7 +19,7 @@ import {
   TRADING_Q_NAME
 } from '../queue'
 import {
-  getCurrentExpiryTradingSymbol,
+  getExpiryTradingSymbol,
   getInstrumentPrice,
   getLastOpenDateSince,
   getNearestCandleTime,
@@ -45,7 +45,7 @@ const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 // get supertrend value of CE option every 5mins
 // update SL = min(SLM%, Supertrend)
 
-async function fetchSuperTrend ({
+async function fetchSuperTrend({
   instrument_token,
   from_date,
   to_date,
@@ -75,7 +75,7 @@ async function fetchSuperTrend ({
   return data
 }
 
-export default async function directionalOptionSelling (
+export default async function directionalOptionSelling(
   initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
     lastTrend: string
     lastTradeOrders: KiteOrder[]
@@ -91,7 +91,8 @@ export default async function directionalOptionSelling (
         .ENTRY_STRATEGIES.FIXED_TIME,
       lastTrend,
       lastTradeOrders,
-      user
+      user,
+      expiryType
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
@@ -102,9 +103,10 @@ export default async function directionalOptionSelling (
 
     const {
       instrument_token: futInstrumentToken
-    } = (await getCurrentExpiryTradingSymbol({
+    } = (await getExpiryTradingSymbol({
       nfoSymbol,
-      instrumentType: 'FUT'
+      instrumentType: 'FUT',
+      expiry: expiryType
     })) as TradingSymbolInterface
 
     const DATE_FORMAT = 'YYYY-MM-DD'
@@ -222,7 +224,7 @@ export default async function directionalOptionSelling (
   }
 }
 
-async function punchOrders (
+async function punchOrders(
   initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE,
   superTrend
 ) {
@@ -237,7 +239,8 @@ async function punchOrders (
     rollback,
     productType = PRODUCT_TYPE.MIS,
     isHedgeEnabled = false,
-    hedgeDistance = 1700
+    hedgeDistance = 1700,
+    expiryType
   } = initialJobData
   const strikeByPriceNumber = strikeByPrice ? Number(strikeByPrice) : null
   const kite = _kite || syncGetKiteInstance(user)
@@ -253,19 +256,21 @@ async function punchOrders (
     instrument_token: optionInstrumentToken,
     strike: optionStrike
   } = strikeByPriceNumber
-    ? await withRemoteRetry(async () =>
+      ? await withRemoteRetry(async () =>
         getTradingSymbolsByOptionPrice({
           nfoSymbol,
           price: strikeByPriceNumber,
           pivotStrike: atmStrike,
           instrumentType,
-          user: user!
+          user: user!,
+          expiry: expiryType
         })
       )
-    : await getCurrentExpiryTradingSymbol({
+      : await getExpiryTradingSymbol({
         nfoSymbol,
         strike: superTrendStrike,
-        instrumentType
+        instrumentType,
+        expiry: expiryType
       })
 
   const ltp = await withRemoteRetry(async () =>
@@ -287,10 +292,11 @@ async function punchOrders (
 
     const {
       tradingsymbol: hedgeTradingSymbol
-    } = (await getCurrentExpiryTradingSymbol({
+    } = (await getExpiryTradingSymbol({
       nfoSymbol,
       strike: hedgeStrike,
-      instrumentType
+      instrumentType,
+      expiry: expiryType
     })) as TradingSymbolInterface
 
     if (hedgeTradingSymbol) {
