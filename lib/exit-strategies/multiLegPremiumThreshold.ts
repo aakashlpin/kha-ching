@@ -44,8 +44,14 @@ import {
 
 import { doSquareOffPositions } from './autoSquareOff'
 
-const isPositionLosing = (volatilityType: VOLATILITY_TYPE, currentPrice: number, buyPrice: number) => {
-  return volatilityType === VOLATILITY_TYPE.SHORT ? currentPrice > buyPrice : currentPrice < buyPrice;
+const isPositionLosing = (
+  volatilityType: VOLATILITY_TYPE,
+  currentPrice: number,
+  buyPrice: number
+) => {
+  return volatilityType === VOLATILITY_TYPE.SHORT
+    ? currentPrice > buyPrice
+    : currentPrice < buyPrice
 }
 
 const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
@@ -73,7 +79,13 @@ const tradeHeartbeat = async dbId => {
   return data
 }
 
-const handleExitLosingLeg = async (losingLegs: GET_LTP_RESPONSE[], winningLegs: GET_LTP_RESPONSE[], legsOrders: KiteOrder[], kite: any, initialJobData: CombinedPremiumJobDataInterface) => {
+const handleExitLosingLeg = async (
+  losingLegs: GET_LTP_RESPONSE[],
+  winningLegs: GET_LTP_RESPONSE[],
+  legsOrders: KiteOrder[],
+  kite: any,
+  initialJobData: CombinedPremiumJobDataInterface
+) => {
   const squareOffLosingLegs = losingLegs.map(losingLeg =>
     legsOrders.find(
       legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
@@ -105,7 +117,6 @@ const handleExitLosingLeg = async (losingLegs: GET_LTP_RESPONSE[], winningLegs: 
       rawKiteOrdersResponse: bringToCostOrders
     }
   )
-
 }
 
 export type CombinedPremiumJobDataInterface = (
@@ -115,7 +126,7 @@ export type CombinedPremiumJobDataInterface = (
   lastTrailingSlTriggerAtPremium?: number
 }
 
-async function multiLegPremiumThreshold({
+async function multiLegPremiumThreshold ({
   initialJobData,
   rawKiteOrdersResponse,
   squareOffOrders
@@ -200,8 +211,8 @@ async function multiLegPremiumThreshold({
     if (trailEveryPercentageChangeValue) {
       const trailingSlTotalPremium = lastTrailingSlTriggerAtPremium
         ? lastTrailingSlTriggerAtPremium +
-        ((trailingSlPercent ?? slmPercent) / 100) *
-        lastTrailingSlTriggerAtPremium
+          ((trailingSlPercent ?? slmPercent) / 100) *
+            lastTrailingSlTriggerAtPremium
         : null // 418
       checkAgainstSl = trailingSlTotalPremium ?? initialSlTotalPremium // 418
 
@@ -216,7 +227,7 @@ async function multiLegPremiumThreshold({
         if (
           changeFromLastInflectionPoint < 0 &&
           Math.abs(changeFromLastInflectionPoint) >=
-          trailEveryPercentageChangeValue
+            trailEveryPercentageChangeValue
         ) {
           // update lastTrailingSlTriggerAtPremium
           // if current liveTotalPremium is X% lesser than trailEveryPercentageChangeValue
@@ -266,15 +277,15 @@ async function multiLegPremiumThreshold({
     }
 
     /**
-     * SHORT 
+     * SHORT
      *  ce = 100, pe=100, sl-10
      *      initialPremium = 200
      *      initialCheckAgainstSl = 220
-     *      
+     *
      *      livePremium = 180, checkAgainstSL = 198
-     * 
+     *
      *      livePremium = 190, checkAgainstSL = 198
-     * 
+     *
      *      livePremium = 200 -> sl triggered
      *      ce = 120, pe = 80
      *      losingleg = ce, winingleg = pe
@@ -303,7 +314,11 @@ async function multiLegPremiumThreshold({
     const { losingLegs, winningLegs } = liveSymbolPrices.reduce(
       (accum, leg) => {
         const { lastPrice, tradingSymbol } = leg
-        const isLosingLeg = isPositionLosing(volatilityType, lastPrice, avgSymbolPrice[tradingSymbol])
+        const isLosingLeg = isPositionLosing(
+          volatilityType,
+          lastPrice,
+          avgSymbolPrice[tradingSymbol]
+        )
 
         if (isLosingLeg) {
           return {
@@ -326,24 +341,53 @@ async function multiLegPremiumThreshold({
     // console.log('losingLegs', logDeep(losingLegs))
     // console.log('winningLegs', logDeep(winningLegs))
 
-    const isPositionInLoss = isPositionLosing(volatilityType, liveTotalPremium, initialSlTotalPremium)
+    const isPositionInLoss = isPositionLosing(
+      volatilityType,
+      liveTotalPremium,
+      initialSlTotalPremium
+    )
 
-    console.log(`☢️ [multiLegPremiumThreshold] ${volatilityType} position is ${isPositionInLoss ? 'losing' : 'winning'}! liveTotalPremium (${liveTotalPremium}) & initialSlTotalPremium (${initialSlTotalPremium})`)
+    console.log(
+      `☢️ [multiLegPremiumThreshold] ${volatilityType} position is ${
+        isPositionInLoss ? 'losing' : 'winning'
+      }! liveTotalPremium (${liveTotalPremium}) & initialSlTotalPremium (${initialSlTotalPremium})`
+    )
 
     if (isPositionInLoss) {
-      console.log(`☢️ [multiLegPremiumThreshold] ${combinedExitStrategyLosing} trigered for losing ${volatilityType} position`)
+      console.log(
+        `☢️ [multiLegPremiumThreshold] ${combinedExitStrategyLosing} trigered for losing ${volatilityType} position`
+      )
       if (combinedExitStrategyLosing === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL) {
-        return doSquareOffPositions(squareOffOrders!, kite, { ...initialJobData, onSquareOffSetAborted: true })
+        return doSquareOffPositions(squareOffOrders!, kite, {
+          ...initialJobData,
+          onSquareOffSetAborted: true
+        })
       }
-      return handleExitLosingLeg(losingLegs, winningLegs, legsOrders, kite, initialJobData);
+      return handleExitLosingLeg(
+        losingLegs,
+        winningLegs,
+        legsOrders,
+        kite,
+        initialJobData
+      )
     } else {
-      console.log(`☢️ [multiLegPremiumThreshold] ${combinedExitStrategyLosing} trigered for winning ${volatilityType} position`)
+      console.log(
+        `☢️ [multiLegPremiumThreshold] ${combinedExitStrategyLosing} trigered for winning ${volatilityType} position`
+      )
       if (combinedExitStrategyWinning === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL) {
-        return doSquareOffPositions(squareOffOrders!, kite, { ...initialJobData, onSquareOffSetAborted: true })
+        return doSquareOffPositions(squareOffOrders!, kite, {
+          ...initialJobData,
+          onSquareOffSetAborted: true
+        })
       }
-      return handleExitLosingLeg(losingLegs, winningLegs, legsOrders, kite, initialJobData);
+      return handleExitLosingLeg(
+        losingLegs,
+        winningLegs,
+        legsOrders,
+        kite,
+        initialJobData
+      )
     }
-
   } catch (e) {
     console.log('☢️ [multiLegPremiumThreshold] terminated', e)
     return Promise.resolve(e)
