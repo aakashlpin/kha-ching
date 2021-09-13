@@ -574,7 +574,7 @@ export interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
 export const getMultipleInstrumentPrices = async (
   instruments: GET_LTP_ARGS[],
   user: SignalXUser
-): Promise<GET_LTP_RESPONSE[]> => {
+): Promise<Record<string, GET_LTP_RESPONSE>> => {
   const {
     data: { data: pricesDetailsof }
   } = await withRemoteRetry(async () =>
@@ -592,20 +592,24 @@ export const getMultipleInstrumentPrices = async (
     )
   )
 
-  const formattedResponse = Object.keys(pricesDetailsof).map(
-    exchangeTradingSymbol => {
+  const formattedResponse = Object.keys(pricesDetailsof).reduce(
+    (accum, exchangeTradingSymbol) => {
       const [exchange, tradingSymbol] = exchangeTradingSymbol.split(':')
       const {
         instrument_token: instrumentToken,
         last_price: lastPrice
       } = pricesDetailsof[exchangeTradingSymbol]
       return {
-        exchange,
-        tradingSymbol,
-        instrumentToken,
-        lastPrice
+        ...accum,
+        [tradingSymbol]: {
+          exchange,
+          tradingSymbol,
+          instrumentToken,
+          lastPrice
+        }
       }
-    }
+    },
+    {}
   )
 
   return formattedResponse
@@ -646,7 +650,10 @@ export const getTradingSymbolsByOptionPrice = async ({
     }
   })
 
-  const pricesData = await getMultipleInstrumentPrices(instruments, user)
+  const priceDataByTradingSymbol = await getMultipleInstrumentPrices(
+    instruments,
+    user
+  )
 
   const getStrike = inst => {
     const withoutNfoSymbol = inst.replace(nfoSymbol, '')
@@ -654,14 +661,17 @@ export const getTradingSymbolsByOptionPrice = async ({
     return Number(withoutExpiryDetails)
   }
 
-  const formattedPrices: LTP_TYPE[] = pricesData.map(
-    ({ tradingSymbol, instrumentToken, lastPrice }) => ({
+  const formattedPrices: LTP_TYPE[] = instruments.map(({ tradingSymbol }) => {
+    const { instrumentToken, lastPrice } = priceDataByTradingSymbol[
+      tradingSymbol
+    ]
+    return {
       tradingsymbol: tradingSymbol,
       strike: getStrike(tradingSymbol),
       instrument_token: instrumentToken,
       last_price: lastPrice
-    })
-  )
+    }
+  })
 
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
