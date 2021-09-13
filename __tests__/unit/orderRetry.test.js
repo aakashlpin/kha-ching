@@ -400,3 +400,64 @@ test('attemptBrokerOrders should work', async () => {
   const res = await attemptBrokerOrders([pr1, pr2])
   console.log(res)
 })
+
+test('freeze qty should work', async () => {
+  let kite = syncGetKiteInstance(user)
+  kite = {
+    ...kite,
+    placeOrder: jest.fn(() =>
+      Promise.resolve({
+        order_id: '210722200262556'
+      })
+    ),
+    getOrders: jest.fn(() =>
+      Promise.resolve([
+        {
+          order_id: '210722200262556',
+          orderTag: 'X0uE0cKR',
+          tradingsymbol: 'BANKNIFTY2172234500PE',
+          quantity: 250,
+          product: 'MIS',
+          transaction_type: 'SELL',
+          exchange: 'NFO'
+        }
+      ])
+    ),
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: kite.STATUS_COMPLETE
+        }
+      ])
+    )
+  }
+
+  expect(kite).toBeDefined()
+
+  const ensured = await remoteOrderSuccessEnsurer({
+    _kite: kite,
+    instrument: INSTRUMENTS.BANKNIFTY,
+    orderProps: {
+      orderTag: 'X0uE0cKR',
+      tradingsymbol: 'BANKNIFTY2172234500PE',
+      quantity: 250,
+      product: 'MIS',
+      transaction_type: 'SELL',
+      exchange: 'NFO'
+    },
+    ensureOrderState: kite.STATUS_COMPLETE,
+    onFailureRetryAfterMs: ms(1),
+    retryAttempts: 2,
+    orderStatusCheckTimeout: ms(5),
+    user
+  })
+
+  console.log({ ensuredRes: ensured.response })
+
+  expect(ensured).toBeDefined()
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: 'COMPLETE' },
+  //   successful: true
+  // })
+})
