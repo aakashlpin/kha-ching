@@ -45,7 +45,7 @@ const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 // get supertrend value of CE option every 5mins
 // update SL = min(SLM%, Supertrend)
 
-async function fetchSuperTrend({
+async function fetchSuperTrend ({
   instrument_token,
   from_date,
   to_date,
@@ -75,7 +75,7 @@ async function fetchSuperTrend({
   return data
 }
 
-export default async function directionalOptionSelling(
+export default async function directionalOptionSelling (
   initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
     lastTrend: string
     lastTradeOrders: KiteOrder[]
@@ -224,7 +224,7 @@ export default async function directionalOptionSelling(
   }
 }
 
-async function punchOrders(
+async function punchOrders (
   initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE,
   superTrend
 ) {
@@ -256,7 +256,7 @@ async function punchOrders(
     instrument_token: optionInstrumentToken,
     strike: optionStrike
   } = strikeByPriceNumber
-      ? await withRemoteRetry(async () =>
+    ? await withRemoteRetry(async () =>
         getTradingSymbolsByOptionPrice({
           nfoSymbol,
           price: strikeByPriceNumber,
@@ -266,7 +266,7 @@ async function punchOrders(
           expiry: expiryType
         })
       )
-      : await getExpiryTradingSymbol({
+    : await getExpiryTradingSymbol({
         nfoSymbol,
         strike: superTrendStrike,
         instrumentType,
@@ -290,14 +290,14 @@ async function punchOrders(
       Number(optionStrike) +
       Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
 
-    const {
-      tradingsymbol: hedgeTradingSymbol
-    } = (await getExpiryTradingSymbol({
-      nfoSymbol,
-      strike: hedgeStrike,
-      instrumentType,
-      expiry: expiryType
-    })) as TradingSymbolInterface
+    const { tradingsymbol: hedgeTradingSymbol } = (await getExpiryTradingSymbol(
+      {
+        nfoSymbol,
+        strike: hedgeStrike,
+        instrumentType,
+        expiry: expiryType
+      }
+    )) as TradingSymbolInterface
 
     if (hedgeTradingSymbol) {
       hedgeOrder = {

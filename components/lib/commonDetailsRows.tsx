@@ -28,8 +28,8 @@ const CommonDetailsRows = ({
       !lastHeartbeatAt
         ? '🔴 Offline'
         : dayjs().diff(dayjs(lastHeartbeatAt), 'seconds') > 60
-          ? '🔴 Offline'
-          : '⚡️ Online',
+        ? '🔴 Offline'
+        : '⚡️ Online',
     [lastHeartbeatAt]
   )
 

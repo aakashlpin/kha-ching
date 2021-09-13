@@ -42,7 +42,9 @@ export const logDeep = object => console.log(JSON.stringify(object, null, 2))
 
 export const ms = seconds => seconds * 1000
 
-const asyncGetIndexInstruments = (exchange = 'NFO'): Promise<KITE_INSTRUMENT_INFO[]> =>
+const asyncGetIndexInstruments = (
+  exchange = 'NFO'
+): Promise<KITE_INSTRUMENT_INFO[]> =>
   new Promise((resolve, reject) => {
     const filename = `instrument_${new Date().getTime()}.csv`
     const file = fs.createWriteStream(filename)
@@ -56,21 +58,21 @@ const asyncGetIndexInstruments = (exchange = 'NFO'): Promise<KITE_INSTRUMENT_INF
           const jsonArray = await csv().fromFile(filename)
           // sometimes 0d returns 200 status code but 502 gateway error in file
           if (Object.keys(jsonArray[0]).length === 12) {
-            fs.unlink(filename, e => { })
+            fs.unlink(filename, e => {})
             const indexesData =
               exchange === 'NFO'
                 ? jsonArray.filter(
-                  item =>
-                    item.name === 'NIFTY' ||
-                    item.name === 'BANKNIFTY' ||
-                    item.name === 'FINNIFTY'
-                )
+                    item =>
+                      item.name === 'NIFTY' ||
+                      item.name === 'BANKNIFTY' ||
+                      item.name === 'FINNIFTY'
+                  )
                 : jsonArray
 
             return resolve(indexesData)
           }
           // retry if that's the case
-          fs.unlink(filename, e => { })
+          fs.unlink(filename, e => {})
           console.log('🔴 Failed downloading instruments file! Retrying...')
           // resolve this promise with a recursive promise fn call
           resolve(asyncGetIndexInstruments())
@@ -115,7 +117,7 @@ const getSortedMatchingIntrumentsData = async ({
   nfoSymbol,
   strike,
   instrumentType,
-  tradingsymbol,
+  tradingsymbol
 }: {
   nfoSymbol?: string
   strike?: number
@@ -134,7 +136,7 @@ const getSortedMatchingIntrumentsData = async ({
     .sort((row1, row2) =>
       dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
     )
-  return rows;
+  return rows
 }
 
 export const getExpiryTradingSymbol = async ({
@@ -150,7 +152,7 @@ export const getExpiryTradingSymbol = async ({
   tradingsymbol?: string
   expiry?: EXPIRY_TYPE
 }): Promise<TradingSymbolInterface | StrikeInterface | null> => {
-  console.log("Fetching trading symbol for expiry type: ", expiry);
+  console.log('Fetching trading symbol for expiry type: ', expiry)
   switch (expiry) {
     case EXPIRY_TYPE.MONTHLY:
       return getMonthlyExpiryTradingSymbol({
@@ -158,7 +160,7 @@ export const getExpiryTradingSymbol = async ({
         strike,
         instrumentType,
         tradingsymbol
-      });
+      })
 
     case EXPIRY_TYPE.NEXT:
       return getNextExpiryTradingSymbol({
@@ -166,7 +168,7 @@ export const getExpiryTradingSymbol = async ({
         strike,
         instrumentType,
         tradingsymbol
-      });
+      })
 
     default:
       return getCurrentExpiryTradingSymbol({
@@ -174,7 +176,7 @@ export const getExpiryTradingSymbol = async ({
         strike,
         instrumentType,
         tradingsymbol
-      });
+      })
   }
 }
 
@@ -189,7 +191,6 @@ export const getCurrentExpiryTradingSymbol = async ({
   instrumentType?: string
   tradingsymbol?: string
 }): Promise<TradingSymbolInterface | StrikeInterface | null> => {
-
   const rows = await getSortedMatchingIntrumentsData({
     nfoSymbol,
     strike,
@@ -232,7 +233,7 @@ export const getNextExpiryTradingSymbol = async ({
     strike,
     instrumentType,
     tradingsymbol
-  });
+  })
 
   if (instrumentType) {
     return rows.length ? rows[1] : null
@@ -269,29 +270,25 @@ export const getMonthlyExpiryTradingSymbol = async ({
     strike,
     instrumentType,
     tradingsymbol
-  });
+  })
 
   // get current calendar month expiries
-  let rows = instrumentsData
-    .filter(
-      item =>
-        (dayjs().get('month') === dayjs(item.expiry).get('month'))
-    )
+  let rows = instrumentsData.filter(
+    item => dayjs().get('month') === dayjs(item.expiry).get('month')
+  )
 
   // // get next calendar month expiries
   if (!rows.length) {
-    let month = dayjs().get('month') === 11 ? 0 : dayjs().get('month'); // to handle December current year & Jan next year cases
-    rows = instrumentsData
-      .filter(
-        item =>
-          (dayjs(item.expiry).get('month') === month)
-      )
+    let month = dayjs().get('month') === 11 ? 0 : dayjs().get('month') // to handle December current year & Jan next year cases
+    rows = instrumentsData.filter(
+      item => dayjs(item.expiry).get('month') === month
+    )
   }
   rows = rows.sort((row1, row2) =>
     dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
   )
 
-  const rowsLength = rows.length;
+  const rowsLength = rows.length
 
   if (instrumentType) {
     return rows.length ? rows[rowsLength - 1] : null
@@ -312,7 +309,7 @@ export const getMonthlyExpiryTradingSymbol = async ({
   }
 }
 
-export function getPercentageChange(
+export function getPercentageChange (
   price1: number,
   price2: number,
   mode: string = 'AGGRESIVE'
@@ -322,7 +319,7 @@ export function getPercentageChange(
   return Math.floor((Math.abs(price1 - price2) / denominator) * 100)
 }
 
-export async function getInstrumentPrice(
+export async function getInstrumentPrice (
   kite,
   underlying: string,
   exchange: string
@@ -332,7 +329,7 @@ export async function getInstrumentPrice(
   return Number(underlyingRes[instrumentString].last_price)
 }
 
-export async function getSkew(kite, instrument1, instrument2, exchange) {
+export async function getSkew (kite, instrument1, instrument2, exchange) {
   const [price1, price2] = await Promise.all([
     getInstrumentPrice(kite, instrument1, exchange),
     getInstrumentPrice(kite, instrument2, exchange)
@@ -346,7 +343,7 @@ export async function getSkew(kite, instrument1, instrument2, exchange) {
   }
 }
 
-export function syncGetKiteInstance(user) {
+export function syncGetKiteInstance (user) {
   const accessToken = user?.session?.access_token
   if (!accessToken) {
     throw new Error(
@@ -359,12 +356,12 @@ export function syncGetKiteInstance(user) {
   })
 }
 
-export async function getCompletedOrderFromOrderHistoryById(kite, orderId) {
+export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
   const orders = await kite.getOrderHistory(orderId)
   return orders.find(odr => odr.status === 'COMPLETE')
 }
 
-export async function getAllOrNoneCompletedOrdersByKiteResponse(
+export async function getAllOrNoneCompletedOrdersByKiteResponse (
   kite,
   rawKiteOrdersResponse
 ) {
@@ -431,10 +428,10 @@ export const getBackoffStrategy = ({ strategy }) => {
 
 export const getCustomBackoffStrategies = () => {
   return {
-    backOffToNearest5thMinute() {
+    backOffToNearest5thMinute () {
       return dayjs(getNextNthMinute(5 * 60 * 1000)).diff(dayjs())
     },
-    backOffToNearestMinute() {
+    backOffToNearestMinute () {
       return dayjs(getNextNthMinute(1 * 60 * 1000)).diff(dayjs())
     }
   }
@@ -672,7 +669,7 @@ export const isMarketOpen = (time = dayjs()) => {
   return time.isAfter(startTime) && time.isBefore(endTime)
 }
 
-export function randomIntFromInterval(min: number, max: number) {
+export function randomIntFromInterval (min: number, max: number) {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -683,7 +680,7 @@ interface LTP_TYPE {
   last_price: number
 }
 
-export function closest(
+export function closest (
   needle: number,
   haystack: Array<LTP_TYPE | any>,
   haystackKey: string,
@@ -786,8 +783,8 @@ export const getTradingSymbolsByOptionPrice = async ({
       idx === 0
         ? idx
         : idx < totalStrikes / 2
-          ? idx * -1
-          : idx - Math.floor(totalStrikes / 2)
+        ? idx * -1
+        : idx - Math.floor(totalStrikes / 2)
     )
     .map(idx => pivotStrike + idx * strikeStepSize)
     .sort((a, b) => a - b)
@@ -826,14 +823,14 @@ export const getTradingSymbolsByOptionPrice = async ({
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
 
-export function withoutFwdSlash(url: string): string {
+export function withoutFwdSlash (url: string): string {
   if (url.endsWith('/')) {
     return url.slice(0, url.length - 1)
   }
   return url
 }
 
-export async function premiumAuthCheck(): Promise<any> {
+export async function premiumAuthCheck (): Promise<any> {
   if (!process.env.SIGNALX_API_KEY) {
     return false
   }
@@ -1297,9 +1294,9 @@ export const getStrikeByDelta = (
 ):
   | apiResponseObject
   | {
-    putStrike: apiResponseObject
-    callStrike: apiResponseObject
-  } => {
+      putStrike: apiResponseObject
+      callStrike: apiResponseObject
+    } => {
   const { data } = apiResponse
   const putStrike = closest(delta, data, 'PutDelta', false)
   const callStrike = closest(delta, data, 'CallDelta', false)
@@ -1317,7 +1314,7 @@ export const getStrikeByDelta = (
   }
 }
 
-export function round(value, step = 0.5) {
+export function round (value, step = 0.5) {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
 }

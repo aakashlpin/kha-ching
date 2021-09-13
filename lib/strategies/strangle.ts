@@ -109,23 +109,21 @@ const getStrangleStrikes = async ({
     higherLegCEStrike = atmStrike + distanceFromAtm * strikeStepSize
   }
 
-  const {
-    tradingsymbol: LOWER_LEG_PE_STRING
-  } = (await getExpiryTradingSymbol({
+  const { tradingsymbol: LOWER_LEG_PE_STRING } = (await getExpiryTradingSymbol({
     nfoSymbol,
     strike: lowerLegPEStrike,
     instrumentType: 'PE',
     expiry: expiryType
   })) as TradingSymbolInterface
 
-  const {
-    tradingsymbol: HIGHER_LEG_CE_STRING
-  } = (await getExpiryTradingSymbol({
-    nfoSymbol,
-    strike: higherLegCEStrike,
-    instrumentType: 'CE',
-    expiry: expiryType
-  })) as TradingSymbolInterface
+  const { tradingsymbol: HIGHER_LEG_CE_STRING } = (await getExpiryTradingSymbol(
+    {
+      nfoSymbol,
+      strike: higherLegCEStrike,
+      instrumentType: 'CE',
+      expiry: expiryType
+    }
+  )) as TradingSymbolInterface
 
   const PE_STRING = !inverted
     ? LOWER_LEG_PE_STRING
@@ -142,7 +140,7 @@ const getStrangleStrikes = async ({
   }
 }
 
-async function atmStrangle(args: ATM_STRANGLE_TRADE) {
+async function atmStrangle (args: ATM_STRANGLE_TRADE) {
   try {
     const {
       instrument,

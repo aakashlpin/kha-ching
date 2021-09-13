@@ -22,18 +22,18 @@ export interface INSTRUMENT_PROPERTIES {
 }
 
 export interface KITE_INSTRUMENT_INFO {
-  exchange: string// "NFO"
-  exchange_token: string// "36320"
-  expiry: string// "2021-10-28"
-  instrument_token: string// "9297922"
-  instrument_type: string// "CE"
-  last_price: string// "0"
-  lot_size: string// "50"
-  name: string// "NIFTY"
-  segment: string// "NFO-OPT"
-  strike: string// "17350"
-  tick_size: string// "0.05"
-  tradingsymbol: string// "NIFTY21OCT17350CE"
+  exchange: string // "NFO"
+  exchange_token: string // "36320"
+  expiry: string // "2021-10-28"
+  instrument_token: string // "9297922"
+  instrument_type: string // "CE"
+  last_price: string // "0"
+  lot_size: string // "50"
+  name: string // "NIFTY"
+  segment: string // "NFO-OPT"
+  strike: string // "17350"
+  tick_size: string // "0.05"
+  tradingsymbol: string // "NIFTY21OCT17350CE"
 }
 
 export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {

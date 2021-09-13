@@ -65,9 +65,9 @@ const TradeSetupForm = ({
   const exitStrategies =
     strategy === STRATEGIES.ATM_STRADDLE
       ? [
-        EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-        EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-      ]
+          EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+          EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+        ]
       : [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 
   const handleFormSubmit = e => {

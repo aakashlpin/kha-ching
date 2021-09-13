@@ -16,7 +16,7 @@ import optionBuyingStrategy from '../strategies/optionBuyingStrategy'
 import strangle from '../strategies/strangle'
 import { getCustomBackoffStrategies, ms } from '../utils'
 
-async function processJob(job: Job) {
+async function processJob (job: Job) {
   const {
     data,
     data: { strategy }

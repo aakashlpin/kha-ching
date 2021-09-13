@@ -153,7 +153,7 @@ const TradeSetupForm = ({
 
           <Grid item>
             {state.entryStrategy ===
-              STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
+            STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
               <DiscreteSlider
                 label={'Strikes away from ATM strike'}
                 defaultValue={1}

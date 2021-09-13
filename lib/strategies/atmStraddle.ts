@@ -34,13 +34,13 @@ dayjs.extend(isSameOrBefore)
 
 interface GET_ATM_STRADDLE_ARGS
   extends ATM_STRADDLE_TRADE,
-  INSTRUMENT_PROPERTIES {
+    INSTRUMENT_PROPERTIES {
   startTime: ConfigType
   attempt?: number
   instrumentsData: any[]
 }
 
-export async function getATMStraddle(
+export async function getATMStraddle (
   args: Partial<GET_ATM_STRADDLE_ARGS>
 ): Promise<{
   PE_STRING: string
@@ -89,9 +89,9 @@ export async function getATMStraddle(
       ? fractionalTimeRemaining >= 0.5
         ? maxSkewPercent
         : Math.round(
-          fractionalTimeRemaining * maxSkewPercent! +
-          (1 - fractionalTimeRemaining) * thresholdSkewPercent
-        )
+            fractionalTimeRemaining * maxSkewPercent! +
+              (1 - fractionalTimeRemaining) * thresholdSkewPercent
+          )
       : maxSkewPercent
 
     const underlyingLTP = await withRemoteRetry(async () =>
@@ -134,7 +134,7 @@ export async function getATMStraddle(
     if (skew > updatedSkewPercent!) {
       console.log(
         `Retry #${attempt +
-        1}... Live skew (${skew as string}%) > Skew consideration (${String(
+          1}... Live skew (${skew as string}%) > Skew consideration (${String(
           updatedSkewPercent
         )}%)`
       )
@@ -193,7 +193,7 @@ export const createOrder = ({
   }
 }
 
-async function atmStraddle({
+async function atmStraddle ({
   _kite,
   instrument,
   lots,
@@ -212,11 +212,11 @@ async function atmStraddle({
   _nextTradingQueue = EXIT_TRADING_Q_NAME
 }: ATM_STRADDLE_TRADE): Promise<
   | {
-    _nextTradingQueue: string
-    straddle: {}
-    rawKiteOrdersResponse: KiteOrder[]
-    squareOffOrders: KiteOrder[]
-  }
+      _nextTradingQueue: string
+      straddle: {}
+      rawKiteOrdersResponse: KiteOrder[]
+      squareOffOrders: KiteOrder[]
+    }
   | undefined
 > {
   const kite = _kite || syncGetKiteInstance(user)
