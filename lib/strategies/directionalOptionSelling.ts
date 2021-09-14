@@ -125,6 +125,12 @@ export default async function directionalOptionSelling (
     const supertrendResponse = await withRemoteRetry(async () =>
       fetchSuperTrend(supertrendProps)
     )
+
+    if (!(Array.isArray(supertrendResponse) && supertrendResponse.length)) {
+      console.log('🔴 [dos] supertrendResponse unlengthy', supertrendResponse)
+      return Promise.reject(new Error('[dos] supertrendResponse unlengthy'))
+    }
+
     const [currentTrendData] = supertrendResponse.slice(-1)
     const currentTrendAsPerST = currentTrendData.STX_10_3
     if (

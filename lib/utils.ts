@@ -746,8 +746,8 @@ export const withRemoteRetry = async (
           const res = await (isRemoteFnPromise ? remoteFn : remoteFn())
           return res
         } catch (e) {
-          if (e.isAxiosError) {
-            if (e.response.status === 401) {
+          if (e?.isAxiosError) {
+            if (e?.response?.status === 401) {
               return reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
             }
           }
