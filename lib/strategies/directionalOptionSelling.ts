@@ -406,7 +406,7 @@ async function punchOrders (
   await Promise.map(exitOrders, async (exitOrder, idx) => {
     return await addToNextQueue(nextQueueData, {
       _nextTradingQueue: EXIT_TRADING_Q_NAME,
-      rawKiteOrderResponse: exitOrder,
+      rawKiteOrdersResponse: [exitOrder],
       optionInstrumentToken,
       hedgeOrderResponse: hedgeOrdersResponse[idx]
     })
