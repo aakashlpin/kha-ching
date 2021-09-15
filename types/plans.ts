@@ -63,6 +63,8 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   slOrderType: SL_ORDER_TYPE
   slLimitPricePercent?: number
   combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
+  combinedExitStrategyWinning?: COMBINED_SL_EXIT_STRATEGY
+  combinedExitStrategyLosing?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
@@ -88,6 +90,8 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   slOrderType: SL_ORDER_TYPE
   slLimitPricePercent?: number
   combinedExitStrategy?: COMBINED_SL_EXIT_STRATEGY
+  combinedExitStrategyWinning?: COMBINED_SL_EXIT_STRATEGY
+  combinedExitStrategyLosing?: COMBINED_SL_EXIT_STRATEGY
 }
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {

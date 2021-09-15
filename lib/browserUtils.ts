@@ -117,10 +117,6 @@ export const formatFormDataForApi = ({
   strategy: string
   data: AvailablePlansConfig
 }): SUPPORTED_TRADE_CONFIG | null => {
-  const getOnSquareOffSetAborted = ({ exitStrategy, combinedExitStrategy }) =>
-    exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD &&
-    combinedExitStrategy === COMBINED_SL_EXIT_STRATEGY.EXIT_ALL
-
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING: {
       const {
@@ -169,7 +165,9 @@ export const formatFormDataForApi = ({
         trailEveryPercentageChangeValue,
         trailingSlPercent,
         exitStrategy,
-        combinedExitStrategy
+        combinedExitStrategy,
+        combinedExitStrategyLosing,
+        combinedExitStrategyWinning
       } = data as ATM_STRADDLE_CONFIG
 
       const apiProps: ATM_STRADDLE_TRADE = {
@@ -180,12 +178,10 @@ export const formatFormDataForApi = ({
           trailEveryPercentageChangeValue
         ),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: getOnSquareOffSetAborted({
-          exitStrategy,
-          combinedExitStrategy
-        }),
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
+        combinedExitStrategyLosing,
+        combinedExitStrategyWinning,
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
           squareOffTime,
@@ -212,7 +208,9 @@ export const formatFormDataForApi = ({
         trailingSlPercent,
         exitStrategy,
         expireIfUnsuccessfulInMins,
-        combinedExitStrategy
+        combinedExitStrategy,
+        combinedExitStrategyLosing,
+        combinedExitStrategyWinning
       } = data as ATM_STRANGLE_CONFIG
 
       const apiProps: ATM_STRANGLE_TRADE = {
@@ -223,11 +221,9 @@ export const formatFormDataForApi = ({
           trailEveryPercentageChangeValue
         ),
         trailingSlPercent: Number(trailingSlPercent),
-        onSquareOffSetAborted: getOnSquareOffSetAborted({
-          exitStrategy,
-          combinedExitStrategy
-        }),
         inverted: Boolean(inverted),
+        combinedExitStrategyLosing,
+        combinedExitStrategyWinning,
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
           squareOffTime,

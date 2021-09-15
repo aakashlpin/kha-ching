@@ -87,6 +87,16 @@ export enum ANCILLARY_TASKS {
   CLEANUP_COMPLETED_JOBS = 'CLEANUP_COMPLETED_JOBS'
 }
 
+export enum POSITION_STATE {
+  WINNING = 'WINNING',
+  LOSING = 'LOSING'
+}
+
+export const POSITION_STATE_LABEL = {
+  [POSITION_STATE.WINNING]: 'If winning',
+  [POSITION_STATE.LOSING]: 'If losing'
+}
+
 export const COMBINED_SL_EXIT_STRATEGY_LABEL = {
   [COMBINED_SL_EXIT_STRATEGY.EXIT_ALL]: 'Exit all legs',
   [COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING]:
@@ -133,6 +143,8 @@ export const STRATEGIES_DETAILS = {
       slOrderType: SL_ORDER_TYPE.SLM,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      combinedExitStrategyWinning: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      combinedExitStrategyLosing: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -169,6 +181,8 @@ export const STRATEGIES_DETAILS = {
       slOrderType: SL_ORDER_TYPE.SLM,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      combinedExitStrategyWinning: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      combinedExitStrategyLosing: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
