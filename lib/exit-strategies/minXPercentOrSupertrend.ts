@@ -98,7 +98,7 @@ async function minXPercentOrSupertrend ({
       latest_only: true
     }
 
-    // console.log('[minXPercentOrSupertrend] ST request', supertrendProps)
+    console.log('[minXPercentOrSupertrend] ST request', supertrendProps)
     const { data: optionSuperTrend } = await withRemoteRetry(async () =>
       axios.post(`${SIGNALX_URL}/api/indicator/supertrend`, supertrendProps, {
         headers: {
@@ -107,25 +107,27 @@ async function minXPercentOrSupertrend ({
       })
     )
 
-    // console.log('[minXPercentOrSupertrend] ST response', optionSuperTrend)
+    console.log('[minXPercentOrSupertrend] ST response')
+    logDeep(optionSuperTrend)
     const [latestST] = optionSuperTrend.slice(-1)
     const { ST_10_3, STX_10_3 } = latestST
     const newST = Math.floor(ST_10_3)
     const newSL = Math.floor(Math.min(0.1 * newST, 10) + newST)
+    const percentChange = getPercentageChange(punchedTriggerPrice!, newSL)
+    logDeep({ latestST, newSL, percentChange })
 
+    // possible that the ST on option strike is still trending "up"
     if (
       !(
-        // possible that the ST on option strike is still trending "up"
-        (
-          STX_10_3 === 'down' &&
-          newSL < punchedTriggerPrice! &&
-          getPercentageChange(punchedTriggerPrice!, newSL) >= 3
-        )
+        STX_10_3 === 'down' &&
+        newSL < punchedTriggerPrice! &&
+        percentChange >= 3
       )
     ) {
       return Promise.reject(new Error('SL not triggered'))
     }
 
+    console.log('should trail SL!')
     try {
       const sllOrderProps =
         slOrderType === SL_ORDER_TYPE.SLL
