@@ -134,7 +134,7 @@ async function autoSquareOffStrat ({
   const completedOrders = rawKiteOrdersResponse
 
   if (deletePendingOrders) {
-    // console.log('deletePendingOrders init')
+     console.log('deletePendingOrders init')
     try {
       await doDeletePendingOrders(completedOrders, kite)
       // console.log('🟢 deletePendingOrders success', res)
@@ -143,6 +143,7 @@ async function autoSquareOffStrat ({
       console.error(e)
     }
   }
+  console.log('Calling SquareOff positions')
   return doSquareOffPositions(completedOrders, kite, initialJobData)
 }
 

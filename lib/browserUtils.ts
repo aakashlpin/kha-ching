@@ -98,8 +98,7 @@ const getSchedulingApiProps = ({
   autoSquareOffProps: isAutoSquareOffEnabled
     ? {
         time: squareOffTime,
-        deletePendingOrders:
-          exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+        deletePendingOrders:true
       }
     : undefined,
   expiresAt: expireIfUnsuccessfulInMins
