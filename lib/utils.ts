@@ -1123,10 +1123,8 @@ export const attemptBrokerOrders = async (
 }> => {
   try {
     const brokerOrderResolutions = await allSettled(ordersPr)
-    console.log(
-      '[attemptBrokerOrders] resolutions',
-      logDeep(brokerOrderResolutions)
-    )
+    console.log('[attemptBrokerOrders] resolutions')
+    logDeep(brokerOrderResolutions)
     const rejectedLegs = (brokerOrderResolutions as any).filter(
       (res: allSettledInterface) => res.status === 'rejected'
     )
