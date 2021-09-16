@@ -183,6 +183,7 @@ const slmWatcher = async ({
           ? 'TRIGGER PENDING'
           : kite.STATUS_COMPLETE,
         orderProps: exitOrder,
+        instrument: _queueJobData.initialJobData.instrument,
         user
       })
       // add this new job to the watcher queue and ensure it succeeds

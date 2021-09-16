@@ -19,6 +19,7 @@ export interface INSTRUMENT_PROPERTIES {
   nfoSymbol: string
   exchange: string
   strikeStepSize: number
+  freezeQty: number
 }
 
 export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
@@ -28,7 +29,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY 50',
     nfoSymbol: 'NIFTY',
     exchange: 'NSE',
-    strikeStepSize: 50
+    strikeStepSize: 50,
+    // [11501-17250]
+    // freezeQty: 200
+    freezeQty: 2800
   },
   [INSTRUMENTS.BANKNIFTY]: {
     lotSize: 25,
@@ -36,7 +40,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY BANK',
     nfoSymbol: 'BANKNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [27501-40000]
+    // freezeQty: 100
+    freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {
     lotSize: 40,
@@ -44,7 +51,9 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY FIN SERVICE',
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [17251-27500]
+    freezeQty: 1800
   }
 }
 

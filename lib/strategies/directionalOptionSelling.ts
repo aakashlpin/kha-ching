@@ -1,3 +1,4 @@
+import { Promise } from 'bluebird'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
@@ -19,6 +20,7 @@ import {
   TRADING_Q_NAME
 } from '../queue'
 import {
+  attemptBrokerOrders,
   getCurrentExpiryTradingSymbol,
   getInstrumentPrice,
   getLastOpenDateSince,
@@ -285,7 +287,7 @@ async function punchOrders (
   }
 
   let hedgeOrder
-  let hedgeOrderResponse
+  let hedgeOrdersResponse
   if (isHedgeEnabled && Number(hedgeDistance) > 0) {
     const hedgeStrike =
       Number(optionStrike) +
@@ -312,15 +314,20 @@ async function punchOrders (
       }
 
       try {
-        const { successful, response } = await remoteOrderSuccessEnsurer({
+        const brokerOrderPr = remoteOrderSuccessEnsurer({
           _kite: kite,
           orderProps: hedgeOrder,
+          instrument,
           ensureOrderState: kite.STATUS_COMPLETE,
           user: user!
         })
 
-        if (successful) {
-          hedgeOrderResponse = response
+        const { allOk, statefulOrders } = await attemptBrokerOrders([
+          brokerOrderPr
+        ])
+
+        if (allOk) {
+          hedgeOrdersResponse = statefulOrders
         } else {
           const error =
             '🔴 hedge order id exists, but status unknown after several retries! terminating dos'
@@ -329,7 +336,7 @@ async function punchOrders (
         }
       } catch (e) {
         if (rollback?.onBrokenHedgeOrders) {
-          await doSquareOffPositions([hedgeOrderResponse], kite, initialJobData)
+          await doSquareOffPositions(hedgeOrdersResponse, kite, initialJobData)
         }
         throw e
       }
@@ -347,17 +354,20 @@ async function punchOrders (
     tag: orderTag
   }
 
-  let rawKiteOrderResponse
+  let rawKiteOrdersResponse
   try {
-    const { successful, response } = await remoteOrderSuccessEnsurer({
+    const brokerOrderPr = remoteOrderSuccessEnsurer({
       _kite: kite,
       orderProps: order,
+      instrument,
       ensureOrderState: kite.STATUS_COMPLETE,
       user: user!
     })
 
-    if (successful) {
-      rawKiteOrderResponse = response
+    const { allOk, statefulOrders } = await attemptBrokerOrders([brokerOrderPr])
+
+    if (allOk) {
+      rawKiteOrdersResponse = statefulOrders
     } else {
       // [TODO] lets see if this ever happens.
       const error =
@@ -370,7 +380,7 @@ async function punchOrders (
     console.log(e)
     if (rollback?.onBrokenPrimaryOrders) {
       await doSquareOffPositions(
-        [hedgeOrderResponse, rawKiteOrderResponse].filter(o => o),
+        [...hedgeOrdersResponse, ...rawKiteOrdersResponse].filter(o => o),
         kite,
         initialJobData
       )
@@ -378,18 +388,18 @@ async function punchOrders (
     throw e
   }
 
-  let exitOrder
+  let exitOrders
   try {
-    ;[exitOrder] = await individualLegExitOrders({
+    exitOrders = await individualLegExitOrders({
       _kite: kite,
       initialJobData,
-      rawKiteOrdersResponse: [rawKiteOrderResponse]
+      rawKiteOrdersResponse
     })
   } catch (e) {
     // if this throws, then the initial SL order for the sold option is not in system
     if (rollback?.onBrokenExitOrders) {
       await doSquareOffPositions(
-        [hedgeOrderResponse, rawKiteOrderResponse].filter(o => o),
+        [...hedgeOrdersResponse, ...rawKiteOrdersResponse].filter(o => o),
         kite,
         initialJobData
       )
@@ -399,23 +409,21 @@ async function punchOrders (
 
   const nextQueueData = omit(initialJobData, '_kite')
 
-  const queueRes = await addToNextQueue(nextQueueData, {
-    _nextTradingQueue: EXIT_TRADING_Q_NAME,
-    rawKiteOrdersResponse: [exitOrder],
-    optionInstrumentToken,
-    hedgeOrderResponse
+  await Promise.map(exitOrders, async (exitOrder, idx) => {
+    return await addToNextQueue(nextQueueData, {
+      _nextTradingQueue: EXIT_TRADING_Q_NAME,
+      rawKiteOrdersResponse: [exitOrder],
+      optionInstrumentToken,
+      hedgeOrderResponse: hedgeOrdersResponse[idx]
+    })
   })
 
-  const { id, name, data } = queueRes!
-  console.log('🟢 [directionalOptionSelling] trailing SL now..', {
-    id,
-    name,
-    data
-  })
+  console.log('🟢 [directionalOptionSelling] trailing SL now..')
 
-  const allPunchedOrders = [rawKiteOrderResponse, hedgeOrderResponse].filter(
-    o => o
-  )
+  const allPunchedOrders = [
+    ...rawKiteOrdersResponse,
+    ...hedgeOrdersResponse
+  ].filter(o => o)
   if (isAutoSquareOffEnabled) {
     try {
       const asoResponse = await addToAutoSquareOffQueue({

@@ -7,6 +7,7 @@ import {
   withRemoteRetry
 } from '../../lib/utils'
 import { Promise } from 'bluebird'
+import { INSTRUMENTS } from '../../lib/constants'
 
 jest.setTimeout(ms(60))
 
@@ -43,32 +44,37 @@ test('should return true for successful order', async () => {
   expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '210722200439620'
+    order_id: '210827200359595'
   })
 
-  kite.getOrderHistory = jest.fn().mockImplementation(() =>
-    Promise.resolve([
-      {
-        status: kite.STATUS_COMPLETE
-      }
-    ])
-  )
+  // kite.getOrderHistory = jest.fn().mockImplementation(() =>
+  //   Promise.resolve([
+  //     {
+  //       status: kite.STATUS_COMPLETE
+  //     }
+  //   ])
+  // )
 
   const ensured = await remoteOrderSuccessEnsurer({
     _kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
-    orderProps: {},
+    orderProps: {
+      quantity: 200
+    },
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 5,
     orderStatusCheckTimeout: ms(5),
     remoteRetryTimeout: ms(5),
+    instrument: INSTRUMENTS.NIFTY,
     user
   })
 
-  expect(ensured).toStrictEqual({
-    response: { status: kite.STATUS_COMPLETE },
-    successful: true
-  })
+  console.log(ensured)
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: kite.STATUS_COMPLETE },
+  //   successful: true
+  // })
 })
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
@@ -393,4 +399,65 @@ test('attemptBrokerOrders should work', async () => {
 
   const res = await attemptBrokerOrders([pr1, pr2])
   console.log(res)
+})
+
+test('freeze qty should work', async () => {
+  let kite = syncGetKiteInstance(user)
+  kite = {
+    ...kite,
+    placeOrder: jest.fn(() =>
+      Promise.resolve({
+        order_id: '210722200262556'
+      })
+    ),
+    getOrders: jest.fn(() =>
+      Promise.resolve([
+        {
+          order_id: '210722200262556',
+          orderTag: 'X0uE0cKR',
+          tradingsymbol: 'BANKNIFTY2172234500PE',
+          quantity: 250,
+          product: 'MIS',
+          transaction_type: 'SELL',
+          exchange: 'NFO'
+        }
+      ])
+    ),
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: kite.STATUS_COMPLETE
+        }
+      ])
+    )
+  }
+
+  expect(kite).toBeDefined()
+
+  const ensured = await remoteOrderSuccessEnsurer({
+    _kite: kite,
+    instrument: INSTRUMENTS.BANKNIFTY,
+    orderProps: {
+      orderTag: 'X0uE0cKR',
+      tradingsymbol: 'BANKNIFTY2172234500PE',
+      quantity: 250,
+      product: 'MIS',
+      transaction_type: 'SELL',
+      exchange: 'NFO'
+    },
+    ensureOrderState: kite.STATUS_COMPLETE,
+    onFailureRetryAfterMs: ms(1),
+    retryAttempts: 2,
+    orderStatusCheckTimeout: ms(5),
+    user
+  })
+
+  console.log({ ensuredRes: ensured.response })
+
+  expect(ensured).toBeDefined()
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: 'COMPLETE' },
+  //   successful: true
+  // })
 })
