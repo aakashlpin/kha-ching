@@ -246,7 +246,7 @@ export const getTimeLeftInMarketClosingMs = () =>
     : dayjs(getMisOrderLastSquareOffTime()).diff(dayjs())
 
 //Returns a boolean to check if current time is after square off time
-export const isTimeAfterAutoSquareOff=(squareOffTime?: string)=>
+export const isTimeAfterAutoSquareOff=(squareOffTime: string)=>
 {
 const finalOrderTime = getMisOrderLastSquareOffTime()
 const runAtTime = isMockOrder()

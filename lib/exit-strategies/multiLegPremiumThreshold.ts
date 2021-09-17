@@ -101,7 +101,7 @@ async function multiLegPremiumThreshold ({
 
     if (getTimeLeftInMarketClosingMs() < 0 ||
       (isAutoSquareOffEnabled &&
-        isTimeAfterAutoSquareOff(time))) {
+        isTimeAfterAutoSquareOff(time!))) {
       return Promise.resolve(
         '🟢 [multiLegPremiumThreshold] Terminating Combined Premium checker as market closing or after square off time..'
       )
