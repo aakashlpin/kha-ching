@@ -245,6 +245,20 @@ export const getTimeLeftInMarketClosingMs = () =>
     ? ms(1 * 60 * 60) // if developing, hardcode one hour to market closing
     : dayjs(getMisOrderLastSquareOffTime()).diff(dayjs())
 
+//Returns a boolean to check if current time is after square off time
+export const isTimeAfterAutoSquareOff=(squareOffTime?: string)=>
+{
+const finalOrderTime = getMisOrderLastSquareOffTime()
+const runAtTime = isMockOrder()
+  ? squareOffTime
+  : dayjs(squareOffTime).isAfter(dayjs(finalOrderTime))
+  ? finalOrderTime
+  : squareOffTime
+
+ return dayjs().isAfter(runAtTime);
+
+}
+
 export const getEntryAttemptsCount = ({ strategy }) => {
   switch (strategy) {
     case STRATEGIES.DIRECTIONAL_OPTION_SELLING:

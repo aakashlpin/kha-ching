@@ -39,7 +39,8 @@ import {
   withRemoteRetry,
   patchDbTrade,
   getMultipleInstrumentPrices,
-  GET_LTP_RESPONSE
+  GET_LTP_RESPONSE,
+  isTimeAfterAutoSquareOff
 } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
@@ -86,12 +87,6 @@ async function multiLegPremiumThreshold ({
   squareOffOrders?: KiteOrder[]
 }) {
   try {
-    if (getTimeLeftInMarketClosingMs() < 0) {
-      return Promise.resolve(
-        '🟢 [multiLegPremiumThreshold] Terminating Combined Premium checker as market closing...'
-      )
-    }
-
     const {
       slmPercent,
       trailingSlPercent,
@@ -99,8 +94,20 @@ async function multiLegPremiumThreshold ({
       trailEveryPercentageChangeValue,
       lastTrailingSlTriggerAtPremium,
       combinedExitStrategy = COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
-      _id: dbId
+      _id: dbId,
+      isAutoSquareOffEnabled,
+      autoSquareOffProps:{time}={}
     } = initialJobData
+
+    if (getTimeLeftInMarketClosingMs() < 0 ||
+      (isAutoSquareOffEnabled &&
+        isTimeAfterAutoSquareOff(time))) {
+      return Promise.resolve(
+        '🟢 [multiLegPremiumThreshold] Terminating Combined Premium checker as market closing or after square off time..'
+      )
+    }
+
+
     const kite = syncGetKiteInstance(user)
 
     try {
