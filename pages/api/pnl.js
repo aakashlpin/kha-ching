@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { uniqBy } from 'lodash'
 
 import withSession from '../../lib/session'
-const advancedFormat = require('dayjs/plugin/advancedFormat')
+import advancedFormat from 'dayjs/plugin/advancedFormat'
 dayjs.extend(advancedFormat)
 
 export default withSession(async (req, res) => {
