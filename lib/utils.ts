@@ -1224,3 +1224,8 @@ export function round (value: number, step = 0.5): number {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
 }
+
+export const getIsDevelopWithoutBrokerEnabled = (): boolean =>
+  process.env.DEVELOP_WITHOUT_BROKER
+    ? JSON.parse(process.env.DEVELOP_WITHOUT_BROKER)
+    : false

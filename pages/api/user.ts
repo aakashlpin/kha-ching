@@ -1,12 +1,22 @@
 import { KiteConnect } from 'kiteconnect'
 
 import withSession from '../../lib/session'
+import { getIsDevelopWithoutBrokerEnabled } from '../../lib/utils'
 import { SignalXUser } from '../../types/misc'
+
+const isDevelopWithoutBrokerEnabled = getIsDevelopWithoutBrokerEnabled()
 
 const apiKey = process.env.KITE_API_KEY
 
 export default withSession(async (req, res) => {
   const user: SignalXUser = req.session.get('user')
+  if (isDevelopWithoutBrokerEnabled) {
+    res.json({
+      ...user,
+      isLoggedIn: true
+    })
+    return
+  }
 
   if (user) {
     const kc = new KiteConnect({

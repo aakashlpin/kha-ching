@@ -1,4 +1,3 @@
-import { AxiosResponse } from 'axios'
 import { KiteConnect } from 'kiteconnect'
 import { cleanupQueues } from '../../lib/queue'
 
@@ -7,7 +6,8 @@ import {
   getIndexInstruments,
   premiumAuthCheck,
   storeAccessTokenRemotely,
-  checkHasSameAccessToken
+  checkHasSameAccessToken,
+  getIsDevelopWithoutBrokerEnabled
 } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
@@ -18,7 +18,20 @@ const kc = new KiteConnect({
   api_key: apiKey
 })
 
+const isDevelopWithoutBrokerEnabled = getIsDevelopWithoutBrokerEnabled()
+
 export default withSession(async (req, res) => {
+  if (isDevelopWithoutBrokerEnabled) {
+    const user: SignalXUser = {
+      isLoggedIn: true,
+      session: JSON.parse(process.env.KITE_SESSION_DATA as string)
+    }
+    req.session.set('user', user)
+    await req.session.save()
+    res.redirect('/dashboard')
+    return
+  }
+
   const { request_token: requestToken } = req.query
 
   if (!requestToken) {
