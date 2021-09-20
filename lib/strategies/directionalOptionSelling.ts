@@ -33,7 +33,8 @@ import {
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
   TradingSymbolInterface,
-  withRemoteRetry
+  withRemoteRetry,
+  logDeep
 } from '../utils'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
@@ -126,8 +127,11 @@ export default async function directionalOptionSelling (
       fetchSuperTrend(supertrendProps)
     )
 
-    if (!(Array.isArray(supertrendResponse) && supertrendResponse.length)) {
-      console.log('🔴 [dos] supertrendResponse unlengthy', supertrendResponse)
+    if (
+      !(Array.isArray(supertrendResponse) && supertrendResponse.length >= 2)
+    ) {
+      console.log('🔴 [dos] supertrendResponse unlengthy')
+      logDeep({ stRequest: supertrendProps, stResponse: supertrendResponse })
       return Promise.reject(new Error('[dos] supertrendResponse unlengthy'))
     }
 
