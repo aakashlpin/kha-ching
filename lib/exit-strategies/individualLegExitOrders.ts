@@ -51,12 +51,10 @@ async function individualLegExitOrders ({
   _kite?: any
   initialJobData: SUPPORTED_TRADE_CONFIG
   rawKiteOrdersResponse: KiteOrder[]
-}) {
-  if (isMockOrder()) {
-    const mockResponse = [...new Array(rawKiteOrdersResponse.length)].map(
-      (_, idx) => orderResponse[idx]
-    )
-    return mockResponse
+}): Promise<KiteOrder[] | null> {
+  const completedOrders = rawKiteOrdersResponse
+  if (!(Array.isArray(completedOrders) && completedOrders.length)) {
+    return null
   }
 
   const {
@@ -69,7 +67,6 @@ async function individualLegExitOrders ({
     instrument
   } = initialJobData
   const kite = _kite || syncGetKiteInstance(user)
-  const completedOrders = rawKiteOrdersResponse
 
   const exitOrders = completedOrders.map(order => {
     const {

@@ -291,21 +291,21 @@ async function punchOrders (
   }
 
   let hedgeOrder
-  let hedgeOrdersResponse
+  let hedgeOrdersResponse: KiteOrder[] = []
   if (isHedgeEnabled && Number(hedgeDistance) > 0) {
     const hedgeStrike =
       Number(optionStrike) +
       Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
 
-    const {
-      tradingsymbol: hedgeTradingSymbol
-    } = (await getCurrentExpiryTradingSymbol({
+    const hedgeStrikeData = (await getCurrentExpiryTradingSymbol({
       nfoSymbol,
       strike: hedgeStrike,
       instrumentType
     })) as TradingSymbolInterface
 
-    if (hedgeTradingSymbol) {
+    if (hedgeStrikeData) {
+      const { tradingsymbol: hedgeTradingSymbol } = hedgeStrikeData
+
       hedgeOrder = {
         tradingsymbol: hedgeTradingSymbol,
         quantity: Number(lots) * lotSize,
@@ -358,7 +358,7 @@ async function punchOrders (
     tag: orderTag
   }
 
-  let rawKiteOrdersResponse
+  let rawKiteOrdersResponse: KiteOrder[] = []
   try {
     const brokerOrderPr = remoteOrderSuccessEnsurer({
       _kite: kite,

@@ -124,7 +124,7 @@ export const getCurrentExpiryTradingSymbol = async ({
   strike?: number
   instrumentType?: string
   tradingsymbol?: string
-}): Promise<TradingSymbolInterface | StrikeInterface> => {
+}): Promise<TradingSymbolInterface | StrikeInterface | null> => {
   const instrumentsData = await getIndexInstruments()
   const rows = instrumentsData
     .filter(
