@@ -1,6 +1,6 @@
 import withSession from '../../../lib/session'
 
-const fyers = require('fyers-api')
+import fyers from 'fyers-api'
 
 // For Process
 

@@ -27,7 +27,7 @@ import {
   syncGetKiteInstance,
   withRemoteRetry
 } from '../utils'
-const isSameOrBefore = require('dayjs/plugin/isSameOrBefore')
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 
 dayjs.extend(isSameOrBefore)
 
@@ -36,7 +36,7 @@ interface GET_ATM_STRADDLE_ARGS
     INSTRUMENT_PROPERTIES {
   startTime: ConfigType
   attempt?: number
-  instrumentsData: any[]
+  instrumentsData: Record<string, unknown>[]
 }
 
 export async function getATMStraddle (
@@ -209,7 +209,7 @@ async function atmStraddle ({
 }: ATM_STRADDLE_TRADE): Promise<
   | {
       _nextTradingQueue: string
-      straddle: {}
+      straddle: Record<string, unknown>
       rawKiteOrdersResponse: KiteOrder[]
       squareOffOrders: KiteOrder[]
     }
@@ -303,6 +303,7 @@ async function atmStraddle ({
         remoteOrderSuccessEnsurer({
           _kite: kite,
           orderProps: order,
+          instrument,
           ensureOrderState: kite.STATUS_COMPLETE,
           user: user!
         })
@@ -324,6 +325,7 @@ async function atmStraddle ({
       remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: order,
+        instrument,
         ensureOrderState: kite.STATUS_COMPLETE,
         user: user!
       })

@@ -51,12 +51,10 @@ async function individualLegExitOrders ({
   _kite?: any
   initialJobData: SUPPORTED_TRADE_CONFIG
   rawKiteOrdersResponse: KiteOrder[]
-}) {
-  if (isMockOrder()) {
-    const mockResponse = [...new Array(rawKiteOrdersResponse.length)].map(
-      (_, idx) => orderResponse[idx]
-    )
-    return mockResponse
+}): Promise<KiteOrder[] | null> {
+  const completedOrders = rawKiteOrdersResponse
+  if (!(Array.isArray(completedOrders) && completedOrders.length)) {
+    return null
   }
 
   const {
@@ -65,10 +63,10 @@ async function individualLegExitOrders ({
     orderTag,
     rollback,
     slOrderType = SL_ORDER_TYPE.SLM,
-    slLimitPricePercent
+    slLimitPricePercent,
+    instrument
   } = initialJobData
   const kite = _kite || syncGetKiteInstance(user)
-  const completedOrders = rawKiteOrdersResponse
 
   const exitOrders = completedOrders.map(order => {
     const {
@@ -109,7 +107,7 @@ async function individualLegExitOrders ({
       exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
     }
 
-    exitOrder.trigger_price = round(exitOrder.trigger_price)
+    exitOrder.trigger_price = round(exitOrder.trigger_price!)
     console.log('placing exit orders...', exitOrder)
     return exitOrder
   })
@@ -119,6 +117,7 @@ async function individualLegExitOrders ({
       _kite: kite,
       ensureOrderState: 'TRIGGER PENDING',
       orderProps: order,
+      instrument,
       user: user!
     })
   )
