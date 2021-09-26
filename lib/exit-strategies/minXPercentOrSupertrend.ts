@@ -34,13 +34,8 @@ async function minXPercentOrSupertrend ({
   optionInstrumentToken,
   hedgeOrderResponse
 }: DOS_TRAILING_INTERFACE): Promise<any> {
-  const {
-    user,
-    orderTag,
-    slOrderType,
-    slLimitPricePercent,
-    instrument
-  } = initialJobData
+  const { user, orderTag, slLimitPricePercent = 1, instrument } = initialJobData
+  const slOrderType = SL_ORDER_TYPE.SLL
   try {
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
