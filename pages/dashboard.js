@@ -196,7 +196,7 @@ const _checkSubscriptionStatus = async apiKey => {
   const { data } = await axios.post(endpoint, {
     box: apiKey
   })
-
+  console.log(data)
   return data
 }
 
