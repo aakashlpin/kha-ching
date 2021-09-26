@@ -475,3 +475,13 @@ export const ERROR_STRINGS = {
   PAID_FEATURE: 'Invalid SignalX Club or Premium subscription',
   PAID_STRATEGY: 'Invalid SignalX Club or Premium subscription'
 }
+
+export const SUBSCRIPTION_TYPE = {
+  SUBSCRIBER: 'SUBSCRIBER',
+  NOT_SUBSCRIBER: 'NOT_SUBSCRIBER'
+}
+
+export const SUBSCRIBER_TYPE = {
+  PREMIUM: 'PREMIUM',
+  CLUB: 'CLUB'
+}
