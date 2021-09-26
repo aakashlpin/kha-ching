@@ -139,7 +139,7 @@ export const STRATEGIES_DETAILS = {
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
@@ -175,7 +175,7 @@ export const STRATEGIES_DETAILS = {
       volatilityType: VOLATILITY_TYPE.SHORT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
@@ -217,7 +217,7 @@ export const STRATEGIES_DETAILS = {
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,

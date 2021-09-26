@@ -6,7 +6,6 @@ import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
 import {
   attemptBrokerOrders,
-  isMockOrder,
   isUntestedFeaturesEnabled,
   remoteOrderSuccessEnsurer,
   round,
@@ -62,10 +61,11 @@ async function individualLegExitOrders ({
     user,
     orderTag,
     rollback,
-    slOrderType = SL_ORDER_TYPE.SLM,
-    slLimitPricePercent,
+    slLimitPricePercent = 1,
     instrument
   } = initialJobData
+
+  const slOrderType = SL_ORDER_TYPE.SLL
   const kite = _kite || syncGetKiteInstance(user)
 
   const exitOrders = completedOrders.map(order => {
