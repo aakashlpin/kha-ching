@@ -108,7 +108,7 @@ const Dashboard = ({
           >
             renew here
           </Link>{' '}
-          to resume services from tomorrow.
+          to resume services tomorrow onwards.
         </Alert>
       ) : null}
 
