@@ -1756,10 +1756,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/ioredis@^4.26.4":
-  version "4.26.6"
-  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.26.6.tgz#7e332d6d24f12d79a1099834ccfa0c169ef667ed"
-  integrity sha512-Q9ydXL/5Mot751i7WLCm9OGTj5jlW3XBdkdEW21SkXZ8Y03srbkluFGbM3q8c+vzPW30JOLJ+NsZWHoly0+13A==
+"@types/ioredis@^4.27.0":
+  version "4.27.4"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.27.4.tgz#2caf9d0222640c9d7ce278fca2f9892c1323f9c8"
+  integrity sha512-uTAA/woL//GxXQI1e9FuUoDZCpP8yn5LXQdea1IEFyLtb8GP2w3HfOE+SqglF6QSAp/3cZLWzrMhHqWSYI3bfg==
   dependencies:
     "@types/node" "*"
 
@@ -2801,19 +2801,19 @@ builtin-status-codes@^3.0.0:
   resolved "https://registry.yarnpkg.com/builtin-status-codes/-/builtin-status-codes-3.0.0.tgz#85982878e21b98e1c66425e03d0174788f569ee8"
   integrity sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=
 
-bullmq@^1.40.4:
-  version "1.40.4"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-1.40.4.tgz#109e30b0f78e904d9af33c71d0a1d68d450864f8"
-  integrity sha512-MTFnW5+VF4YLGnHhgRQ50kE4NhfV2e8dmr8AcaiFN1Jtmms5FLee9p/NqUnRatQnxscKLxYn17hV2vn5urd4Yw==
+bullmq@^1.48.2:
+  version "1.48.2"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-1.48.2.tgz#54e6440fbe653a9d42641dad447694af69f3e86e"
+  integrity sha512-ZFexnRSnOjH1c9fH9ec0i9nswFNKtPZ6BKTK5YIsWz67HnHC09MahuSPAhamb39y5WH8i/wZM3woDAAVM9OIDQ==
   dependencies:
-    "@types/ioredis" "^4.26.4"
+    "@types/ioredis" "^4.27.0"
     cron-parser "^2.7.3"
     get-port "^5.0.0"
-    ioredis "^4.27.5"
+    ioredis "^4.27.8"
     lodash "^4.17.21"
     semver "^6.3.0"
     tslib "^1.10.0"
-    uuid "^8.2.0"
+    uuid "^8.3.2"
 
 bunyan@^1.8.12:
   version "1.8.15"
@@ -5558,26 +5558,10 @@ invert-kv@^2.0.0:
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-2.0.0.tgz#7393f5afa59ec9ff5f67a27620d11c226e3eec02"
   integrity sha512-wPVv/y/QQ/Uiirj/vh3oP+1Ww+AWehmi1g5fFWGPF6IpCBCDVrhgHRMvrLfdYcwDh3QJbGXDW4JAuzxElLSqKA==
 
-ioredis@^4.22.0:
-  version "4.22.0"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.22.0.tgz#a2e18a29300ffb759670d7ed7023fcf6592031a2"
-  integrity sha512-mtC+jNFMPRxReWx0HodDbcwj34Gj5pK/P4+aE6Nh0pdqgtZKvxUh4z2lVtLjqnRIvMhKaBnIgMYFR8qH/xtttA==
-  dependencies:
-    cluster-key-slot "^1.1.0"
-    debug "^4.1.1"
-    denque "^1.1.0"
-    lodash.defaults "^4.2.0"
-    lodash.flatten "^4.4.0"
-    p-map "^2.1.0"
-    redis-commands "1.7.0"
-    redis-errors "^1.2.0"
-    redis-parser "^3.0.0"
-    standard-as-callback "^2.0.1"
-
-ioredis@^4.27.5:
-  version "4.27.7"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.27.7.tgz#11bf2947e23a0e8055931afa7c2da89fc48c8ff3"
-  integrity sha512-lqvFFmUyGIHlrNyDvBoakzy1+ioJzNyoP6CP97GWtdTjWq9IOAnv6l0HUTsqhvd/z9etGgtrDHZ4kWCMAwNkug==
+ioredis@^4.27.8, ioredis@^4.27.9:
+  version "4.27.9"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.27.9.tgz#c27bbade9724f0b8f84c279fb1d567be785ba33d"
+  integrity sha512-hAwrx9F+OQ0uIvaJefuS3UTqW+ByOLyLIV+j0EH8ClNVxvFyH9Vmb08hCL4yje6mDYT5zMquShhypkd50RRzkg==
   dependencies:
     cluster-key-slot "^1.1.0"
     debug "^4.3.1"
@@ -9572,11 +9556,6 @@ stacktrace-parser@0.1.10:
   dependencies:
     type-fest "^0.7.1"
 
-standard-as-callback@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/standard-as-callback/-/standard-as-callback-2.0.1.tgz#ed8bb25648e15831759b6023bdb87e6b60b38126"
-  integrity sha512-NQOxSeB8gOI5WjSaxjBgog2QFw55FV8TkS6Y07BiB3VJ8xNTvUYm0wl0s8ObgQ5NhdpnNfigMIKjgPESzgr4tg==
-
 standard-as-callback@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/standard-as-callback/-/standard-as-callback-2.1.0.tgz#8953fc05359868a77b5b9739a665c5977bb7df45"
@@ -10519,7 +10498,7 @@ uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-uuid@^8.2.0, uuid@^8.3.2:
+uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
