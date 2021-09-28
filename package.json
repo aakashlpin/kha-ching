@@ -32,7 +32,7 @@
     "dayjs": "^1.10.4",
     "esm": "^3.2.25",
     "fyers-api": "^1.1.0",
-    "ioredis": "^4.27.9",
+    "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",
     "lodash": "^4.17.21",
     "memoizee": "^0.4.15",
