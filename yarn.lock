@@ -6812,10 +6812,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kiteconnect@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/kiteconnect/-/kiteconnect-3.2.0.tgz#a5c4637bd5b2cab90fbec6e43821920f941938f1"
-  integrity sha512-Beq1IeXHpxdwLFL8StbG8hL7RyuNsT1qwNxvhF9yJYkIEALQGoQ4zRJnskUQlbw2bKWEqaIlQpZPtfHYwcRLPA==
+kiteconnect@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/kiteconnect/-/kiteconnect-3.2.1.tgz#2f9842d18e7ffb89a74a25da70cd5af1fdcd7f33"
+  integrity sha512-qo4Q4DzJmSA/cJWyTrGPrl7sEeW204xap7kg0gTT08o1AbSY+im0pGxSoI8/+QK6A5J9gKqrmAf7SnMHJH+3cQ==
   dependencies:
     axios "^0.21.1"
     crypto-js "^3.1.9-1"
