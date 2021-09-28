@@ -61,11 +61,11 @@ const asyncGetIndexInstruments = (exchange = 'NFO') =>
             const indexesData =
               exchange === 'NFO'
                 ? jsonArray.filter(
-                    item =>
-                      item.name === 'NIFTY' ||
-                      item.name === 'BANKNIFTY' ||
-                      item.name === 'FINNIFTY'
-                  )
+                  item =>
+                    item.name === 'NIFTY' ||
+                    item.name === 'BANKNIFTY' ||
+                    item.name === 'FINNIFTY'
+                )
                 : jsonArray
 
             return resolve(indexesData)
@@ -155,7 +155,7 @@ export const getCurrentExpiryTradingSymbol = async ({
   }
 }
 
-export function getPercentageChange (
+export function getPercentageChange(
   price1: number,
   price2: number,
   mode = 'AGGRESIVE'
@@ -165,7 +165,7 @@ export function getPercentageChange (
   return Math.floor((Math.abs(price1 - price2) / denominator) * 100)
 }
 
-export async function getInstrumentPrice (
+export async function getInstrumentPrice(
   kite,
   underlying: string,
   exchange: string
@@ -175,7 +175,7 @@ export async function getInstrumentPrice (
   return Number(underlyingRes[instrumentString].last_price)
 }
 
-export async function getSkew (kite, instrument1, instrument2, exchange) {
+export async function getSkew(kite, instrument1, instrument2, exchange) {
   const [price1, price2] = await Promise.all([
     getInstrumentPrice(kite, instrument1, exchange),
     getInstrumentPrice(kite, instrument2, exchange)
@@ -189,7 +189,7 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
   }
 }
 
-export function syncGetKiteInstance (user) {
+export function syncGetKiteInstance(user) {
   const accessToken = user?.session?.access_token
   if (!accessToken) {
     throw new Error(
@@ -202,12 +202,12 @@ export function syncGetKiteInstance (user) {
   })
 }
 
-export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
+export async function getCompletedOrderFromOrderHistoryById(kite, orderId) {
   const orders = await kite.getOrderHistory(orderId)
   return orders.find(odr => odr.status === 'COMPLETE')
 }
 
-export async function getAllOrNoneCompletedOrdersByKiteResponse (
+export async function getAllOrNoneCompletedOrdersByKiteResponse(
   kite,
   rawKiteOrdersResponse
 ) {
@@ -274,10 +274,10 @@ export const getBackoffStrategy = ({ strategy }) => {
 
 export const getCustomBackoffStrategies = () => {
   return {
-    backOffToNearest5thMinute () {
+    backOffToNearest5thMinute() {
       return dayjs(getNextNthMinute(5 * 60 * 1000)).diff(dayjs())
     },
-    backOffToNearestMinute () {
+    backOffToNearestMinute() {
       return dayjs(getNextNthMinute(1 * 60 * 1000)).diff(dayjs())
     }
   }
@@ -515,7 +515,7 @@ export const isMarketOpen = (time = dayjs()) => {
   return time.isAfter(startTime) && time.isBefore(endTime)
 }
 
-export function randomIntFromInterval (min: number, max: number) {
+export function randomIntFromInterval(min: number, max: number) {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -526,7 +526,7 @@ interface LTP_TYPE {
   last_price: number
 }
 
-export function closest (
+export function closest(
   needle: number,
   haystack: Array<LTP_TYPE | any>,
   haystackKey: string,
@@ -631,8 +631,8 @@ export const getTradingSymbolsByOptionPrice = async ({
       idx === 0
         ? idx
         : idx < totalStrikes / 2
-        ? idx * -1
-        : idx - Math.floor(totalStrikes / 2)
+          ? idx * -1
+          : idx - Math.floor(totalStrikes / 2)
     )
     .map(idx => pivotStrike + idx * strikeStepSize)
     .sort((a, b) => a - b)
@@ -676,14 +676,14 @@ export const getTradingSymbolsByOptionPrice = async ({
   return closest(price, formattedPrices, 'last_price', greaterThanEqualToPrice)
 }
 
-export function withoutFwdSlash (url: string): string {
+export function withoutFwdSlash(url: string): string {
   if (url.endsWith('/')) {
     return url.slice(0, url.length - 1)
   }
   return url
 }
 
-export async function premiumAuthCheck (): Promise<any> {
+export async function premiumAuthCheck(): Promise<any> {
   if (!process.env.SIGNALX_API_KEY) {
     return false
   }
@@ -1115,6 +1115,18 @@ export const patchDbTrade = async ({
   return data
 }
 
+// gets trade data from db
+export const getDbTrade = async ({
+  _id,
+}: {
+  _id: string
+}): Promise<Record<string, unknown>> => {
+  const endpoint = `${baseTradeUrl}/${_id}`
+  const { data } = await axios(endpoint)
+
+  return data
+}
+
 export const attemptBrokerOrders = async (
   ordersPr: Array<Promise<any>>
 ): Promise<{
@@ -1200,9 +1212,9 @@ export const getStrikeByDelta = (
 ):
   | apiResponseObject
   | {
-      putStrike: apiResponseObject
-      callStrike: apiResponseObject
-    } => {
+    putStrike: apiResponseObject
+    callStrike: apiResponseObject
+  } => {
   const { data } = apiResponse
   const putStrike = closest(delta, data, 'PutDelta', false)
   const callStrike = closest(delta, data, 'CallDelta', false)
@@ -1220,7 +1232,7 @@ export const getStrikeByDelta = (
   }
 }
 
-export function round (value: number, step = 0.5): number {
+export function round(value: number, step = 0.5): number {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
 }

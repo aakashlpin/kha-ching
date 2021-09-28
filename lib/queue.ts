@@ -2,16 +2,20 @@ import { Queue, QueueScheduler, JobsOptions, Job } from 'bullmq'
 import dayjs from 'dayjs'
 import IORedis from 'ioredis'
 import { v4 as uuidv4 } from 'uuid'
+import { pick } from 'lodash'
+import { SUPPORTED_TRADE_CONFIG } from '../types/trade'
 
 import console from './logging'
 import {
   getBackoffStrategy,
+  getDbTrade,
   getEntryAttemptsCount,
   getMisOrderLastSquareOffTime,
   getQueueOptionsForExitStrategy,
   getTimeLeftInMarketClosingMs,
   isMockOrder,
-  ms
+  ms,
+  patchDbTrade
 } from './utils'
 
 const redisUrl = `${process.env
@@ -74,11 +78,48 @@ const allQueues = [
   ancillaryQueue
 ]
 
-export async function addToNextQueue (
-  jobData,
-  jobResponse
+const updateTradeQueuesArray = async (tradeDbId: string, qRes: Job | undefined, _nextTradingQueue: string) => {
+  if (!qRes) return;
+  const dbData: Partial<SUPPORTED_TRADE_CONFIG> = await getDbTrade({ _id: tradeDbId });
+  const { queuesArray = [] } = dbData;
+  if (queuesArray && queuesArray.length) {
+    queuesArray[queuesArray.length - 1] = {
+      ...queuesArray[queuesArray.length - 1],
+      isProcessed: true
+    }
+  }
+  const patchProps = {
+    queuesArray: [
+      ...queuesArray,
+      {
+        ...pick(qRes, [
+          'id',
+          'name',
+          'opts',
+          'timestamp',
+          'stacktrace',
+          'returnvalue'
+        ]),
+        isProcessed: false,
+        _nextTradingQueue
+      }
+    ]
+  }
+
+  await patchDbTrade({ _id: tradeDbId, patchProps })
+}
+
+export async function addToNextQueue(
+  jobData: Partial<SUPPORTED_TRADE_CONFIG>,
+  jobResponse,
+  tradeId?: string
 ): Promise<Job | undefined> {
   try {
+    let qRes: Promise<Job | undefined>;
+    let qResResolved: Job | undefined;
+    if (tradeId) {
+      jobData = await getDbTrade({ _id: tradeId })
+    }
     switch (jobResponse._nextTradingQueue) {
       case ANCILLARY_Q_NAME: {
         // console.log('Adding job to ancillary queue', jobData, jobResponse)
@@ -86,7 +127,7 @@ export async function addToNextQueue (
           .set('hours', 15)
           .set('minutes', 30)
           .set('seconds', 0)
-        return ancillaryQueue.add(
+        qRes = ancillaryQueue.add(
           `${ANCILLARY_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
@@ -100,7 +141,7 @@ export async function addToNextQueue (
 
       case WATCHER_Q_NAME: {
         // console.log('Adding job to watcher queue', jobData, jobResponse)
-        return watcherQueue.add(
+        qRes = watcherQueue.add(
           `${WATCHER_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
@@ -121,7 +162,7 @@ export async function addToNextQueue (
         const queueOptions = getQueueOptionsForExitStrategy(
           jobData.exitStrategy
         )
-        return exitTradesQueue.add(
+        qRes = exitTradesQueue.add(
           `${EXIT_TRADING_Q_NAME}_${uuidv4() as string}`,
           {
             initialJobData: jobData,
@@ -147,7 +188,7 @@ export async function addToNextQueue (
           queueOptions.delay = delay
         }
 
-        return tradingQueue.add(
+        qRes = tradingQueue.add(
           `${TRADING_Q_NAME}_${uuidv4() as string}`,
           jobData,
           queueOptions
@@ -155,16 +196,20 @@ export async function addToNextQueue (
       }
 
       default: {
+        qRes = Promise.resolve(undefined)
         break
       }
     }
+    qResResolved = await qRes;
+    await updateTradeQueuesArray(jobData._id!, qResResolved, jobResponse._nextTradingQueue);
+    return qResResolved;
   } catch (e) {
     console.log('addToNextQueue error')
     console.log(e)
   }
 }
 
-export async function addToAutoSquareOffQueue ({
+export async function addToAutoSquareOffQueue({
   initialJobData,
   jobResponse
 }) {
@@ -176,8 +221,8 @@ export async function addToAutoSquareOffQueue ({
   const runAtTime = isMockOrder()
     ? time
     : dayjs(time).isAfter(dayjs(finalOrderTime))
-    ? finalOrderTime
-    : time
+      ? finalOrderTime
+      : time
 
   const delay = dayjs(runAtTime).diff(dayjs())
   // console.log(`>>> auto square off scheduled for ${Math.ceil(delay / 60000)} minutes from now`)
