@@ -4,9 +4,6 @@ services:
     env: node
     repo: https://github.com/aakashlpin/kha-ching.git
     region: frankfurt
-    scaling:
-      minInstances: 1
-      maxInstances: 1
     buildCommand: yarn; yarn build
     startCommand: yarn start
     envVars:
