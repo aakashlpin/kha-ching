@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: signalx
+    env: node
+    repo: https://github.com/aakashlpin/kha-ching.git
+    region: frankfurt
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+    buildCommand: yarn; yarn build
+    startCommand: yarn start
+    envVars:
+      - key: KITE_API_KEY
+        value: ''
+      - key: KITE_API_SECRET
+        value: ''
+      - key: REDIS_URL
+        value: ''
+      - key: SIGNALX_API_KEY
+        value: ''
+      - key: SECRET_COOKIE_PASSWORD
+        value: ''
+      - key: DATABASE_HOST_URL
+        value: ''
+      - key: DATABASE_USER_KEY
+        value: ''
+      - key: DATABASE_API_KEY
+        value: ''
+      - key: NEXT_PUBLIC_DEFAULT_LOTS
+        value: '4'
+      - key: NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
+        value: '10'
+      - key: NEXT_PUBLIC_DEFAULT_SLM_PERCENT
+        value: '50'
+      - key: NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME
+        value: '15:20'
+    autoDeploy: true
