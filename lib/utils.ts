@@ -1051,6 +1051,10 @@ export const patchDbTrade = async ({
 }): Promise<object> => {
   const endpoint = `${baseTradeUrl}/${_id}`
   const { data } = await axios(endpoint)
+  console.log('Data printed in patchDbTrade')
+  logDeep(data);
+  console.log('patchProps printed in patchDbTrade')
+  logDeep(patchProps);
   await axios.put(
     endpoint,
     {
