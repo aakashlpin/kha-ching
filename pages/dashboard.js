@@ -1,17 +1,15 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
-import { Box, Button, Divider, Link, List, ListItem } from '@material-ui/core'
+import { Box, Link, List, ListItem } from '@material-ui/core'
 import AppBar from '@material-ui/core/AppBar'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
 import Typography from '@material-ui/core/Typography'
 import Alert from '@material-ui/lab/Alert'
-import axios from 'axios'
+// import axios from 'axios'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import SwipeableViews from 'react-swipeable-views'
-import memoizer from 'memoizee'
+// import memoizer from 'memoizee'
 
 import Footer from '../components/Footer'
 import Layout from '../components/Layout'
@@ -23,7 +21,7 @@ import {
   SUBSCRIBER_TYPE
 } from '../lib/constants'
 import useUser from '../lib/useUser'
-import { ms } from '../lib/utils'
+// import { ms } from '../lib/utils'
 
 function TabPanel (props) {
   const { children, value, index, ...other } = props
@@ -189,21 +187,21 @@ const Dashboard = ({
   )
 }
 
-const _checkSubscriptionStatus = async apiKey => {
-  console.log('fetching subscription status...')
-  const endpoint =
-    process.env.SUBSCRIPTION_URL ?? `https://auth.signalx.club/api/auth_box_id`
-  const { data } = await axios.post(endpoint, {
-    box: apiKey
-  })
-  console.log(data)
-  return data
-}
+// const _checkSubscriptionStatus = async apiKey => {
+//   console.log('fetching subscription status...')
+//   const endpoint =
+//     process.env.SUBSCRIPTION_URL ?? `https://auth.signalx.club/api/auth_box_id`
+//   const { data } = await axios.post(endpoint, {
+//     box: apiKey
+//   })
+//   console.log(data)
+//   return data
+// }
 
-const checkSubscriptionStatus = memoizer(_checkSubscriptionStatus, {
-  maxAge: ms(9 * 60 * 60),
-  promise: true
-})
+// const checkSubscriptionStatus = memoizer(_checkSubscriptionStatus, {
+//   maxAge: ms(9 * 60 * 60),
+//   promise: true
+// })
 
 export async function getServerSideProps (context) {
   return {
