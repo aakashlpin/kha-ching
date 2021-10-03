@@ -206,74 +206,80 @@ const checkSubscriptionStatus = memoizer(_checkSubscriptionStatus, {
 })
 
 export async function getServerSideProps (context) {
-  const SIGNALX_API_KEY = process.env.SIGNALX_API_KEY
-  if (!(SIGNALX_API_KEY && SIGNALX_API_KEY.length === 16)) {
-    return {
-      props: {
-        isInstallationValid: true
-      }
+  return {
+    props: {
+      isInstallationValid: true
     }
   }
 
-  try {
-    const subscriptionData = await checkSubscriptionStatus(SIGNALX_API_KEY)
-    const { isPremiumUser, isClubUser, allowed, expireOn } = subscriptionData
+  // const SIGNALX_API_KEY = process.env.SIGNALX_API_KEY
+  // if (!(SIGNALX_API_KEY && SIGNALX_API_KEY.length === 16)) {
+  //   return {
+  //     props: {
+  //       isInstallationValid: true
+  //     }
+  //   }
+  // }
 
-    if (!isClubUser && !isPremiumUser) {
-      // open source user
-      return {
-        props: {
-          isInstallationValid: true
-        }
-      }
-    }
+  // try {
+  //   const subscriptionData = await checkSubscriptionStatus(SIGNALX_API_KEY)
+  //   const { isPremiumUser, isClubUser, allowed, expireOn } = subscriptionData
 
-    // either club or premium
-    if (!allowed) {
-      // refetch immediately if subscription has expired
-      checkSubscriptionStatus.delete(SIGNALX_API_KEY, true)
+  //   if (!isClubUser && !isPremiumUser) {
+  //     // open source user
+  //     return {
+  //       props: {
+  //         isInstallationValid: true
+  //       }
+  //     }
+  //   }
 
-      return {
-        props: {
-          isInstallationValid: false,
-          expireOn,
-          subscriberType: isClubUser
-            ? SUBSCRIBER_TYPE.CLUB
-            : SUBSCRIBER_TYPE.PREMIUM
-        }
-      }
-    }
+  //   // either club or premium
+  //   if (!allowed) {
+  //     // refetch immediately if subscription has expired
+  //     checkSubscriptionStatus.delete(SIGNALX_API_KEY, true)
 
-    // valid subscription
-    const ttl = dayjs(expireOn).diff(dayjs(), 'days')
-    if (ttl <= 3) {
-      // but expiring soon
-      return {
-        props: {
-          isInstallationValid: true,
-          isExpiringSoon: true,
-          expireOn,
-          subscriberType: isClubUser
-            ? SUBSCRIBER_TYPE.CLUB
-            : SUBSCRIBER_TYPE.PREMIUM
-        }
-      }
-    }
+  //     return {
+  //       props: {
+  //         isInstallationValid: false,
+  //         expireOn,
+  //         subscriberType: isClubUser
+  //           ? SUBSCRIBER_TYPE.CLUB
+  //           : SUBSCRIBER_TYPE.PREMIUM
+  //       }
+  //     }
+  //   }
 
-    return {
-      props: {
-        isInstallationValid: true
-      }
-    }
-  } catch (e) {
-    console.log(e)
-    // in case of any issues, give the benefit to the user
-    return {
-      props: {
-        isInstallationValid: true
-      }
-    }
-  }
+  //   // valid subscription
+  //   const ttl = dayjs(expireOn).diff(dayjs(), 'days')
+  //   if (ttl <= 3) {
+  //     // but expiring soon
+  //     return {
+  //       props: {
+  //         isInstallationValid: true,
+  //         isExpiringSoon: true,
+  //         expireOn,
+  //         subscriberType: isClubUser
+  //           ? SUBSCRIBER_TYPE.CLUB
+  //           : SUBSCRIBER_TYPE.PREMIUM
+  //       }
+  //     }
+  //   }
+
+  //   return {
+  //     props: {
+  //       isInstallationValid: true
+  //     }
+  //   }
+  // } catch (e) {
+  //   console.log(e)
+  //   // in case of any issues, give the benefit to the user
+  //   return {
+  //     props: {
+  //       isInstallationValid: true
+  //     }
+  //   }
+  // }
 }
 
 export default Dashboard
