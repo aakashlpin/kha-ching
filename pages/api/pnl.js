@@ -24,10 +24,10 @@ export default withSession(async (req, res) => {
     const { data: orders } = await axios(
       `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
     )
-    const {orclProfit}=await axios (
+    const {data:{profit}}=await axios (
      `${process.env.ORCL_HOST_URL}/profits/${orderTag}`
     )
-    console.log(`Profit from ORCL is:${orclProfit.profit} `)
+    console.log(`Profit from ORCL is:${profit} `)
 
     if (!orders.length) {
       return res.json({ error: 'PnL not ready yet!' })
