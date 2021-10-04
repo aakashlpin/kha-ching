@@ -39,3 +39,5 @@ spec:
       value: ${_self.COMMIT_HASH}
     - key: MOCK_ORDERS
       value: "false"
+    - key: ORCL_HOST_URL
+       value: ""

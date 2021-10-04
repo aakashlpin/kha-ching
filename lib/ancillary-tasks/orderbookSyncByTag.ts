@@ -9,6 +9,7 @@ import {
 
 const DATABASE_HOST_URL: string = process.env.DATABASE_HOST_URL!
 const DATABASE_USER_KEY: string = process.env.DATABASE_USER_KEY!
+const ORCL_HOST:string=process.env.ORCL_HOST_URL!
 
 async function orderbookSyncByTag ({
   orderTag,
@@ -25,6 +26,10 @@ async function orderbookSyncByTag ({
       `${DATABASE_HOST_URL}/odr_${DATABASE_USER_KEY}/${orderTag}`,
       ordersForTag,
       SIGNALX_AXIOS_DB_AUTH
+    )
+    const res1=await axios.post(
+      `${ORCL_HOST}/trades`,
+      ordersForTag,
     )
     return res
   } catch (e) {
