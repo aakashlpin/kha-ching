@@ -15,11 +15,12 @@ export default withSession(async (req, res) => {
 
   try {
     const { order_tag: orderTag } = req.query
+    console.log(`OrderTag is ${orderTag}`)
 
     if (!orderTag) {
       return res.status(400).json({ error: 'expected orderTag in query' })
     }
-
+    console.log(`HostURl is ${process.env.ORCL_HOST_URL}`)
     const { data: orders } = await axios(
       `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
     )
