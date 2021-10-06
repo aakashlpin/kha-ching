@@ -35,6 +35,7 @@ const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
 const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
 const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 const KITE_API_KEY = process.env.KITE_API_KEY
+const ORCL_HOST_URL=process.env.ORCL_HOST_URL
 
 export const logDeep = object => console.log(JSON.stringify(object, null, 2))
 
@@ -428,10 +429,14 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
     DATABASE_HOST_URL as string
   )}/pvt_${DATABASE_USER_KEY as string}/tokens?limit=1`
   try {
-    const {
-      data: [token]
-    } = await axios(ACCESS_TOKEN_URL)
-    const { access_token: dbAccessToken } = token
+    // const {
+    //   data: [token]
+    // } = await axios(ACCESS_TOKEN_URL)
+    // const { access_token: dbAccessToken } = token
+    const {data:{items:[item]}}= await axios(
+      `${ORCL_HOST_URL}/access_tokens`
+);
+const { access_token: dbAccessToken } = item
     return dbAccessToken === accessToken
   } catch (e) {
     console.log('🔴 [storeAccessTokenRemotely] error', e)
@@ -450,6 +455,12 @@ export const storeAccessTokenRemotely = async accessToken => {
         access_token: accessToken
       },
       SIGNALX_AXIOS_DB_AUTH
+    )
+    await axios.post(
+      `${ORCL_HOST_URL}/access_tokens`,
+      {
+        access_token: accessToken
+      }
     )
   } catch (e) {
     console.log('🔴 [storeAccessTokenRemotely] error', e)
