@@ -17,9 +17,10 @@ import Layout from '../components/Layout'
 import PlanDash from '../components/PlanDash'
 import TradesForDay from '../components/TradesForDay'
 import { STRATEGIES, STRATEGIES_DETAILS } from '../lib/constants'
+import { checkAndRetryFailedJobs } from '../lib/queue-processor/retryFailedJobs'
 import useUser from '../lib/useUser'
 
-function TabPanel (props) {
+function TabPanel(props) {
   const { children, value, index, ...other } = props
 
   return (
@@ -40,7 +41,7 @@ function TabPanel (props) {
   )
 }
 
-function a11yProps (index) {
+function a11yProps(index) {
   return {
     id: `full-width-tab-${index}`,
     'aria-controls': `full-width-tabpanel-${index}`
@@ -147,7 +148,7 @@ const Dashboard = ({ hasDbSetup }) => {
   )
 }
 
-export async function getStaticProps (context) {
+export async function getStaticProps(context) {
   const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
   const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
   const DATABASE_API_KEY = process.env.DATABASE_API_KEY

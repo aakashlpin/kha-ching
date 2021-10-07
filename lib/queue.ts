@@ -137,6 +137,7 @@ export async function addToNextQueue(
             delay: marketClosing.diff(dayjs())
           }
         )
+        break
       }
 
       case WATCHER_Q_NAME: {
@@ -155,6 +156,7 @@ export async function addToNextQueue(
             }
           }
         )
+        break
       }
 
       case EXIT_TRADING_Q_NAME: {
@@ -170,6 +172,7 @@ export async function addToNextQueue(
           },
           queueOptions
         )
+        break
       }
       case TRADING_Q_NAME: {
         const queueOptions: JobsOptions = {}
@@ -193,6 +196,7 @@ export async function addToNextQueue(
           jobData,
           queueOptions
         )
+        break
       }
 
       default: {

@@ -11,6 +11,7 @@ import console from '../../lib/logging'
 import withSession from '../../lib/session'
 import {
   baseTradeUrl,
+  getDbTrade,
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
@@ -24,7 +25,7 @@ const nanoid = customAlphabet(
   8
 )
 
-async function createJob ({
+async function createJob({
   jobData,
   user
 }: {
@@ -77,7 +78,7 @@ async function createJob ({
   )
 }
 
-async function deleteJob (id) {
+async function deleteJob(id) {
   try {
     if (id.includes('repeat')) {
       await tradingQueue.removeRepeatableByKey(id)
@@ -129,11 +130,13 @@ export default withSession(async (req, res) => {
         jobData: data,
         user
       })
+
+      const newDbData = await getDbTrade({ _id: data._id! })
       // then patch the db entry with queue entry
       await axios.put(
         `${endpoint}/${data._id!}`,
         {
-          ...data,
+          ...newDbData,
           status: 'QUEUE',
           queue: pick(qRes, [
             'id',
