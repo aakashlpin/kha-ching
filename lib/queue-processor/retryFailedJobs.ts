@@ -4,7 +4,9 @@ import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { addToNextQueue } from '../queue'
 import { baseTradeUrl } from "../utils"
 
-export const checkAndRetryFailedJobs = async () => {
+let isDone = false;
+export const checkAndRetryFailedJobs = async (force = false) => {
+    if (isDone && !force) return;
     console.log('checking for failed jobs')
     const urlDateParam = dayjs().format('DDMMYYYY')
     const endpoint = `${baseTradeUrl}/${urlDateParam}`
@@ -20,6 +22,7 @@ export const checkAndRetryFailedJobs = async () => {
                 addToNextQueue(tradeInfo, { _nextTradingQueue: lastJob._nextTradingQueue })
             }
         }))
+        isDone = true;
     }
 }
 
