@@ -19,11 +19,19 @@ export default withSession(async (req, res) => {
     if (!orderTag) {
       return res.status(400).json({ error: 'expected orderTag in query' })
     }
+    const day330=dayjs()
+    .set('hour', 15)
+    .set('minutes', 30)
+    .set('seconds', 0)
+    .format()
+    if (dayjs().isBefore(dayjs(day330)))
+    return res.json({ error: 'PnL not ready yet!' })
+
     const { data: orders } = await axios(
       `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
     )
     const {data:{profit}}=await axios (
-     `${process.env.ORCL_HOST_URL}/profits/${orderTag}`
+     `${process.env.ORCL_HOST_URL}/rest-v1/profits/${orderTag}`
     )
     console.log(`Profit from ORCL is:${profit} `)
     if (profit===null)

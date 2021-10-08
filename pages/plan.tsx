@@ -218,10 +218,10 @@ const Plan = () => {
     // console.log('commonOnSubmitHandler', selectedConfig)
 
     let updatedConfig
-    if (selectedConfig._id) {
+    if (selectedConfig.id) {
       // editing an existing strategy
       await axios.put('/api/plan', {
-        _id: selectedConfig._id,
+        id: selectedConfig.id,
         dayOfWeek: currentEditDay,
         config: cleanupForRemoteSync({
           ...selectedConfig,
@@ -229,7 +229,7 @@ const Plan = () => {
         } as AvailablePlansConfig)
       })
 
-      updatedConfig = { [selectedConfig._id]: selectedConfig }
+      updatedConfig = { [selectedConfig.id]: selectedConfig }
     } else {
       // creating a new strategy
       const config = Object.keys(selectedConfig.instruments)
@@ -342,18 +342,18 @@ const Plan = () => {
     async function fn () {
       const { data } = await axios('/api/plan')
       const dayWiseData = data.reduce((accum, config) => {
-        if (accum[config._collection]) {
+        if (accum[config.collection]) {
           return {
             ...accum,
-            [config._collection]: {
-              ...accum[config._collection],
+            [config.collection]: {
+              ...accum[config.collection],
               [config._id]: config
             }
           }
         }
         return {
           ...accum,
-          [config._collection]: { [config._id]: config }
+          [config.collection]: { [config._id]: config }
         }
       }, {})
       const updatedDayState: DailyPlansConfig = Object.keys(dayState).reduce(

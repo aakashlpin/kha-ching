@@ -2,6 +2,7 @@ import { Worker } from 'bullmq'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 
 import orderbookSyncByTag from '../ancillary-tasks/orderbookSyncByTag'
+import orderbookSync from '../ancillary-tasks/orderbookSync'
 import { ANCILLARY_TASKS } from '../constants'
 import console from '../logging'
 import { ANCILLARY_Q_NAME, redisConnection } from '../queue'
@@ -14,6 +15,11 @@ function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
     case ANCILLARY_TASKS.ORDERBOOK_SYNC_BY_TAG: {
       return orderbookSyncByTag({
         orderTag: orderTag!,
+        user: user!
+      })
+    }
+    case ANCILLARY_TASKS.ORDERBOOKSYNC: {
+      return orderbookSync({
         user: user!
       })
     }

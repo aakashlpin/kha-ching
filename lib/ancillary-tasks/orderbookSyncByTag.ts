@@ -22,13 +22,14 @@ async function orderbookSyncByTag ({
     const kite = syncGetKiteInstance(user)
     const allOrders = await withRemoteRetry(() => kite.getOrders())
     const ordersForTag = allOrders.filter(order => order.tag === orderTag)
+    console.log(`Order tag is ${orderTag}`)
     const res = await axios.post(
       `${DATABASE_HOST_URL}/odr_${DATABASE_USER_KEY}/${orderTag}`,
       ordersForTag,
       SIGNALX_AXIOS_DB_AUTH
     )
     const res1=await axios.post(
-      `${ORCL_HOST_URL}/trades`,
+      `${ORCL_HOST_URL}/rest-v1/trades`,
       ordersForTag,
     )
     return res

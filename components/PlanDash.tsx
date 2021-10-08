@@ -45,18 +45,18 @@ const PlanDash = () => {
             .format()
         }
 
-        if (Array.isArray(accum[updatedConfig._collection])) {
+        if (Array.isArray(accum[updatedConfig.collection])) {
           return {
             ...accum,
-            [updatedConfig._collection]: [
-              ...accum[updatedConfig._collection],
+            [updatedConfig.collection]: [
+              ...accum[updatedConfig.collection],
               updatedConfig
             ]
           }
         }
         return {
           ...accum,
-          [updatedConfig._collection]: [updatedConfig]
+          [updatedConfig.collection]: [updatedConfig]
         }
       }, {})
 
@@ -75,7 +75,7 @@ const PlanDash = () => {
         strategy: plan.strategy,
         data: {
           ...plan,
-          plan_ref: plan._id,
+          plan_ref: plan.id,
           runNow
         }
       })
@@ -85,7 +85,7 @@ const PlanDash = () => {
 
   const getPendingTrades = () =>
     plans[dayOfWeek]
-      ?.filter(plan => !tradesDay?.find(trade => trade.plan_ref === plan._id))
+      ?.filter(plan => !tradesDay?.find(trade => trade.plan_ref === plan.id))
       .filter(plan => STRATEGIES_DETAILS[plan.strategy])
 
   const getScheduleableTrades = () => {
@@ -155,7 +155,7 @@ const PlanDash = () => {
       {pendingTrades.map((plan: SUPPORTED_TRADE_CONFIG, idx: number) => {
         const isPlanScheduleable = dayjs().isBefore(dayjs(plan.runAt))
         return (
-          <div key={plan._id}>
+          <div key={plan.id}>
             <Paper style={{ padding: 16, marginBottom: 32 }}>
               <h4>
                 {`${idx + 1}`} · {STRATEGIES_DETAILS[plan.strategy].heading}

@@ -434,7 +434,7 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
     // } = await axios(ACCESS_TOKEN_URL)
     // const { access_token: dbAccessToken } = token
     const {data:{items:[item]}}= await axios(
-      `${ORCL_HOST_URL}/access_tokens`
+      `${ORCL_HOST_URL}/rest-v1/access_tokens`
 );
 const { access_token: dbAccessToken } = item
     return dbAccessToken === accessToken
@@ -457,7 +457,7 @@ export const storeAccessTokenRemotely = async accessToken => {
       SIGNALX_AXIOS_DB_AUTH
     )
     await axios.post(
-      `${ORCL_HOST_URL}/access_tokens`,
+      `${ORCL_HOST_URL}/rest-v1/access_tokens`,
       {
         access_token: accessToken
       }
@@ -714,6 +714,8 @@ export const SIGNALX_AXIOS_DB_AUTH = {
     'x-api-key': DATABASE_API_KEY
   }
 }
+export const orclsodaUrl: string = `${ORCL_HOST_URL as string
+}/soda/latest`
 
 export const baseTradeUrl: string = `${withoutFwdSlash(
   DATABASE_HOST_URL as string

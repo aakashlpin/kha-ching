@@ -13,9 +13,7 @@ interface COMMON_TRADE_PROPS {
 }
 
 export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
-  _id?: string
-  _createdOn?: string
-  _updatedOn?: string
+  id?: string
   // _collection?: DailyPlansDayKey
   isAutoSquareOffEnabled: boolean
   runNow?: boolean
