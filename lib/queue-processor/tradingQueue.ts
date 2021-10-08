@@ -54,6 +54,7 @@ const worker = new Worker(
       const numberOfJobs:number=await ancillaryQueue.count()
       /*ANILTODO: 1.Check if there are any jobs in the queue 
                   2.If there are no jobs, add to queue. Else add. */
+      console.log(`Jobs in ancillaryQueue=${numberOfJobs}`);
       if (numberOfJobs ===0)
       // console.log('enabling orderbook sync by tag = ', orderTag)
       // await addToNextQueue(
