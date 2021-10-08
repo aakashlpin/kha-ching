@@ -172,8 +172,7 @@ export default withSession(async (req, res) => {
             'stacktrace',
             'returnvalue'
           ])
-        },
-        SIGNALX_AXIOS_DB_AUTH
+        }
       )
       // done!
       return res.json(data)
