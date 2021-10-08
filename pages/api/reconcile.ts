@@ -37,7 +37,7 @@ export default withSession(async (req, res) => {
       await axios.delete(
         `${withoutFwdSlash(
           DATABASE_HOST_URL!
-        )}/odr_${DATABASE_USER_KEY!}/${order._collection!}/${order._id as string}`,
+        )}/odr_${DATABASE_USER_KEY!}/${order.collection!}/${order._id as string}`,
         SIGNALX_AXIOS_DB_AUTH
       )
     }

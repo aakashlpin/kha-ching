@@ -10,7 +10,6 @@ export default async function plan (req, res) {
 const baseUrl = `${withoutFwdSlash(
     DATABASE_HOST_URL
   )}/set_${DATABASE_USER_KEY}`
-  console.log({ baseUrl })
   try {
     if (req.method === 'POST') {
       const { data } = await axios[req.method.toLowerCase()](
@@ -66,7 +65,7 @@ const baseUrl = `${withoutFwdSlash(
 const settings=items.map(items=>{
   return ({...items.value,id:items.id})
  });
-    return res.json(settings)
+ return res.json(settings)
   } catch (e) {
     console.log('[api/plan] error', e)
     if (e.isAxiosError) {

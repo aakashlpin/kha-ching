@@ -347,13 +347,13 @@ const Plan = () => {
             ...accum,
             [config.collection]: {
               ...accum[config.collection],
-              [config._id]: config
+              [config.id]: config
             }
           }
         }
         return {
           ...accum,
-          [config.collection]: { [config._id]: config }
+          [config.collection]: { [config.id]: config }
         }
       }, {})
       const updatedDayState: DailyPlansConfig = Object.keys(dayState).reduce(
@@ -368,7 +368,7 @@ const Plan = () => {
         },
         {}
       )
-
+      
       setDayState(updatedDayState)
     }
 
