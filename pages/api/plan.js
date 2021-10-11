@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-import { withoutFwdSlash } from '../../lib/utils'
+import { withoutFwdSlash,orclsodaUrl } from '../../lib/utils'
 
-const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY,ORCL_HOST_URL } = process.env
+const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env
 
 export default async function plan (req, res) {
   const { dayOfWeek, config } = req.body
@@ -27,7 +27,7 @@ const baseUrl = `${withoutFwdSlash(
     if (req.method === 'PUT') {
 
       const { data }=await axios[req.method.toLowerCase()](
-        `${ORCL_HOST_URL}/soda/latest/trade_plans/${config.id}`,
+        `${orclsodaUrl}/trade_plans/${config.id}`,
         config
   );
       // const { data } = await axios[req.method.toLowerCase()](
@@ -45,7 +45,7 @@ const baseUrl = `${withoutFwdSlash(
     if (req.method === 'DELETE') {
 
       const { data }=await axios[req.method.toLowerCase()](
-        `${ORCL_HOST_URL}/soda/latest/trade_plans/${config.id}`
+        `${orclsodaUrl}/trade_plans/${config.id}`
   );
       // const { data } = await axios[req.method.toLowerCase()](
       //   `${baseUrl}/${config._id}`,
@@ -60,7 +60,7 @@ const baseUrl = `${withoutFwdSlash(
 
     //const { data: settings } = await axios(`${baseUrl}?limit=100`)
     const {data:{items}}= await axios(
-      `${ORCL_HOST_URL}/soda/latest/trade_plans`);
+      `${orclsodaUrl}/trade_plans`);
 
 const settings=items.map(items=>{
   return ({...items.value,id:items.id})

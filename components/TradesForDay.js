@@ -73,7 +73,7 @@ const WrapperComponent = props => {
     try {
       await axios.delete('/api/trades_day', {
         data: {
-          _id: tradeId
+        id: tradeId
         }
       })
       await mutate('/api/trades_day')
@@ -88,7 +88,7 @@ const WrapperComponent = props => {
   const handleAbortTrade = async tradeId => {
     try {
       await axios.put('/api/trades_day', {
-        _id: tradeId,
+        id: tradeId,
         user_override: USER_OVERRIDE.ABORT
       })
       await mutate('/api/trades_day')
@@ -122,7 +122,7 @@ const WrapperComponent = props => {
                     type='button'
                     onClick={async () => {
                       setLoading(true)
-                      await handleDeleteTrade(props._id)
+                      await handleDeleteTrade(props.id)
                       setLoading(false)
                     }}
                   >
@@ -145,9 +145,9 @@ const WrapperComponent = props => {
                     onClick={async () => {
                       setLoading(true)
                       if (!userOverrideAborted) {
-                        await handleAbortTrade(props._id)
+                        await handleAbortTrade(props.id)
                       } else {
-                        await handleDeleteTrade(props._id)
+                        await handleDeleteTrade(props.id)
                       }
                       setLoading(false)
                     }}
@@ -235,7 +235,7 @@ const TradesForDay = () => {
       <div style={{ marginBottom: 48 }}>
         {trades.map(trade => (
           <WrapperComponent
-            key={trade._id}
+            key={trade.id}
             {...trade}
             detailsComponent={(strategy, jobDetails) => (
               <TradeDetails

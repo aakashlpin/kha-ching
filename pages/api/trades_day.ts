@@ -15,7 +15,8 @@ import {
   isMockOrder,
   premiumAuthCheck,
   SIGNALX_AXIOS_DB_AUTH,
-  orclsodaUrl
+  orclsodaUrl,
+  dayparam
 } from '../../lib/utils'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
@@ -33,7 +34,7 @@ async function createJob ({
   user: SignalXUser
 }) {
   const { runAt, runNow, strategy } = jobData
-
+  
   if (STRATEGIES_DETAILS[strategy].premium) {
     if (!process.env.SIGNALX_API_KEY?.length) {
       return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
@@ -100,10 +101,9 @@ export default withSession(async (req, res) => {
   }
 
   const urlDateParam = dayjs().format('DDMMYYYY')
-  const dayparam=dayjs().format('YYYYMMDD') // This will be helfpul to delete earlier daily plans
   const endpoint = `${baseTradeUrl}/${urlDateParam}`
   const orclEndpoint=`${orclsodaUrl}/dailyplan`
-  const orclGetPoint=`${orclsodaUrl}/custom-actions/query/dailyplan`
+  //const orclGetPoint=`${orclsodaUrl}/custom-actions/query/dailyplan`
   /*ANILTODO: 1. Check if that colletions exist
   2. If it exists, keep posting , else crete a collection
   */
@@ -126,8 +126,10 @@ export default withSession(async (req, res) => {
       //   SIGNALX_AXIOS_DB_AUTH
       // )
       // data = response.data
-      const response =await axios.post(orclEndpoint,postData);
-      data={...response.data.items[0].value,id:response.data.items[0].id};
+      const  {data:{items:[{id}]}}=await axios.post(orclEndpoint,postData);
+      const {data:getData} = await axios.get(`${orclEndpoint}/${id}`)
+      data={...getData,id}
+      console.log(`[trades_Day] ${id} posted in daily_trades`)
     } catch (e) {
       console.log('🔴 failed to post', e)
       return res
@@ -216,8 +218,7 @@ export default withSession(async (req, res) => {
         await deleteJob(data.queue.id)
       }
       await axios.delete(
-        `${endpoint}/${req.body.id as string}`,
-        SIGNALX_AXIOS_DB_AUTH
+        `${orclEndpoint}/${req.body.id as string}`
       )
       return res.end()
     } catch (e) {
@@ -261,10 +262,12 @@ export default withSession(async (req, res) => {
   if (req.method === 'GET') {
     try {
       //const { data } = await axios(`${endpoint}?limit=100`)
-      let body:Object={day:dayparam};
-      const {data:{items}}= await axios.post(
-        `${orclGetPoint}`,
-        body);
+      // let body:Object={day:dayparam};
+      // const {data:{items}}= await axios(
+      //   `${orclGetPoint}`,
+      //   body);
+      const {data:{items}}= await axios(
+        `${orclEndpoint}?q={"dayparam":"${dayparam}"}`);
     
     const data=items.map(items=>{
       return ({...items.value,id:items.id})
