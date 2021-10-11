@@ -20,7 +20,7 @@ Once you've gone through the Notion doc above, come back here for instructions t
    - Activate your database and name it `signalx`
    - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
 
-_Update - Redislabs Free tier drops connections very often. Recommend upgrading to a paid tier for seamless experience._
+_Update - Redislabs free tier drops connections very often. Recommend upgrading to a paid tier for a seamless trading experience._
 
 ## 1-click Installation
 
