@@ -426,9 +426,9 @@ export const getLastOpenDateSince = (from: Dayjs) => {
 }
 
 export const checkHasSameAccessToken = async (accessToken: string) => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(
-    DATABASE_HOST_URL as string
-  )}/pvt_${DATABASE_USER_KEY as string}/tokens?limit=1`
+  // const ACCESS_TOKEN_URL = `${withoutFwdSlash(
+  //   DATABASE_HOST_URL as string
+  // )}/pvt_${DATABASE_USER_KEY as string}/tokens?limit=1`
   try {
     // const {
     //   data: [token]
@@ -446,18 +446,18 @@ const { access_token: dbAccessToken } = item
 }
 
 export const storeAccessTokenRemotely = async accessToken => {
-  const ACCESS_TOKEN_URL = `${withoutFwdSlash(
-    DATABASE_HOST_URL as string
-  )}/pvt_${DATABASE_USER_KEY as string}/tokens`
-  try {
-    await axios.post(
-      ACCESS_TOKEN_URL,
-      {
-        access_token: accessToken
-      },
-      SIGNALX_AXIOS_DB_AUTH
-    )
-    await axios.post(
+  // const ACCESS_TOKEN_URL = `${withoutFwdSlash(
+  //   DATABASE_HOST_URL as string
+  // )}/pvt_${DATABASE_USER_KEY as string}/tokens`
+   try {
+  //   await axios.post(
+  //     ACCESS_TOKEN_URL,
+  //     {
+  //       access_token: accessToken
+  //     },
+  //     SIGNALX_AXIOS_DB_AUTH
+  //   )
+   await axios.post(
       `${ORCL_HOST_URL}/rest-v1/access_tokens`,
       {
         access_token: accessToken
@@ -1064,13 +1064,15 @@ return ({...items.value,id:items.id})
 
 // patches and returns stale data
 export const patchDbTrade = async ({
-  _id,
+  id,
   patchProps
 }: {
-  _id: string
+  id: string
   patchProps: object
 }): Promise<object> => {
-  const endpoint = `${baseTradeUrl}/${_id}`
+  //const endpoint = `${baseTradeUrl}/${_id}`
+  const endpoint = `${orclsodaUrl}/dailyplan/${id}`
+
   const { data } = await axios(endpoint)
   // console.log('Data printed in patchDbTrade')
   // logDeep(data);
@@ -1081,8 +1083,7 @@ export const patchDbTrade = async ({
     {
       ...data,
       ...patchProps
-    },
-    SIGNALX_AXIOS_DB_AUTH
+    }
   )
 
   return data

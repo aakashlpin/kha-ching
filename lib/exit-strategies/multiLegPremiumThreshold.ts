@@ -48,7 +48,7 @@ import { doSquareOffPositions } from './autoSquareOff'
 const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
   try {
     await patchDbTrade({
-      _id: dbId,
+      id: dbId,
       patchProps: {
         liveTrailingSl: trailingSl,
         lastTrailingSlSetAt: dayjs().format()
@@ -61,7 +61,7 @@ const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
 
 const tradeHeartbeat = async dbId => {
   const data = await patchDbTrade({
-    _id: dbId,
+    id: dbId,
     patchProps: {
       lastHeartbeatAt: dayjs().format()
     }
@@ -94,7 +94,7 @@ async function multiLegPremiumThreshold ({
       trailEveryPercentageChangeValue,
       lastTrailingSlTriggerAtPremium,
       combinedExitStrategy = COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
-      _id: dbId,
+      id: dbId,
       isAutoSquareOffEnabled,
       autoSquareOffProps:{time}={}
     } = initialJobData
