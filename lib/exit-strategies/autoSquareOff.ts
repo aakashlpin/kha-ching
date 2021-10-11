@@ -107,7 +107,7 @@ export async function doSquareOffPositions (
   ) {
     try {
       await patchDbTrade({
-        _id: initialJobData._id!,
+        id: initialJobData.id!,
         patchProps: {
           user_override: USER_OVERRIDE.ABORT
         }
