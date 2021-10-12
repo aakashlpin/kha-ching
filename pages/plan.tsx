@@ -249,13 +249,18 @@ const Plan = () => {
         config
       })
 
-      updatedConfig = newStrategyConfig.reduce(
-        (accum, item) => ({
-          ...accum,
-          [item._id]: item
-        }),
-        {}
-      )
+      // updatedConfig = newStrategyConfig.reduce(
+      //   (accum, item) => ({
+      //     ...accum,
+      //     [item.id]: item
+      //   }),
+      //   {}
+      // )
+      updatedConfig={}
+      console.log(newStrategyConfig)
+      updatedConfig = { [newStrategyConfig.id]: selectedConfig }
+      //updatedConfig[newStrategyConfig.id]=newStrategyConfig
+      console.log(updatedConfig)
     }
 
     setDayState({

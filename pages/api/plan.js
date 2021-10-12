@@ -3,7 +3,7 @@ import axios from 'axios'
 import { withoutFwdSlash,orclsodaUrl } from '../../lib/utils'
 
 const { DATABASE_HOST_URL, DATABASE_USER_KEY, DATABASE_API_KEY } = process.env
-
+const orclEndpoint=`${orclsodaUrl}/trade_plans`
 export default async function plan (req, res) {
   const { dayOfWeek, config } = req.body
 
@@ -12,24 +12,33 @@ const baseUrl = `${withoutFwdSlash(
   )}/set_${DATABASE_USER_KEY}`
   try {
     if (req.method === 'POST') {
-      const { data } = await axios[req.method.toLowerCase()](
-        `${baseUrl}/${dayOfWeek}`,
-        config,
-        {
-          headers: {
-            'x-api-key': DATABASE_API_KEY
-          }
-        }
-      )
-      return res.json(data)
+      
+      //POST for SODA accepts an object and returns an arrray of ids
+      let updatedConfig={...config[0],collection: `${dayOfWeek}`} 
+      const  {data:{items:[{id}]}}=await axios.post(orclEndpoint,updatedConfig);
+      const {data} = await axios.get(`${orclEndpoint}/${id}`)
+      const newdata= {...data,id}
+      
+      // const { data } = await axios[req.method.toLowerCase()](
+      //   `${baseUrl}/${dayOfWeek}`,
+      //   config,
+      //   {
+      //     headers: {
+      //       'x-api-key': DATABASE_API_KEY
+      //     }
+      //   }
+      // )
+      return res.json(newdata)
     }
 
     if (req.method === 'PUT') {
 
       const { data }=await axios[req.method.toLowerCase()](
-        `${orclsodaUrl}/trade_plans/${config.id}`,
+        `${orclEndpoint}/${config.id}`,
         config
   );
+  const {data:getData} = await axios.get(`${orclEndpoint}/${config.id}`)
+  data={...getData,id:config.id}
       // const { data } = await axios[req.method.toLowerCase()](
       //   `${baseUrl}/${config._id}`,
       //   config,
@@ -43,10 +52,9 @@ const baseUrl = `${withoutFwdSlash(
     }
 
     if (req.method === 'DELETE') {
-
+      console.log(`${config.id}`);
       const { data }=await axios[req.method.toLowerCase()](
-        `${orclsodaUrl}/trade_plans/${config.id}`
-  );
+        `${orclEndpoint}/${config.id}`  );
       // const { data } = await axios[req.method.toLowerCase()](
       //   `${baseUrl}/${config._id}`,
       //   {
@@ -60,7 +68,7 @@ const baseUrl = `${withoutFwdSlash(
 
     //const { data: settings } = await axios(`${baseUrl}?limit=100`)
     const {data:{items}}= await axios(
-      `${orclsodaUrl}/trade_plans`);
+      `${orclEndpoint}`);
 
 const settings=items.map(items=>{
   return ({...items.value,id:items.id})

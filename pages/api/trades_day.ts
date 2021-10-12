@@ -126,7 +126,7 @@ export default withSession(async (req, res) => {
       //   SIGNALX_AXIOS_DB_AUTH
       // )
       // data = response.data
-      const  {data:{items:[{id}]}}=await axios.post(orclEndpoint,postData);
+      const  {data:{items:[{id}]}}=await axios.post(`${orclEndpoint}`,postData);
       const {data:getData} = await axios.get(`${orclEndpoint}/${id}`)
       data={...getData,id}
       console.log(`[trades_Day] ${id} posted in daily_trades`)
