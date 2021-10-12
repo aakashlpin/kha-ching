@@ -20,9 +20,15 @@ Once you've gone through the Notion doc above, come back here for instructions t
    - Activate your database and name it `signalx`
    - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
 
+_Update - Redislabs free tier drops connections very often. Recommend upgrading to a paid tier for a seamless trading experience._
+
 ## 1-click Installation
 
-Now, click the button to deploy the application on DigitalOcean's (DO) apps platform.
+_Update - DigitalOcean's app platform is terribly slow. Recommend using render.com for all new installations. All other instructions remain as is._
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+or, deploy the application on DigitalOcean's (DO) apps platform.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master&refcode=d9db955b428e)
 
