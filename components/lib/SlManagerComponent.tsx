@@ -17,7 +17,7 @@ import {
 } from '../../lib/constants'
 
 const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
-  const slOrderTypes = [SL_ORDER_TYPE.SLM, SL_ORDER_TYPE.SLL]
+  const slOrderTypes = [SL_ORDER_TYPE.SLL]
   return (
     <>
       <Grid item xs={12}>

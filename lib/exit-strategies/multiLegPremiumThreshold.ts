@@ -27,6 +27,7 @@
  */
 
 import dayjs from 'dayjs'
+import { Await } from '../../types'
 import { KiteOrder } from '../../types/kite'
 import { COMBINED_SL_EXIT_STRATEGY } from '../../types/plans'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
@@ -85,7 +86,7 @@ async function multiLegPremiumThreshold ({
   initialJobData: CombinedPremiumJobDataInterface
   rawKiteOrdersResponse: KiteOrder[]
   squareOffOrders?: KiteOrder[]
-}) {
+}): Promise<any> {
   try {
     const {
       slmPercent,
@@ -137,7 +138,7 @@ async function multiLegPremiumThreshold ({
       0
     )
 
-    let liveSymbolPrices: GET_LTP_RESPONSE[]
+    let liveSymbolPrices: Await<ReturnType<typeof getMultipleInstrumentPrices>>
     try {
       liveSymbolPrices = await getMultipleInstrumentPrices(
         tradingSymbols.map(symbol => ({
@@ -154,10 +155,10 @@ async function multiLegPremiumThreshold ({
       return Promise.reject(new Error('Kite APIs acting up'))
     }
 
-    const liveTotalPremium = liveSymbolPrices.reduce(
-      (sum, priceData) => sum + priceData.lastPrice,
-      0
-    )
+    const liveTotalPremium = tradingSymbols.reduce((sum, tradingSymbol) => {
+      const priceData = liveSymbolPrices[tradingSymbol]
+      return sum + priceData.lastPrice
+    }, 0)
     const initialSlTotalPremium =
       initialPremiumReceived! + (slmPercent / 100) * initialPremiumReceived! // 440
 
@@ -253,9 +254,10 @@ async function multiLegPremiumThreshold ({
       // console.log('avgSymbolPrice', logDeep(avgSymbolPrice))
 
       // future proofing by allowing for any number of positions to be trailed together
-      const { losingLegs, winningLegs } = liveSymbolPrices.reduce(
-        (accum, leg) => {
-          const { lastPrice, tradingSymbol } = leg
+      const { losingLegs, winningLegs } = tradingSymbols.reduce(
+        (accum, tradingSymbol) => {
+          const leg = liveSymbolPrices[tradingSymbol]
+          const { lastPrice } = leg
           if (avgSymbolPrice[tradingSymbol] < lastPrice) {
             return {
               ...accum,
