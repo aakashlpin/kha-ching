@@ -278,6 +278,11 @@ async function multiLegPremiumThreshold ({
       // console.log('losingLegs', logDeep(losingLegs))
       // console.log('winningLegs', logDeep(winningLegs))
 
+      if (!losingLegs.length) {
+        // [NEW] if the position is winning on both legs, take it out
+        return doSquareOffPositions(squareOffOrders!, kite, initialJobData)
+      }
+
       const squareOffLosingLegs = losingLegs.map(losingLeg =>
         legsOrders.find(
           legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
