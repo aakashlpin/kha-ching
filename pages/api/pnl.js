@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { uniqBy } from 'lodash'
 
 import withSession from '../../lib/session'
-const advancedFormat = require('dayjs/plugin/advancedFormat')
+import advancedFormat from 'dayjs/plugin/advancedFormat'
 dayjs.extend(advancedFormat)
 
 export default withSession(async (req, res) => {
@@ -27,9 +27,9 @@ export default withSession(async (req, res) => {
     if (dayjs().isBefore(dayjs(day330)))
     return res.json({ error: 'PnL not ready yet!' })
 
-    const { data: orders } = await axios(
-      `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
-    )
+    // const { data: orders } = await axios(
+    //   `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
+    // )
     const {data:{profit}}=await axios (
      `${process.env.ORCL_HOST_URL}/rest-v1/profits/${orderTag}`
     )

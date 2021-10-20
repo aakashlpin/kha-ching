@@ -1,7 +1,7 @@
 import withSession from '../../lib/session'
 // import { storeAccessTokenRemotely } from '../../lib/utils';
 
-const fyers = require('fyers-api')
+import fyers from 'fyers-api'
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')

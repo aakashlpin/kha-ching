@@ -256,11 +256,10 @@ const Plan = () => {
       //   }),
       //   {}
       // )
-      updatedConfig={}
       console.log(newStrategyConfig)
-      updatedConfig = { [newStrategyConfig.id]: selectedConfig }
+      updatedConfig = { [newStrategyConfig.id]: newStrategyConfig }
       //updatedConfig[newStrategyConfig.id]=newStrategyConfig
-      console.log(updatedConfig)
+      console.log(updatedConfig)  
     }
 
     setDayState({

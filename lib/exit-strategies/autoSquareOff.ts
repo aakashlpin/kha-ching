@@ -95,6 +95,7 @@ export async function doSquareOffPositions (
       return remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: exitOrder,
+        instrument: initialJobData.instrument!,
         ensureOrderState: kite.STATUS_COMPLETE,
         user: initialJobData.user!
       })
