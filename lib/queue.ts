@@ -14,8 +14,7 @@ import {
   ms
 } from './utils'
 
-const redisUrl = `${process.env
-  .REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
+const redisUrl = `${process.env.REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
 
 const SIGNALX_API_KEY = process.env.SIGNALX_API_KEY ?? ''
 const KITE_API_KEY = process.env.KITE_API_KEY ?? ''
