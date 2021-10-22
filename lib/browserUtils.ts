@@ -133,7 +133,8 @@ export const formatFormDataForApi = ({
         martingaleIncrementSize,
         strikeByPrice,
         slmPercent,
-        exitStrategy
+        exitStrategy,
+        expiryType
       } = data as DIRECTIONAL_OPTION_SELLING_CONFIG
 
       const apiProps: DIRECTIONAL_OPTION_SELLING_TRADE = {
@@ -142,6 +143,7 @@ export const formatFormDataForApi = ({
         martingaleIncrementSize: Number(martingaleIncrementSize),
         slmPercent: Number(slmPercent),
         maxTrades: Number(maxTrades),
+        expiryType,
         strikeByPrice: strikeByPrice ? Number(strikeByPrice) : undefined,
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
@@ -169,7 +171,8 @@ export const formatFormDataForApi = ({
         trailEveryPercentageChangeValue,
         trailingSlPercent,
         exitStrategy,
-        combinedExitStrategy
+        combinedExitStrategy,
+        expiryType
       } = data as ATM_STRADDLE_CONFIG
 
       const apiProps: ATM_STRADDLE_TRADE = {
@@ -184,6 +187,7 @@ export const formatFormDataForApi = ({
           exitStrategy,
           combinedExitStrategy
         }),
+        expiryType,
         maxSkewPercent: Number(maxSkewPercent),
         thresholdSkewPercent: Number(thresholdSkewPercent),
         ...getSchedulingApiProps({
@@ -212,7 +216,8 @@ export const formatFormDataForApi = ({
         trailingSlPercent,
         exitStrategy,
         expireIfUnsuccessfulInMins,
-        combinedExitStrategy
+        combinedExitStrategy,
+        expiryType
       } = data as ATM_STRANGLE_CONFIG
 
       const apiProps: ATM_STRANGLE_TRADE = {
@@ -227,6 +232,7 @@ export const formatFormDataForApi = ({
           exitStrategy,
           combinedExitStrategy
         }),
+        expiryType,
         inverted: Boolean(inverted),
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
