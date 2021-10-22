@@ -107,6 +107,12 @@ export enum EXPIRY_TYPE {
   MONTHLY = 'MONTHLY'
 }
 
+export const EXPIRY_TYPE_HUMAN = {
+  [EXPIRY_TYPE.CURRENT]: 'Current weekly',
+  [EXPIRY_TYPE.NEXT]: 'Next weekly',
+  [EXPIRY_TYPE.MONTHLY]: 'Current Monthly'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'

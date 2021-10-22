@@ -8,7 +8,7 @@ import {
   Radio,
   Grid
 } from '@material-ui/core'
-import { EXPIRY_TYPE } from '../../lib/constants'
+import { EXPIRY_TYPE, EXPIRY_TYPE_HUMAN } from '../../lib/constants'
 
 const ExpiryTypeComponent = ({ state, onChange }) => {
   const expiryTypes = [
@@ -19,7 +19,7 @@ const ExpiryTypeComponent = ({ state, onChange }) => {
   return (
     <Grid item xs={12}>
       <FormControl component='fieldset'>
-        <FormLabel component='legend'>Expiry type</FormLabel>
+        <FormLabel component='legend'>Option Expiry</FormLabel>
         <RadioGroup
           aria-label='expiryTypes'
           name='expiryType'
@@ -34,7 +34,11 @@ const ExpiryTypeComponent = ({ state, onChange }) => {
               key={expiryType}
               value={expiryType}
               control={<Radio size='small' />}
-              label={<Typography variant='body2'>{expiryType}</Typography>}
+              label={
+                <Typography variant='body2'>
+                  {EXPIRY_TYPE_HUMAN[expiryType]}
+                </Typography>
+              }
             />
           ))}
         </RadioGroup>

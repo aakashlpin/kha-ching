@@ -22,7 +22,6 @@ import {
 import {
   getExpiryTradingSymbol,
   attemptBrokerOrders,
-  getCurrentExpiryTradingSymbol,
   getInstrumentPrice,
   getLastOpenDateSince,
   getNearestCandleTime,
@@ -95,7 +94,8 @@ export default async function directionalOptionSelling (
         .ENTRY_STRATEGIES.FIXED_TIME,
       lastTrend,
       lastTradeOrders,
-      user
+      user,
+      expiryType
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
@@ -108,7 +108,8 @@ export default async function directionalOptionSelling (
       instrument_token: futInstrumentToken
     } = (await getExpiryTradingSymbol({
       nfoSymbol,
-      instrumentType: 'FUT'
+      instrumentType: 'FUT',
+      expiry: expiryType
     })) as TradingSymbolInterface
 
     const DATE_FORMAT = 'YYYY-MM-DD'
@@ -250,7 +251,8 @@ async function punchOrders (
     rollback,
     productType = PRODUCT_TYPE.MIS,
     isHedgeEnabled = false,
-    hedgeDistance = 1700
+    hedgeDistance = 1700,
+    expiryType
   } = initialJobData
   const strikeByPriceNumber = strikeByPrice ? Number(strikeByPrice) : null
   const kite = _kite || syncGetKiteInstance(user)
@@ -272,13 +274,15 @@ async function punchOrders (
           price: strikeByPriceNumber,
           pivotStrike: atmStrike,
           instrumentType,
-          user: user!
+          user: user!,
+          expiry: expiryType
         })
       )
     : await getExpiryTradingSymbol({
         nfoSymbol,
         strike: superTrendStrike,
-        instrumentType
+        instrumentType,
+        expiry: expiryType
       })
 
   const ltp = await withRemoteRetry(async () =>
@@ -298,10 +302,11 @@ async function punchOrders (
       Number(optionStrike) +
       Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
 
-    const hedgeStrikeData = (await getCurrentExpiryTradingSymbol({
+    const hedgeStrikeData = (await getExpiryTradingSymbol({
       nfoSymbol,
       strike: hedgeStrike,
-      instrumentType
+      instrumentType,
+      expiry: expiryType
     })) as TradingSymbolInterface
 
     if (hedgeStrikeData) {
