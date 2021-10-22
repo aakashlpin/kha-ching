@@ -34,6 +34,7 @@ import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
 import SlManagerComponent from '../../lib/SlManagerComponent'
+import ExpiryTypeComponent from '../../lib/ExpiryTypeComponent'
 
 interface ATMStraddleTradeSetupFormProps {
   formHeading?: string
@@ -112,6 +113,8 @@ const TradeSetupForm = ({
           <VolatilityTypeComponent state={state} onChange={onChange} />
 
           <ProductTypeComponent state={state} onChange={onChange} />
+
+          <ExpiryTypeComponent state={state} onChange={onChange} />
 
           <Grid item xs={12}>
             <TextField

@@ -5,11 +5,13 @@ import {
   STRATEGIES,
   STRANGLE_ENTRY_STRATEGIES,
   PRODUCT_TYPE,
-  VOLATILITY_TYPE
+  VOLATILITY_TYPE,
+  EXPIRY_TYPE
 } from '../lib/constants'
 
 interface COMMON_TRADE_PROPS {
   productType: PRODUCT_TYPE
+  expiryType: EXPIRY_TYPE
 }
 
 export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
