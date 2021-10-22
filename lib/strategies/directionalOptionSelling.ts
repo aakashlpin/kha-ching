@@ -36,6 +36,7 @@ import {
   withRemoteRetry,
   logDeep
 } from '../utils'
+import { ASO_TYPE } from '../../types/misc'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 
@@ -430,16 +431,25 @@ async function punchOrders (
   ].filter(o => o)
   if (isAutoSquareOffEnabled) {
     try {
-      const asoResponse = await addToAutoSquareOffQueue({
+      if (hedgeOrdersResponse.length) {
+        await addToAutoSquareOffQueue({
+          squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+          initialJobData: nextQueueData,
+          jobResponse: {
+            rawKiteOrdersResponse: hedgeOrdersResponse
+          }
+        })
+      }
+
+      await addToAutoSquareOffQueue({
+        squareOffType: ASO_TYPE.SLL_TO_MARKET,
         initialJobData: nextQueueData,
         jobResponse: {
-          rawKiteOrdersResponse: allPunchedOrders
+          rawKiteOrdersResponse: exitOrders
         }
       })
-      const { data, name } = asoResponse
       console.log(
-        '🟢 [directionalOptionSelling] success enable auto square off',
-        { data, name }
+        '🟢 [directionalOptionSelling] success enable auto square off'
       )
     } catch (e) {
       console.log(

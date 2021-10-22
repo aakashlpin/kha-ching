@@ -31,3 +31,8 @@ export interface DBMeta {
   _createdOn?: string
   _updatedOn?: string
 }
+
+export enum ASO_TYPE {
+  OPEN_POSITION_SQUARE_OFF = 'OPEN_POSITION_SQUARE_OFF',
+  SLL_TO_MARKET = 'SLL_TO_MARKET'
+}

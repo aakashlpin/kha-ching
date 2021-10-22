@@ -85,7 +85,6 @@ export function commonOnChangeHandler (
 const getSchedulingApiProps = ({
   isAutoSquareOffEnabled,
   squareOffTime,
-  exitStrategy,
   runAt,
   runNow,
   expireIfUnsuccessfulInMins
@@ -97,9 +96,7 @@ const getSchedulingApiProps = ({
         .format(),
   autoSquareOffProps: isAutoSquareOffEnabled
     ? {
-        time: squareOffTime,
-        deletePendingOrders:
-          exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+        time: squareOffTime
       }
     : undefined,
   expiresAt: expireIfUnsuccessfulInMins
@@ -189,7 +186,6 @@ export const formatFormDataForApi = ({
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
           squareOffTime,
-          exitStrategy,
           expireIfUnsuccessfulInMins,
           runAt,
           runNow
@@ -231,7 +227,6 @@ export const formatFormDataForApi = ({
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
           squareOffTime,
-          exitStrategy,
           expireIfUnsuccessfulInMins,
           runAt,
           runNow

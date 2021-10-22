@@ -202,8 +202,19 @@ export function syncGetKiteInstance (user) {
   })
 }
 
-export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
-  const orders = await kite.getOrderHistory(orderId)
+export async function getOrderHistory (
+  kite: any,
+  orderId: string
+): Promise<KiteOrder[]> {
+  const history = await withRemoteRetry(() => kite.getOrderHistory(orderId))
+  return [...history].reverse()
+}
+
+export async function getCompletedOrderFromOrderHistoryById (
+  kite: any,
+  orderId: string
+): Promise<KiteOrder | undefined> {
+  const orders = await getOrderHistory(kite, orderId)
   return orders.find(odr => odr.status === 'COMPLETE')
 }
 
@@ -787,10 +798,7 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
         return false
       }
       try {
-        const orderHistory = await withRemoteRetry(() =>
-          kite.getOrderHistory(orderId)
-        )
-        const byRecencyOrderHistory = orderHistory.reverse()
+        const byRecencyOrderHistory = await getOrderHistory(kite, orderId)
         // if it reaches here, then order exists in broker system
 
         const expectedStateOrder = byRecencyOrderHistory.find(
@@ -805,7 +813,6 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
           orderId,
           ensureOrderState
         })
-        logDeep(orderHistory)
 
         const wasOrderRejectedOrCancelled = byRecencyOrderHistory.find(
           odr =>
@@ -1223,4 +1230,20 @@ export const getStrikeByDelta = (
 export function round (value: number, step = 0.5): number {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
+}
+
+export const convertSllToMarketOrder = async (
+  kite: any,
+  order: KiteOrder
+): Promise<void> => {
+  // ensure order is not in complete state
+  const completedOrder = await getOrderHistory(kite, order.order_id!)
+  if (completedOrder) {
+    return
+  }
+  return withRemoteRetry(() =>
+    kite.modifyOrder(order.variety, order.order_id, {
+      order_type: kite.ORDER_TYPE_MARKET
+    })
+  )
 }

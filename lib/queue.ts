@@ -2,6 +2,9 @@ import { Queue, QueueScheduler, JobsOptions, Job } from 'bullmq'
 import dayjs from 'dayjs'
 import IORedis from 'ioredis'
 import { v4 as uuidv4 } from 'uuid'
+import { KiteOrder } from '../types/kite'
+import { ASO_TYPE } from '../types/misc'
+import { SUPPORTED_TRADE_CONFIG } from '../types/trade'
 
 import console from './logging'
 import {
@@ -165,12 +168,19 @@ export async function addToNextQueue (
 }
 
 export async function addToAutoSquareOffQueue ({
+  squareOffType,
   initialJobData,
   jobResponse
-}) {
-  const {
-    autoSquareOffProps: { time, deletePendingOrders }
-  } = initialJobData
+}: {
+  squareOffType: ASO_TYPE
+  jobResponse: {
+    rawKiteOrdersResponse: KiteOrder[]
+    squareOffOrders?: KiteOrder[]
+  }
+  initialJobData: SUPPORTED_TRADE_CONFIG
+}): Promise<Job> {
+  const { autoSquareOffProps } = initialJobData
+  const { time } = autoSquareOffProps as { time: string }
   const { rawKiteOrdersResponse, squareOffOrders } = jobResponse
   const finalOrderTime = getMisOrderLastSquareOffTime()
   const runAtTime = isMockOrder()
@@ -184,8 +194,8 @@ export async function addToAutoSquareOffQueue ({
   return autoSquareOffQueue.add(
     `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
     {
+      squareOffType,
       rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
-      deletePendingOrders,
       initialJobData
     },
     {
@@ -194,5 +204,5 @@ export async function addToAutoSquareOffQueue ({
   )
 }
 
-export const cleanupQueues = async () =>
+export const cleanupQueues = async (): Promise<void[]> =>
   await Promise.all(allQueues.map(async queue => await queue.obliterate()))

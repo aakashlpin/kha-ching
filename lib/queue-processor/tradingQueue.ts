@@ -4,7 +4,6 @@ import { Job, Worker } from 'bullmq'
 import { ANCILLARY_TASKS, STRATEGIES } from '../constants'
 import console from '../logging'
 import {
-  addToAutoSquareOffQueue,
   addToNextQueue,
   ANCILLARY_Q_NAME,
   redisConnection,
@@ -63,27 +62,6 @@ const worker = new Worker(
       )
     } catch (e) {
       console.log('[error] enabling orderbook sync by tag...', e)
-    }
-
-    const { isAutoSquareOffEnabled, strategy } = job.data
-    // can't enable auto square off for DOS
-    // because we don't know upfront how many orders would get punched
-    if (
-      strategy !== STRATEGIES.DIRECTIONAL_OPTION_SELLING &&
-      isAutoSquareOffEnabled
-    ) {
-      try {
-        // console.log('enabling auto square off...')
-        const asoResponse = await addToAutoSquareOffQueue({
-          //eslint-disable-line
-          initialJobData: job.data,
-          jobResponse: result
-        })
-        // const { data, name } = asoResponse
-        // console.log('🟢 success enable auto square off', { data, name })
-      } catch (e) {
-        console.log('🔴 failed to enable auto square off', e)
-      }
     }
     return result
   },

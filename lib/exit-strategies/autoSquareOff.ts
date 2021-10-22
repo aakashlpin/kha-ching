@@ -1,4 +1,5 @@
 import { KiteOrder } from '../../types/kite'
+import { ASO_TYPE } from '../../types/misc'
 import {
   ATM_STRADDLE_TRADE,
   ATM_STRANGLE_TRADE,
@@ -7,6 +8,7 @@ import {
 import { USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
+  convertSllToMarketOrder,
   // logDeep,
   patchDbTrade,
   remoteOrderSuccessEnsurer,
@@ -122,29 +124,36 @@ export async function doSquareOffPositions (
 }
 
 async function autoSquareOffStrat ({
+  squareOffType,
   rawKiteOrdersResponse,
-  deletePendingOrders,
   initialJobData
 }: {
+  squareOffType: ASO_TYPE
   rawKiteOrdersResponse: KiteOrder[]
-  deletePendingOrders: boolean
   initialJobData: SUPPORTED_TRADE_CONFIG
 }): Promise<any> {
   const { user } = initialJobData
   const kite = syncGetKiteInstance(user)
-  const completedOrders = rawKiteOrdersResponse
-
-  if (deletePendingOrders) {
-    // console.log('deletePendingOrders init')
+  if (squareOffType === ASO_TYPE.SLL_TO_MARKET) {
+    const triggerPendingOrders = rawKiteOrdersResponse
+    // if completed orders exist, they can be converted to market hours
     try {
-      await doDeletePendingOrders(completedOrders, kite)
-      // console.log('🟢 deletePendingOrders success', res)
+      await Promise.all(
+        triggerPendingOrders.map(order => convertSllToMarketOrder(kite, order))
+      )
     } catch (e) {
       console.log('🔴 deletePendingOrders failed')
       console.error(e)
     }
+  } else {
+    const completedOrders = rawKiteOrdersResponse
+    try {
+      await doSquareOffPositions(completedOrders, kite, initialJobData)
+    } catch (e) {
+      console.log('🔴 doSquareOffPositions failed')
+      console.error(e)
+    }
   }
-  return doSquareOffPositions(completedOrders, kite, initialJobData)
 }
 
 export default autoSquareOffStrat

@@ -1,12 +1,17 @@
 import { KiteOrder } from '../../types/kite'
+import { ASO_TYPE } from '../../types/misc'
 import { SL_ORDER_TYPE } from '../../types/plans'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
-import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
-import orderResponse from '../strategies/mockData/orderResponse'
+import {
+  addToAutoSquareOffQueue,
+  addToNextQueue,
+  WATCHER_Q_NAME
+} from '../queue'
+// import orderResponse from '../strategies/mockData/orderResponse'
 import {
   attemptBrokerOrders,
-  isUntestedFeaturesEnabled,
+  // isUntestedFeaturesEnabled,
   remoteOrderSuccessEnsurer,
   round,
   syncGetKiteInstance
@@ -62,10 +67,10 @@ async function individualLegExitOrders ({
     orderTag,
     rollback,
     slLimitPricePercent = 1,
-    instrument
+    instrument,
+    isAutoSquareOffEnabled
   } = initialJobData
 
-  const slOrderType = SL_ORDER_TYPE.SLL
   const kite = _kite || syncGetKiteInstance(user)
 
   const exitOrders = completedOrders.map(order => {
@@ -103,10 +108,7 @@ async function individualLegExitOrders ({
       exchange
     }
 
-    if (slOrderType === SL_ORDER_TYPE.SLL) {
-      exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
-    }
-
+    exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
     exitOrder.trigger_price = round(exitOrder.trigger_price!)
     console.log('placing exit orders...', exitOrder)
     return exitOrder
@@ -132,20 +134,26 @@ async function individualLegExitOrders ({
     throw Error('rolled back onBrokenExitOrders')
   }
 
-  if (slOrderType === SL_ORDER_TYPE.SLL) {
-    const watcherQueueJobs = statefulOrders.map(async exitOrder => {
-      return addToNextQueue(initialJobData, {
-        _nextTradingQueue: WATCHER_Q_NAME,
-        rawKiteOrderResponse: exitOrder
-      })
+  if (isAutoSquareOffEnabled) {
+    await addToAutoSquareOffQueue({
+      squareOffType: ASO_TYPE.SLL_TO_MARKET,
+      jobResponse: { rawKiteOrdersResponse: statefulOrders },
+      initialJobData
     })
+  }
 
-    try {
-      await Promise.all(watcherQueueJobs)
-    } catch (e) {
-      console.log('error adding to `watcherQueueJobs`')
-      console.log(e.message ? e.message : e)
-    }
+  const watcherQueueJobs = statefulOrders.map(async exitOrder => {
+    return addToNextQueue(initialJobData, {
+      _nextTradingQueue: WATCHER_Q_NAME,
+      rawKiteOrderResponse: exitOrder
+    })
+  })
+
+  try {
+    await Promise.all(watcherQueueJobs)
+  } catch (e) {
+    console.log('error adding to `watcherQueueJobs`')
+    console.log(e.message ? e.message : e)
   }
 
   return statefulOrders
