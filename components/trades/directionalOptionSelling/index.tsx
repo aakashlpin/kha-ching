@@ -66,7 +66,7 @@ const DirectionTradeSetup = ({
 
       try {
         await Promise.all(
-          Object.keys(state.instruments as {})
+          Object.keys(state.instruments as Record<INSTRUMENTS, boolean>)
             .filter(key => state.instruments![key])
             .map(async instrument =>
               handleSyncJob({

@@ -6,7 +6,6 @@ import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
 import {
   attemptBrokerOrders,
-  isMockOrder,
   isUntestedFeaturesEnabled,
   remoteOrderSuccessEnsurer,
   round,
@@ -51,12 +50,10 @@ async function individualLegExitOrders ({
   _kite?: any
   initialJobData: SUPPORTED_TRADE_CONFIG
   rawKiteOrdersResponse: KiteOrder[]
-}) {
-  if (isMockOrder()) {
-    const mockResponse = [...new Array(rawKiteOrdersResponse.length)].map(
-      (_, idx) => orderResponse[idx]
-    )
-    return mockResponse
+}): Promise<KiteOrder[] | null> {
+  const completedOrders = rawKiteOrdersResponse
+  if (!(Array.isArray(completedOrders) && completedOrders.length)) {
+    return null
   }
 
   const {
@@ -64,11 +61,12 @@ async function individualLegExitOrders ({
     user,
     orderTag,
     rollback,
-    slOrderType = SL_ORDER_TYPE.SLM,
-    slLimitPricePercent
+    slLimitPricePercent = 1,
+    instrument
   } = initialJobData
+
+  const slOrderType = SL_ORDER_TYPE.SLL
   const kite = _kite || syncGetKiteInstance(user)
-  const completedOrders = rawKiteOrdersResponse
 
   const exitOrders = completedOrders.map(order => {
     const {
@@ -109,7 +107,7 @@ async function individualLegExitOrders ({
       exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
     }
 
-    exitOrder.trigger_price = round(exitOrder.trigger_price)
+    exitOrder.trigger_price = round(exitOrder.trigger_price!)
     console.log('placing exit orders...', exitOrder)
     return exitOrder
   })
@@ -119,6 +117,7 @@ async function individualLegExitOrders ({
       _kite: kite,
       ensureOrderState: 'TRIGGER PENDING',
       orderProps: order,
+      instrument,
       user: user!
     })
   )
@@ -133,7 +132,7 @@ async function individualLegExitOrders ({
     throw Error('rolled back onBrokenExitOrders')
   }
 
-  if (slOrderType === SL_ORDER_TYPE.SLL && isUntestedFeaturesEnabled()) {
+  if (slOrderType === SL_ORDER_TYPE.SLL) {
     const watcherQueueJobs = statefulOrders.map(async exitOrder => {
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,

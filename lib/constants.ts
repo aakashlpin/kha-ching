@@ -19,6 +19,7 @@ export interface INSTRUMENT_PROPERTIES {
   nfoSymbol: string
   exchange: string
   strikeStepSize: number
+  freezeQty: number
 }
 
 export interface KITE_INSTRUMENT_INFO {
@@ -43,7 +44,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY 50',
     nfoSymbol: 'NIFTY',
     exchange: 'NSE',
-    strikeStepSize: 50
+    strikeStepSize: 50,
+    // [11501-17250]
+    // freezeQty: 200
+    freezeQty: 1800
   },
   [INSTRUMENTS.BANKNIFTY]: {
     lotSize: 25,
@@ -51,7 +55,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY BANK',
     nfoSymbol: 'BANKNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [27501-40000]
+    // freezeQty: 100
+    freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {
     lotSize: 40,
@@ -59,7 +66,9 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY FIN SERVICE',
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [17251-27500]
+    freezeQty: 1800
   }
 }
 
@@ -152,7 +161,7 @@ export const STRATEGIES_DETAILS = {
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
@@ -189,7 +198,7 @@ export const STRATEGIES_DETAILS = {
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
@@ -232,7 +241,7 @@ export const STRATEGIES_DETAILS = {
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
-      slOrderType: SL_ORDER_TYPE.SLM,
+      slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
@@ -489,4 +498,14 @@ export const STOCKS_NFO_SCRIPS = [
 export const ERROR_STRINGS = {
   PAID_FEATURE: 'Invalid SignalX Club or Premium subscription',
   PAID_STRATEGY: 'Invalid SignalX Club or Premium subscription'
+}
+
+export const SUBSCRIPTION_TYPE = {
+  SUBSCRIBER: 'SUBSCRIBER',
+  NOT_SUBSCRIBER: 'NOT_SUBSCRIBER'
+}
+
+export const SUBSCRIBER_TYPE = {
+  PREMIUM: 'PREMIUM',
+  CLUB: 'CLUB'
 }

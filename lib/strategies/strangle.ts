@@ -263,6 +263,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
         remoteOrderSuccessEnsurer({
           _kite: kite,
           orderProps: order,
+          instrument,
           ensureOrderState: kite.STATUS_COMPLETE,
           user: user!
         })
@@ -284,6 +285,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       remoteOrderSuccessEnsurer({
         _kite: kite,
         orderProps: order,
+        instrument,
         ensureOrderState: kite.STATUS_COMPLETE,
         user: user!
       })
