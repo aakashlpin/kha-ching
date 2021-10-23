@@ -27,7 +27,9 @@ export default async function getRisk (req, res) {
     return res.status(400).json({ error: 'Send either plan_id or trade_id' })
   }
 
-  const baseUrl = `${withoutFwdSlash(DATABASE_HOST_URL)}/set_${DATABASE_USER_KEY}`
+  const baseUrl = `${withoutFwdSlash(
+    DATABASE_HOST_URL
+  )}/set_${DATABASE_USER_KEY}`
 
   if (plan_id) {
     const { data: plan } = await axios(`${baseUrl}/${plan_id}`)

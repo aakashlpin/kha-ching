@@ -8,4 +8,4 @@ export interface allSettledInterface {
   }
 }
 
-export const allSettled = async (promises) => Promise.allSettled(promises)
+export const allSettled = async promises => Promise.allSettled(promises)

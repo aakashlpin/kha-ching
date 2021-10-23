@@ -2,7 +2,7 @@
 
 SignalX is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
 
-✅  Read everything about SignalX [here](https://signalx.club).
+✅ Read everything about SignalX [here](https://signalx.club).
 
 Once you've gone through the Notion doc above, come back here for instructions to setup SignalX!
 
@@ -10,20 +10,25 @@ Once you've gone through the Notion doc above, come back here for instructions t
 
 1. [Sign up on DigitalOcean using this link](https://m.do.co/c/d9db955b428e). You'd receive $100 in new signup credits valid for 2 months. Running this app costs $10/month. So you'd be able to run it FREE for first 2 months.
 
+2) Goto https://kite.trade and sign up for Kite Connect. Create an app and pay Zerodha the ₹2000/month fee.
 
-2. Goto https://kite.trade and sign up for Kite Connect. Create an app and pay Zerodha the ₹2000/month fee.
+   - Ignore the `Redirect URL` and `Postback URL` fields for now.
+   - Copy `API Key` and `API Secret` fields and keep them handy somewhere.
 
-    - Ignore the `Redirect URL` and `Postback URL` fields for now.
-    - Copy `API Key` and `API Secret` fields and keep them handy somewhere.
+3) Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account.
 
-3. Goto https://redislabs.com/try-free/ and sign up for a "Cloud" redis account.
+   - Activate your database and name it `signalx`
+   - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
 
-    - Activate your database and name it `signalx`
-    - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
+_Update - Redislabs free tier drops connections very often. Recommend upgrading to a paid tier for a seamless trading experience._
 
 ## 1-click Installation
 
-Now, click the button to deploy the application on DigitalOcean's (DO) apps platform.
+_Update - DigitalOcean's app platform is terribly slow. Recommend using render.com for all new installations. All other instructions remain as is._
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+or, deploy the application on DigitalOcean's (DO) apps platform.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master&refcode=d9db955b428e)
 
@@ -31,10 +36,10 @@ Now, click the button to deploy the application on DigitalOcean's (DO) apps plat
 
 > Environment variables are private setting variables that configures this application to run on your Zerodha account.
 
-
 #### `KITE_API_KEY`
 
 Paste the Kite API key that you copied from Step #1. Ensure to tick `Encrypt`.
+
 #### `KITE_API_SECRET`
 
 Paste the Kite Secret key that you copied from Step #1. Ensure to tick `Encrypt`.
@@ -56,6 +61,7 @@ Set it to `true` if you'd simulate orders but not actually place them on Zerodha
 Default lots that you trade on a regular basis. This is only the default initial value in the form and is changeable before taking the trade.
 
 for e.g. If you regularly trade `150` quantity of Nifty Options, you'd enter `2` lots here.
+
 #### `NEXT_PUBLIC_DEFAULT_SKEW_PERCENT`
 
 Default skew that you're okay with when selling straddles. Anywhere between 5-15 is a good value. The value here only serves as a default and can be changed before setting up daily trades.
@@ -73,7 +79,9 @@ Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh set
 Upgrade to [SignalX Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX Premium gives you access to technical indicators required to trade certain strategies.
 
 #### `DATABASE_HOST_URL`
+
 #### `DATABASE_USER_KEY`
+
 #### `DATABASE_API_KEY`
 
 [Follow the upgrade guide here](https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2#7a05ef9737904c148ea299177f1de8f0) to get values for all these 3 variables.
@@ -95,17 +103,17 @@ Leave the value in this field as it-is. This'll inform if there's an app update 
 - Once successfully built, Goto `Settings` of this app, and copy the URL where DigitalOcean hosted this application for you.
 - Go back to the [kite app](https://kite.trade/), and now enter Redirect URL as follows: `{url_from_digitalocean}/api/redirect_url_kite`. It should look something like this https://qwe-qwerty-gex5y.ondigitalocean.app/api/redirect_url_kite (only an example - yours will differ). Press `Save`!
 
-
 ## Using the application
 
 - Bookmark the URL, or save it to your homescreen. You'd need it every trading day!
 - Zerodha automatically expires the authentication token required to access the APIs at around 7.35am. You're required to login to this app every day after 7.45am to generate a new access token.
-- Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. *Trades setup after market hours will fail the next day as the API access token would have expired.*
+- Once logged in, you'd need to setup your trades for the day. **This needs to be done everyday!**. _Trades setup after market hours will fail the next day as the API access token would have expired._
 
 ## Data and Security
 
 - All access tokens are saved via a first-party cookie in your browser and are encrypted via the `SECRET_COOKIE_PASSWORD` environment variable. Whatever you do, **DO NOT** share this with anyone!
 - Redis is used for scheduling the tasks or running them on spot. **DO NOT** share your redis URL with anyone as it contains your Zerodha profile details alongwith API access tokens.
+
 ## Develop locally
 
 In case you'd like to contribute, you can run the development server like so

@@ -1,9 +1,15 @@
+import { Promise } from 'bluebird'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
+import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
-import { INSTRUMENT_DETAILS, PRODUCT_TYPE, STRATEGIES_DETAILS } from '../constants'
+import {
+  INSTRUMENT_DETAILS,
+  PRODUCT_TYPE,
+  STRATEGIES_DETAILS
+} from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import individualLegExitOrders from '../exit-strategies/individualLegExitOrders'
 import console from '../logging'
@@ -11,22 +17,24 @@ import {
   addToAutoSquareOffQueue,
   addToNextQueue,
   EXIT_TRADING_Q_NAME,
-  TRADING_Q_NAME,
-  WATCHER_Q_NAME
+  TRADING_Q_NAME
 } from '../queue'
 import {
-  getCurrentExpiryTradingSymbol,
+  getExpiryTradingSymbol,
+  attemptBrokerOrders,
   getInstrumentPrice,
   getLastOpenDateSince,
   getNearestCandleTime,
   getNextNthMinute,
   getTimeLeftInMarketClosingMs,
   getTradingSymbolsByOptionPrice,
+  isUntestedFeaturesEnabled,
   ms,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
   TradingSymbolInterface,
-  withRemoteRetry
+  withRemoteRetry,
+  logDeep
 } from '../utils'
 
 const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
@@ -40,7 +48,13 @@ const SIGNALX_URL = process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 // get supertrend value of CE option every 5mins
 // update SL = min(SLM%, Supertrend)
 
-async function fetchSuperTrend ({ instrument_token, from_date, to_date, ...otherProps }) {  //eslint-disable-line
+async function fetchSuperTrend ({
+  instrument_token,
+  from_date,
+  to_date,
+  ...otherProps
+}) {
+  //eslint-disable-line
   const props = {
     instrument_token,
     from_date,
@@ -51,43 +65,59 @@ async function fetchSuperTrend ({ instrument_token, from_date, to_date, ...other
     ...otherProps
   }
 
-  const { data } = await axios.post(`${SIGNALX_URL}/api/indicator/supertrend`, props, {
-    headers: {
-      'X-API-KEY': process.env.SIGNALX_API_KEY
+  const { data } = await axios.post(
+    `${SIGNALX_URL}/api/indicator/supertrend`,
+    props,
+    {
+      headers: {
+        'X-API-KEY': process.env.SIGNALX_API_KEY
+      }
     }
-  })
+  )
 
   return data
 }
 
-export default async function directionalOptionSelling (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
-  lastTrend: string
-}) {
+export default async function directionalOptionSelling (
+  initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE & {
+    lastTrend: string
+    lastTradeOrders: KiteOrder[]
+  }
+) {
   try {
     const {
       instrument,
       lots = 1,
       martingaleIncrementSize = 0,
       maxTrades = 0,
-      entryStrategy = STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.FIXED_TIME,
-      lastTrend
+      entryStrategy = STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING
+        .ENTRY_STRATEGIES.FIXED_TIME,
+      lastTrend,
+      lastTradeOrders,
+      user,
+      expiryType
     } = initialJobData
 
     if (getTimeLeftInMarketClosingMs() < 40 * 60 * 1000) {
-      return `🟢 [dos] Terminating DOS trade. ${(maxTrades).toString()} attempts left but less than 40 mins in market closing.`
+      return `🟢 [dos] Terminating DOS trade. ${maxTrades.toString()} attempts left but less than 40 mins in market closing.`
     }
 
     const { nfoSymbol } = INSTRUMENT_DETAILS[instrument]
 
-    const { instrument_token: futInstrumentToken } = await getCurrentExpiryTradingSymbol({
+    const {
+      instrument_token: futInstrumentToken
+    } = (await getExpiryTradingSymbol({
       nfoSymbol,
-      instrumentType: 'FUT'
-    }) as TradingSymbolInterface
+      instrumentType: 'FUT',
+      expiry: expiryType
+    })) as TradingSymbolInterface
 
     const DATE_FORMAT = 'YYYY-MM-DD'
     const DATE_TIME_FORMAT = `${DATE_FORMAT} HH:mm:ss`
     const lastOpenDate = getLastOpenDateSince(dayjs()).format(DATE_FORMAT)
-    const nearestClosedCandleTime = getNearestCandleTime(5 * 60 * 1000).format(DATE_TIME_FORMAT)
+    const nearestClosedCandleTime = getNearestCandleTime(5 * 60 * 1000).format(
+      DATE_TIME_FORMAT
+    )
 
     const supertrendProps = {
       instrument_token: futInstrumentToken,
@@ -95,17 +125,77 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       to_date: nearestClosedCandleTime
     }
 
-    const supertrendResponse = await withRemoteRetry(async () => fetchSuperTrend(supertrendProps))
+    const supertrendResponse = await withRemoteRetry(async () =>
+      fetchSuperTrend(supertrendProps)
+    )
+
+    if (
+      !(Array.isArray(supertrendResponse) && supertrendResponse.length >= 2)
+    ) {
+      console.log('🔴 [dos] supertrendResponse unlengthy')
+      logDeep({ stRequest: supertrendProps, stResponse: supertrendResponse })
+      return Promise.reject(new Error('[dos] supertrendResponse unlengthy'))
+    }
+
     const [currentTrendData] = supertrendResponse.slice(-1)
     const currentTrendAsPerST = currentTrendData.STX_10_3
     if (
-      entryStrategy === STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
+      entryStrategy ===
+      STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE
     ) {
       const lastTrendAsPerST = supertrendResponse.slice(-2)[0].STX_10_3
       const wasLastTrendAccurate = lastTrend === lastTrendAsPerST
       if (!wasLastTrendAccurate) {
-        console.log('🔴 [dos] wasLastTrendAccurate = false')
+        // only if currentTrend is not same as the previous position that was taken
+        /**
+         * possible scenarios
+         * on incorrect trend,
+         *
+         * say at 9.45am
+         * ST data comes in as [up, up, down]
+         * a short position gets taken
+         *
+         * then at 9.50am
+         * Case 1. ST data comes in as [up, up, up, down]
+         * then it's all okay - even though previous trend was inaccurate,
+         * the new position would have been same as existing positon
+         * Action: No action required
+         *
+         * Case 2. ST data comes in as [up, up, up, up]
+         * then it's a problem as now a new long position will be taken
+         * even though nothing has changed on the futures chart
+         * but 3 trades would have been taken already
+         * Action: Revert previous trade, and retain lot size and maxTrades from incoming initialJobData
+         */
+
+        console.log('🔴 [dos] last trend was inaccurate')
+        if (currentTrendAsPerST !== lastTrend && lastTradeOrders?.length) {
+          // [NB] let this happen at least once before enabling it for everyone else
+          if (isUntestedFeaturesEnabled()) {
+            console.log('🔴 [dos black swan] reverting bad position')
+            const kite = syncGetKiteInstance(user)
+            // 1. square off last trade
+            await doSquareOffPositions(lastTradeOrders, kite, initialJobData)
+            // 2. prevent next trade from happening
+            // 3. increase back maxTrades by 1
+            return await addToNextQueue(
+              {
+                ...initialJobData,
+                entryStrategy:
+                  STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES
+                    .ST_CHANGE,
+                lastTrend: currentTrendAsPerST,
+                runNow: false,
+                runAt: getNextNthMinute(ms(5 * 60))
+              },
+              {
+                _nextTradingQueue: TRADING_Q_NAME
+              }
+            )
+          }
+        }
       }
+
       const compareWithTrendValue = lastTrend || lastTrendAsPerST
       if (compareWithTrendValue === currentTrendAsPerST) {
         const error = `[dos] no change in ST ("${currentTrendAsPerST as string}")`
@@ -113,19 +203,22 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       }
     }
 
-    const res = await punchOrders(initialJobData, currentTrendData)
+    const punchedOrders = await punchOrders(initialJobData, currentTrendData)
 
     if (maxTrades > 1) {
       // flow should never reach here if the orders haven't been punched in
       await addToNextQueue(
         {
           ...initialJobData,
-          entryStrategy: STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES.ST_CHANGE,
+          entryStrategy:
+            STRATEGIES_DETAILS.DIRECTIONAL_OPTION_SELLING.ENTRY_STRATEGIES
+              .ST_CHANGE,
           lastTrend: currentTrendAsPerST,
           maxTrades: maxTrades - 1,
           lots: Number(lots) + Number(martingaleIncrementSize),
           runNow: false,
-          runAt: getNextNthMinute(ms(5 * 60))
+          runAt: getNextNthMinute(ms(5 * 60)),
+          lastTradeOrders: punchedOrders
         },
         {
           _nextTradingQueue: TRADING_Q_NAME
@@ -133,15 +226,20 @@ export default async function directionalOptionSelling (initialJobData: DIRECTIO
       )
     }
 
-    return res
+    return punchedOrders
   } catch (e) {
     console.log('🔴 [dos] parent caught', e)
     // [TODO] update db job with `status`: ERROR and an appropriate `reason`
-    return Promise.resolve('🔴 [dos] Terminating DOS trade. non recoverable error')
+    return Promise.resolve(
+      '🔴 [dos] Terminating DOS trade. non recoverable error'
+    )
   }
 }
 
-async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, superTrend) {
+async function punchOrders (
+  initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE,
+  superTrend
+) {
   const {
     _kite,
     instrument,
@@ -153,7 +251,8 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     rollback,
     productType = PRODUCT_TYPE.MIS,
     isHedgeEnabled = false,
-    hedgeDistance = 1700
+    hedgeDistance = 1700,
+    expiryType
   } = initialJobData
   const strikeByPriceNumber = strikeByPrice ? Number(strikeByPrice) : null
   const kite = _kite || syncGetKiteInstance(user)
@@ -169,20 +268,26 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     instrument_token: optionInstrumentToken,
     strike: optionStrike
   } = strikeByPriceNumber
-    ? await withRemoteRetry(async () => getTradingSymbolsByOptionPrice({
-      nfoSymbol,
-      price: strikeByPriceNumber,
-      pivotStrike: atmStrike,
-      instrumentType,
-      user: user!
-    }))
-    : await getCurrentExpiryTradingSymbol({
-      nfoSymbol,
-      strike: superTrendStrike,
-      instrumentType
-    })
+    ? await withRemoteRetry(async () =>
+        getTradingSymbolsByOptionPrice({
+          nfoSymbol,
+          price: strikeByPriceNumber,
+          pivotStrike: atmStrike,
+          instrumentType,
+          user: user!,
+          expiry: expiryType
+        })
+      )
+    : await getExpiryTradingSymbol({
+        nfoSymbol,
+        strike: superTrendStrike,
+        instrumentType,
+        expiry: expiryType
+      })
 
-  const ltp = await withRemoteRetry(async () => getInstrumentPrice(kite, optionTradingSymbol, kite.EXCHANGE_NFO))
+  const ltp = await withRemoteRetry(async () =>
+    getInstrumentPrice(kite, optionTradingSymbol, kite.EXCHANGE_NFO)
+  )
   if (ltp < 10) {
     console.log(
       '🔴 [directionalOptionSelling] not punching order as option price less than 10 bucks'
@@ -191,18 +296,22 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
   }
 
   let hedgeOrder
-  let hedgeOrderResponse
+  let hedgeOrdersResponse: KiteOrder[] = []
   if (isHedgeEnabled && Number(hedgeDistance) > 0) {
     const hedgeStrike =
-        Number(optionStrike) + Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
+      Number(optionStrike) +
+      Number(hedgeDistance) * (instrumentType === 'PE' ? -1 : 1)
 
-    const { tradingsymbol: hedgeTradingSymbol } = await getCurrentExpiryTradingSymbol({
+    const hedgeStrikeData = (await getExpiryTradingSymbol({
       nfoSymbol,
       strike: hedgeStrike,
-      instrumentType
-    }) as TradingSymbolInterface
+      instrumentType,
+      expiry: expiryType
+    })) as TradingSymbolInterface
 
-    if (hedgeTradingSymbol) {
+    if (hedgeStrikeData) {
+      const { tradingsymbol: hedgeTradingSymbol } = hedgeStrikeData
+
       hedgeOrder = {
         tradingsymbol: hedgeTradingSymbol,
         quantity: Number(lots) * lotSize,
@@ -215,23 +324,29 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
       }
 
       try {
-        const { successful, response } = await remoteOrderSuccessEnsurer({
+        const brokerOrderPr = remoteOrderSuccessEnsurer({
           _kite: kite,
           orderProps: hedgeOrder,
+          instrument,
           ensureOrderState: kite.STATUS_COMPLETE,
           user: user!
         })
 
-        if (successful) {
-          hedgeOrderResponse = response
+        const { allOk, statefulOrders } = await attemptBrokerOrders([
+          brokerOrderPr
+        ])
+
+        if (allOk) {
+          hedgeOrdersResponse = statefulOrders
         } else {
-          const error = '🔴 hedge order id exists, but status unknown after several retries! terminating dos'
+          const error =
+            '🔴 hedge order id exists, but status unknown after several retries! terminating dos'
           console.log(error)
           throw new Error(error)
         }
       } catch (e) {
         if (rollback?.onBrokenHedgeOrders) {
-          await doSquareOffPositions([hedgeOrderResponse], kite, initialJobData)
+          await doSquareOffPositions(hedgeOrdersResponse, kite, initialJobData)
         }
         throw e
       }
@@ -249,20 +364,24 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     tag: orderTag
   }
 
-  let rawKiteOrderResponse
+  let rawKiteOrdersResponse: KiteOrder[] = []
   try {
-    const { successful, response } = await remoteOrderSuccessEnsurer({
+    const brokerOrderPr = remoteOrderSuccessEnsurer({
       _kite: kite,
       orderProps: order,
+      instrument,
       ensureOrderState: kite.STATUS_COMPLETE,
       user: user!
     })
 
-    if (successful) {
-      rawKiteOrderResponse = response
+    const { allOk, statefulOrders } = await attemptBrokerOrders([brokerOrderPr])
+
+    if (allOk) {
+      rawKiteOrdersResponse = statefulOrders
     } else {
       // [TODO] lets see if this ever happens.
-      const error = '🔴 DOS order exists, but status unknown several retries! terminating dos'
+      const error =
+        '🔴 DOS order exists, but status unknown several retries! terminating dos'
       console.log(error)
       throw new Error(error)
     }
@@ -270,56 +389,70 @@ async function punchOrders (initialJobData: DIRECTIONAL_OPTION_SELLING_TRADE, su
     // squaring off the hedge if this times out
     console.log(e)
     if (rollback?.onBrokenPrimaryOrders) {
-      await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o), kite, initialJobData)
+      await doSquareOffPositions(
+        [...hedgeOrdersResponse, ...rawKiteOrdersResponse].filter(o => o),
+        kite,
+        initialJobData
+      )
     }
     throw e
   }
 
-  let exitOrder
+  let exitOrders
   try {
-    [exitOrder] = await individualLegExitOrders({
+    exitOrders = await individualLegExitOrders({
       _kite: kite,
       initialJobData,
-      rawKiteOrdersResponse: [rawKiteOrderResponse]
+      rawKiteOrdersResponse
     })
   } catch (e) {
     // if this throws, then the initial SL order for the sold option is not in system
     if (rollback?.onBrokenExitOrders) {
-      await doSquareOffPositions([hedgeOrderResponse, rawKiteOrderResponse].filter(o => o), kite, initialJobData)
+      await doSquareOffPositions(
+        [...hedgeOrdersResponse, ...rawKiteOrdersResponse].filter(o => o),
+        kite,
+        initialJobData
+      )
     }
     throw e
   }
 
   const nextQueueData = omit(initialJobData, '_kite')
 
-  const queueRes = await addToNextQueue(nextQueueData, {
-    _nextTradingQueue: EXIT_TRADING_Q_NAME,
-    rawKiteOrdersResponse: [exitOrder],
-    optionInstrumentToken,
-    hedgeOrderResponse
+  await Promise.map(exitOrders, async (exitOrder, idx) => {
+    return await addToNextQueue(nextQueueData, {
+      _nextTradingQueue: EXIT_TRADING_Q_NAME,
+      rawKiteOrdersResponse: [exitOrder],
+      optionInstrumentToken,
+      hedgeOrderResponse: hedgeOrdersResponse[idx]
+    })
   })
 
-  await addToNextQueue(nextQueueData, {
-    _nextTradingQueue: WATCHER_Q_NAME,
-    rawKiteOrderResponse: exitOrder
-  })
+  console.log('🟢 [directionalOptionSelling] trailing SL now..')
 
-  const { id, name, data } = queueRes!
-  console.log('🟢 [directionalOptionSelling] trailing SL now..', { id, name, data })
-
+  const allPunchedOrders = [
+    ...rawKiteOrdersResponse,
+    ...hedgeOrdersResponse
+  ].filter(o => o)
   if (isAutoSquareOffEnabled) {
     try {
       const asoResponse = await addToAutoSquareOffQueue({
         initialJobData: nextQueueData,
         jobResponse: {
-          rawKiteOrdersResponse: [rawKiteOrderResponse, hedgeOrderResponse].filter((o) => o)
+          rawKiteOrdersResponse: allPunchedOrders
         }
       })
       const { data, name } = asoResponse
-      console.log('🟢 [directionalOptionSelling] success enable auto square off', { data, name })
+      console.log(
+        '🟢 [directionalOptionSelling] success enable auto square off',
+        { data, name }
+      )
     } catch (e) {
-      console.log('🔴 [directionalOptionSelling] failed to enable auto square off', e)
+      console.log(
+        '🔴 [directionalOptionSelling] failed to enable auto square off',
+        e
+      )
     }
   }
-  return queueRes
+  return allPunchedOrders
 }

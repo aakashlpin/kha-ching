@@ -1,10 +1,19 @@
-import { attemptBrokerOrders, finiteStateChecker, ms, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../../lib/utils'
+import {
+  attemptBrokerOrders,
+  finiteStateChecker,
+  ms,
+  remoteOrderSuccessEnsurer,
+  syncGetKiteInstance,
+  withRemoteRetry
+} from '../../lib/utils'
 import { Promise } from 'bluebird'
+import { INSTRUMENTS } from '../../lib/constants'
 
 jest.setTimeout(ms(60))
 
 test('should retry failed remote response', async () => {
-  const remoteFn = jest.fn()
+  const remoteFn = jest
+    .fn()
     .mockResolvedValue(true)
     .mockRejectedValueOnce(new Error('Async error'))
 
@@ -14,13 +23,16 @@ test('should retry failed remote response', async () => {
 })
 
 test('should fail after 2 seconds', async () => {
-  const remoteFn = jest.fn()
+  const remoteFn = jest
+    .fn()
     .mockResolvedValue(true)
     .mockRejectedValueOnce(new Error('2 sec error'))
     .mockRejectedValueOnce(new Error('2 sec error'))
     .mockRejectedValueOnce(new Error('2 sec error'))
 
-  await expect(withRemoteRetry(remoteFn, ms(2))).rejects.toThrow(Promise.TimeoutError)
+  await expect(withRemoteRetry(remoteFn, ms(2))).rejects.toThrow(
+    Promise.TimeoutError
+  )
 })
 
 const user = JSON.parse(process.env.USER_SESSION)
@@ -32,25 +44,37 @@ test('should return true for successful order', async () => {
   expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
-    order_id: '210722200439620'
+    order_id: '210827200359595'
   })
 
-  kite.getOrderHistory = jest.fn().mockImplementation(() => Promise.resolve([{
-    status: kite.STATUS_COMPLETE
-  }]))
+  // kite.getOrderHistory = jest.fn().mockImplementation(() =>
+  //   Promise.resolve([
+  //     {
+  //       status: kite.STATUS_COMPLETE
+  //     }
+  //   ])
+  // )
 
   const ensured = await remoteOrderSuccessEnsurer({
     _kite: kite,
     ensureOrderState: kite.STATUS_COMPLETE,
-    orderProps: {},
+    orderProps: {
+      quantity: 200
+    },
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 5,
     orderStatusCheckTimeout: ms(5),
     remoteRetryTimeout: ms(5),
+    instrument: INSTRUMENTS.NIFTY,
     user
   })
 
-  expect(ensured).toStrictEqual({ response: { status: kite.STATUS_COMPLETE }, successful: true })
+  console.log(ensured)
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: kite.STATUS_COMPLETE },
+  //   successful: true
+  // })
 })
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
@@ -89,9 +113,13 @@ test('should return false when order history api check times out', async () => {
     placeOrder: jest.fn().mockResolvedValue({
       order_id: '21072220232443'
     }),
-    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
-      status: 'VALIDATION PENDING'
-    }]))
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: 'VALIDATION PENDING'
+        }
+      ])
+    )
   }
 
   expect(kite).toBeDefined()
@@ -108,7 +136,10 @@ test('should return false when order history api check times out', async () => {
 
   console.log({ ensured })
 
-  expect(ensured).toStrictEqual({ response: { order_id: '21072220232443' }, successful: false })
+  expect(ensured).toStrictEqual({
+    response: { order_id: '21072220232443' },
+    successful: false
+  })
 })
 
 test('should handle `placeOrder` NetworkException and then find an existing completed order in broker system', async () => {
@@ -119,25 +150,39 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
       status: 'error',
       error_type: 'NetworkException'
     }),
-    getOrders: jest.fn(() => Promise.resolve([{
-      order_id: '210722200262556',
-      status: 'COMPLETE',
-      variety: 'regular',
-      exchange: 'NFO',
-      tradingsymbol: 'BANKNIFTY2172234500PE',
-      order_type: 'MARKET',
-      transaction_type: 'SELL',
-      validity: 'DAY',
-      product: 'MIS',
-      quantity: 250,
-      tag: 'X0uE0cKR'
-    }])).mockImplementationOnce(() => Promise.reject(new Error({
-      status: 'error',
-      error_type: 'NetworkException'
-    }))),
-    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
-      status: 'COMPLETE'
-    }]))
+    getOrders: jest
+      .fn(() =>
+        Promise.resolve([
+          {
+            order_id: '210722200262556',
+            status: 'COMPLETE',
+            variety: 'regular',
+            exchange: 'NFO',
+            tradingsymbol: 'BANKNIFTY2172234500PE',
+            order_type: 'MARKET',
+            transaction_type: 'SELL',
+            validity: 'DAY',
+            product: 'MIS',
+            quantity: 250,
+            tag: 'X0uE0cKR'
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        Promise.reject(
+          new Error({
+            status: 'error',
+            error_type: 'NetworkException'
+          })
+        )
+      ),
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: 'COMPLETE'
+        }
+      ])
+    )
   }
 
   expect(kite).toBeDefined()
@@ -160,26 +205,43 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
     user
   })
 
-  expect(ensured).toStrictEqual({ successful: true, response: { status: 'COMPLETE' } })
+  expect(ensured).toStrictEqual({
+    successful: true,
+    response: { status: 'COMPLETE' }
+  })
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry when no such order exists with broker', async () => {
   let kite = syncGetKiteInstance(user)
   kite = {
     ...kite,
-    placeOrder: jest.fn(() => Promise.resolve({
-      order_id: '210722200262556'
-    })).mockRejectedValueOnce({
-      status: 'error',
-      error_type: 'NetworkException'
-    }),
-    getOrders: jest.fn(() => Promise.resolve([])).mockImplementationOnce(() => Promise.reject(new Error({
-      status: 'error',
-      error_type: 'NetworkException'
-    }))),
-    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
-      status: 'COMPLETE'
-    }]))
+    placeOrder: jest
+      .fn(() =>
+        Promise.resolve({
+          order_id: '210722200262556'
+        })
+      )
+      .mockRejectedValueOnce({
+        status: 'error',
+        error_type: 'NetworkException'
+      }),
+    getOrders: jest
+      .fn(() => Promise.resolve([]))
+      .mockImplementationOnce(() =>
+        Promise.reject(
+          new Error({
+            status: 'error',
+            error_type: 'NetworkException'
+          })
+        )
+      ),
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: 'COMPLETE'
+        }
+      ])
+    )
   }
 
   expect(kite).toBeDefined()
@@ -203,7 +265,10 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
 
   console.log({ ensured })
 
-  expect(ensured).toStrictEqual({ response: { status: 'COMPLETE' }, successful: true })
+  expect(ensured).toStrictEqual({
+    response: { status: 'COMPLETE' },
+    successful: true
+  })
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry an existing REJECTED order', async () => {
@@ -218,34 +283,55 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
   let kite = syncGetKiteInstance(user)
   kite = {
     ...kite,
-    placeOrder: jest.fn(() => Promise.resolve({
-      order_id: '210722200262556'
-    })).mockRejectedValueOnce({
-      status: 'error',
-      error_type: 'NetworkException'
-    }),
-    getOrders: jest.fn(() => Promise.resolve([{
-      order_id: '210722200262556',
-      orderTag: 'X0uE0cKR',
-      tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
-      product: 'MIS',
-      transaction_type: 'SELL',
-      exchange: 'NFO'
-    }])).mockRejectedValueOnce([{
-      order_id: '210722200262556',
-      orderTag: 'X0uE0cKR',
-      tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
-      product: 'MIS',
-      transaction_type: 'SELL',
-      exchange: 'NFO'
-    }]),
-    getOrderHistory: jest.fn().mockImplementation(() => Promise.resolve([{
-      status: kite.STATUS_COMPLETE
-    }])).mockRejectedValueOnce([{
-      status: kite.STATUS_REJECTED
-    }])
+    placeOrder: jest
+      .fn(() =>
+        Promise.resolve({
+          order_id: '210722200262556'
+        })
+      )
+      .mockRejectedValueOnce({
+        status: 'error',
+        error_type: 'NetworkException'
+      }),
+    getOrders: jest
+      .fn(() =>
+        Promise.resolve([
+          {
+            order_id: '210722200262556',
+            orderTag: 'X0uE0cKR',
+            tradingsymbol: 'BANKNIFTY2172234500PE',
+            quantity: 250,
+            product: 'MIS',
+            transaction_type: 'SELL',
+            exchange: 'NFO'
+          }
+        ])
+      )
+      .mockRejectedValueOnce([
+        {
+          order_id: '210722200262556',
+          orderTag: 'X0uE0cKR',
+          tradingsymbol: 'BANKNIFTY2172234500PE',
+          quantity: 250,
+          product: 'MIS',
+          transaction_type: 'SELL',
+          exchange: 'NFO'
+        }
+      ]),
+    getOrderHistory: jest
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve([
+          {
+            status: kite.STATUS_COMPLETE
+          }
+        ])
+      )
+      .mockRejectedValueOnce([
+        {
+          status: kite.STATUS_REJECTED
+        }
+      ])
   }
 
   expect(kite).toBeDefined()
@@ -269,7 +355,10 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
 
   console.log({ ensured })
 
-  expect(ensured).toStrictEqual({ response: { status: 'COMPLETE' }, successful: true })
+  expect(ensured).toStrictEqual({
+    response: { status: 'COMPLETE' },
+    successful: true
+  })
 })
 
 test('finiteStateChecker should work', async () => {
@@ -310,4 +399,65 @@ test('attemptBrokerOrders should work', async () => {
 
   const res = await attemptBrokerOrders([pr1, pr2])
   console.log(res)
+})
+
+test('freeze qty should work', async () => {
+  let kite = syncGetKiteInstance(user)
+  kite = {
+    ...kite,
+    placeOrder: jest.fn(() =>
+      Promise.resolve({
+        order_id: '210722200262556'
+      })
+    ),
+    getOrders: jest.fn(() =>
+      Promise.resolve([
+        {
+          order_id: '210722200262556',
+          orderTag: 'X0uE0cKR',
+          tradingsymbol: 'BANKNIFTY2172234500PE',
+          quantity: 250,
+          product: 'MIS',
+          transaction_type: 'SELL',
+          exchange: 'NFO'
+        }
+      ])
+    ),
+    getOrderHistory: jest.fn().mockImplementation(() =>
+      Promise.resolve([
+        {
+          status: kite.STATUS_COMPLETE
+        }
+      ])
+    )
+  }
+
+  expect(kite).toBeDefined()
+
+  const ensured = await remoteOrderSuccessEnsurer({
+    _kite: kite,
+    instrument: INSTRUMENTS.BANKNIFTY,
+    orderProps: {
+      orderTag: 'X0uE0cKR',
+      tradingsymbol: 'BANKNIFTY2172234500PE',
+      quantity: 250,
+      product: 'MIS',
+      transaction_type: 'SELL',
+      exchange: 'NFO'
+    },
+    ensureOrderState: kite.STATUS_COMPLETE,
+    onFailureRetryAfterMs: ms(1),
+    retryAttempts: 2,
+    orderStatusCheckTimeout: ms(5),
+    user
+  })
+
+  console.log({ ensuredRes: ensured.response })
+
+  expect(ensured).toBeDefined()
+
+  // expect(ensured).toStrictEqual({
+  //   response: { status: 'COMPLETE' },
+  //   successful: true
+  // })
 })

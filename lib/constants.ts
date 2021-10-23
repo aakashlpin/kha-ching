@@ -1,7 +1,10 @@
 import dayjs from 'dayjs'
+import { COMBINED_SL_EXIT_STRATEGY, SL_ORDER_TYPE } from '../types/plans'
 const NEXT_PUBLIC_DEFAULT_LOTS = process.env.NEXT_PUBLIC_DEFAULT_LOTS
-const NEXT_PUBLIC_DEFAULT_SKEW_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
-const NEXT_PUBLIC_DEFAULT_SLM_PERCENT = process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
+const NEXT_PUBLIC_DEFAULT_SKEW_PERCENT =
+  process.env.NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
+const NEXT_PUBLIC_DEFAULT_SLM_PERCENT =
+  process.env.NEXT_PUBLIC_DEFAULT_SLM_PERCENT
 
 export enum INSTRUMENTS {
   NIFTY = 'NIFTY',
@@ -16,6 +19,22 @@ export interface INSTRUMENT_PROPERTIES {
   nfoSymbol: string
   exchange: string
   strikeStepSize: number
+  freezeQty: number
+}
+
+export interface KITE_INSTRUMENT_INFO {
+  exchange: string // "NFO"
+  exchange_token: string // "36320"
+  expiry: string // "2021-10-28"
+  instrument_token: string // "9297922"
+  instrument_type: string // "CE"
+  last_price: string // "0"
+  lot_size: string // "50"
+  name: string // "NIFTY"
+  segment: string // "NFO-OPT"
+  strike: string // "17350"
+  tick_size: string // "0.05"
+  tradingsymbol: string // "NIFTY21OCT17350CE"
 }
 
 export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
@@ -25,7 +44,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY 50',
     nfoSymbol: 'NIFTY',
     exchange: 'NSE',
-    strikeStepSize: 50
+    strikeStepSize: 50,
+    // [11501-17250]
+    // freezeQty: 200
+    freezeQty: 1800
   },
   [INSTRUMENTS.BANKNIFTY]: {
     lotSize: 25,
@@ -33,7 +55,10 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY BANK',
     nfoSymbol: 'BANKNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [27501-40000]
+    // freezeQty: 100
+    freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {
     lotSize: 40,
@@ -41,7 +66,9 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY FIN SERVICE',
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100
+    strikeStepSize: 100,
+    // [17251-27500]
+    freezeQty: 1800
   }
 }
 
@@ -74,6 +101,18 @@ export enum VOLATILITY_TYPE {
   SHORT = 'SHORT'
 }
 
+export enum EXPIRY_TYPE {
+  CURRENT = 'CURRENT',
+  NEXT = 'NEXT',
+  MONTHLY = 'MONTHLY'
+}
+
+export const EXPIRY_TYPE_HUMAN = {
+  [EXPIRY_TYPE.CURRENT]: 'Current weekly',
+  [EXPIRY_TYPE.NEXT]: 'Next weekly',
+  [EXPIRY_TYPE.MONTHLY]: 'Current Monthly'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'
@@ -82,6 +121,12 @@ export enum STRANGLE_ENTRY_STRATEGIES {
 export enum ANCILLARY_TASKS {
   ORDERBOOK_SYNC_BY_TAG = 'ORDERBOOK_SYNC_BY_TAG',
   CLEANUP_COMPLETED_JOBS = 'CLEANUP_COMPLETED_JOBS'
+}
+
+export const COMBINED_SL_EXIT_STRATEGY_LABEL = {
+  [COMBINED_SL_EXIT_STRATEGY.EXIT_ALL]: 'Exit all legs',
+  [COMBINED_SL_EXIT_STRATEGY.EXIT_LOSING]:
+    'Exit losing legs only and bring others to cost'
 }
 
 const getInstrumentsDefaultState = (): Record<INSTRUMENTS, boolean> =>
@@ -97,7 +142,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRADDLE]: {
     premium: false,
     heading: 'Long/Short Straddle — ATM',
-    defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 12)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 145000,
       [INSTRUMENTS.BANKNIFTY]: 150000,
@@ -114,9 +163,13 @@ export const STRATEGIES_DETAILS = {
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLL,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -127,7 +180,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.ATM_STRANGLE]: {
     premium: false,
     heading: 'Long/Short Strangle',
-    defaultRunAt: dayjs().set('hour', 12).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 12)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 420000,
       [INSTRUMENTS.BANKNIFTY]: 425000
@@ -144,8 +201,12 @@ export const STRATEGIES_DETAILS = {
       deltaStrikes: 20,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      slOrderType: SL_ORDER_TYPE.SLL,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -165,7 +226,11 @@ export const STRATEGIES_DETAILS = {
   [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: {
     premium: true,
     heading: 'Directional Option Selling',
-    defaultRunAt: dayjs().set('hour', 9).set('minutes', 20).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 9)
+      .set('minutes', 20)
+      .set('seconds', 0)
+      .format(),
     margin1x: {
       [INSTRUMENTS.NIFTY]: 675000,
       [INSTRUMENTS.BANKNIFTY]: 750000
@@ -178,9 +243,12 @@ export const STRATEGIES_DETAILS = {
       martingaleIncrementSize: 1,
       isHedgeEnabled: true,
       productType: PRODUCT_TYPE.MIS,
+      expiryType: EXPIRY_TYPE.CURRENT,
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,
+      slOrderType: SL_ORDER_TYPE.SLL,
+      slLimitPricePercent: 1,
       rollback: {
         onBrokenHedgeOrders: false,
         onBrokenPrimaryOrders: false,
@@ -192,23 +260,44 @@ export const STRATEGIES_DETAILS = {
       label: 'at the scheduled time and then every time trend reverses'
     },
     [DOS_ENTRY_STRATEGIES.ST_CHANGE]: {
-      label: 'when trend reverses from live trend and then every time trend reverses'
+      label:
+        'when trend reverses from live trend and then every time trend reverses'
     }
   },
   [STRATEGIES.OPTION_BUYING_STRATEGY]: {
     premium: true,
     heading: 'Option Buying Strategy',
-    defaultRunAt: dayjs().set('hour', 9).set('minutes', 30).set('seconds', 0).format(),
+    defaultRunAt: dayjs()
+      .set('hour', 9)
+      .set('minutes', 30)
+      .set('seconds', 0)
+      .format(),
     schedule: [
       {
         afterTime: () =>
-          dayjs().set('hour', 9).set('minutes', 30).set('seconds', 0).subtract(1, 'second'),
-        beforeTime: () => dayjs().set('hour', 11).set('minutes', 0).set('seconds', 0)
+          dayjs()
+            .set('hour', 9)
+            .set('minutes', 30)
+            .set('seconds', 0)
+            .subtract(1, 'second'),
+        beforeTime: () =>
+          dayjs()
+            .set('hour', 11)
+            .set('minutes', 0)
+            .set('seconds', 0)
       },
       {
         afterTime: () =>
-          dayjs().set('hour', 13).set('minutes', 0).set('seconds', 0).subtract(1, 'second'),
-        beforeTime: () => dayjs().set('hour', 15).set('minutes', 0).set('seconds', 0)
+          dayjs()
+            .set('hour', 13)
+            .set('minutes', 0)
+            .set('seconds', 0)
+            .subtract(1, 'second'),
+        beforeTime: () =>
+          dayjs()
+            .set('hour', 15)
+            .set('minutes', 0)
+            .set('seconds', 0)
       }
     ],
     defaultFormState: {}
@@ -415,4 +504,14 @@ export const STOCKS_NFO_SCRIPS = [
 export const ERROR_STRINGS = {
   PAID_FEATURE: 'Invalid SignalX Club or Premium subscription',
   PAID_STRATEGY: 'Invalid SignalX Club or Premium subscription'
+}
+
+export const SUBSCRIPTION_TYPE = {
+  SUBSCRIBER: 'SUBSCRIBER',
+  NOT_SUBSCRIBER: 'NOT_SUBSCRIBER'
+}
+
+export const SUBSCRIBER_TYPE = {
+  PREMIUM: 'PREMIUM',
+  CLUB: 'CLUB'
 }

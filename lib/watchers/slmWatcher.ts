@@ -24,7 +24,12 @@ import { SignalXUser } from '../../types/misc'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
 import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
-import { getInstrumentPrice, remoteOrderSuccessEnsurer, syncGetKiteInstance, withRemoteRetry } from '../utils'
+import {
+  getInstrumentPrice,
+  remoteOrderSuccessEnsurer,
+  syncGetKiteInstance,
+  withRemoteRetry
+} from '../utils'
 
 /**
  * [NB] IMPORTANT!
@@ -38,10 +43,17 @@ const WATCH_MANUAL_CANCELLED_ORDERS = process.env.WATCH_MANUAL_CANCELLED_ORDERS
   ? JSON.parse(process.env.WATCH_MANUAL_CANCELLED_ORDERS)
   : false
 
-const slmWatcher = async (
-  { slmOrderId, user, originalTriggerPrice, _queueJobData }:
-  { slmOrderId: string, user: SignalXUser, originalTriggerPrice: number, _queueJobData: { initialJobData: SUPPORTED_TRADE_CONFIG } }
-) => {
+const slmWatcher = async ({
+  slmOrderId,
+  user,
+  originalTriggerPrice,
+  _queueJobData
+}: {
+  slmOrderId: string
+  user: SignalXUser
+  originalTriggerPrice: number
+  _queueJobData: { initialJobData: SUPPORTED_TRADE_CONFIG }
+}) => {
   /**
    * Scenario for the need of `originalTriggerPrice`
    * - consider the initial SLM order gets cancelled at 50
@@ -55,18 +67,24 @@ const slmWatcher = async (
    */
   try {
     const kite = syncGetKiteInstance(user)
-    const orderHistory = (await withRemoteRetry(() => kite.getOrderHistory(slmOrderId))).reverse()
-    const isOrderCompleted = orderHistory.find((order) => order.status === kite.STATUS_COMPLETE)
+    const orderHistory = (
+      await withRemoteRetry(() => kite.getOrderHistory(slmOrderId))
+    ).reverse()
+    const isOrderCompleted = orderHistory.find(
+      order => order.status === kite.STATUS_COMPLETE
+    )
     if (isOrderCompleted) {
       return Promise.resolve('[slmWatcher] order COMPLETED!')
     }
 
-    const cancelledOrder = orderHistory.find((order) =>
+    const cancelledOrder = orderHistory.find(order =>
       order.status.includes(kite.STATUS_CANCELLED)
     )
 
     if (!cancelledOrder) {
-      return Promise.reject(new Error('[slmWatcher] neither COMPLETED nor CANCELLED. Watching!'))
+      return Promise.reject(
+        new Error('[slmWatcher] neither COMPLETED nor CANCELLED. Watching!')
+      )
     }
 
     const {
@@ -98,7 +116,8 @@ const slmWatcher = async (
 
     if (
       !WATCH_MANUAL_CANCELLED_ORDERS &&
-      statusMessageRaw !== '17070 : The Price is out of the current execution range'
+      statusMessageRaw !==
+        '17070 : The Price is out of the current execution range'
     ) {
       return Promise.resolve('[slmWatcher] order cancelled by user!')
     }
@@ -117,7 +136,7 @@ const slmWatcher = async (
 
     const { net } = positions
     const openPositionThatMustBeSquaredOff = net.find(
-      (position) =>
+      position =>
         position.tradingsymbol === tradingsymbol &&
         position.product === product &&
         position.exchange === exchange &&
@@ -128,9 +147,14 @@ const slmWatcher = async (
       return Promise.resolve('[slmWatcher] no open position to be squared off!')
     }
 
-    console.log('[slmWatcher] openPositionThatMustBeSquaredOff', openPositionThatMustBeSquaredOff)
+    console.log(
+      '[slmWatcher] openPositionThatMustBeSquaredOff',
+      openPositionThatMustBeSquaredOff
+    )
 
-    const ltp = await withRemoteRetry(async () => getInstrumentPrice(kite, tradingsymbol, exchange))
+    const ltp = await withRemoteRetry(async () =>
+      getInstrumentPrice(kite, tradingsymbol, exchange)
+    )
 
     const newOrderType =
       (transactionType === kite.TRANSACTION_TYPE_BUY && ltp < triggerPrice) ||
@@ -155,8 +179,11 @@ const slmWatcher = async (
     console.log('[slmWatcher] placing exit order', exitOrder)
     try {
       const { response } = await remoteOrderSuccessEnsurer({
-        ensureOrderState: exitOrder.trigger_price ? 'TRIGGER PENDING' : kite.STATUS_COMPLETE,
+        ensureOrderState: exitOrder.trigger_price
+          ? 'TRIGGER PENDING'
+          : kite.STATUS_COMPLETE,
         orderProps: exitOrder,
+        instrument: _queueJobData.initialJobData.instrument,
         user
       })
       // add this new job to the watcher queue and ensure it succeeds
@@ -166,7 +193,10 @@ const slmWatcher = async (
         originalTriggerPrice: triggerPrice
       })
     } catch (e) {
-      console.log('[slmWatcher] error adding watcher for new exit market order', e)
+      console.log(
+        '[slmWatcher] error adding watcher for new exit market order',
+        e
+      )
     }
     return Promise.resolve('[slmWatcher] placing exit order')
   } catch (e) {

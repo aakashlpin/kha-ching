@@ -3,7 +3,7 @@ import React from 'react'
 import commonDetailsRows from '../../lib/commonDetailsRows'
 import OrdersTable from '../../lib/ordersTable'
 
-const Details = (args) => {
+const Details = args => {
   const {
     lots,
     maxSkewPercent,
@@ -13,7 +13,9 @@ const Details = (args) => {
     takeTradeIrrespectiveSkew = true
   } = args
 
-  const afterCheckerString = takeTradeIrrespectiveSkew ? 'Enter irrespective skew' : 'Reject trade'
+  const afterCheckerString = takeTradeIrrespectiveSkew
+    ? 'Enter irrespective skew'
+    : 'Reject trade'
 
   return (
     <OrdersTable
@@ -21,8 +23,14 @@ const Details = (args) => {
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
         [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],
-        [{ value: 'Threshold Skew' }, { value: thresholdSkewPercent ? `${thresholdSkewPercent}%` : '-' }],
-        [{ value: 'Skew checker' }, { value: `${expireIfUnsuccessfulInMins ?? 0} mins` }],
+        [
+          { value: 'Threshold Skew' },
+          { value: thresholdSkewPercent ? `${thresholdSkewPercent}%` : '-' }
+        ],
+        [
+          { value: 'Skew checker' },
+          { value: `${expireIfUnsuccessfulInMins ?? 0} mins` }
+        ],
         [{ value: 'After checker' }, { value: afterCheckerString }],
         ...commonDetailsRows(args)
       ]}

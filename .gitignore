@@ -38,6 +38,7 @@ workbox-*
 .vercel
 instrument_*.csv
 backtests
+bt_results
 __tests/unit/backtests
 dos*.csv
 oss*.csv

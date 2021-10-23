@@ -13,7 +13,10 @@ import {
   TextField,
   Typography
 } from '@material-ui/core'
-import { KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import {
+  KeyboardTimePicker,
+  MuiPickersUtilsProvider
+} from '@material-ui/pickers'
 import dayjs from 'dayjs'
 import React from 'react'
 
@@ -30,6 +33,8 @@ import HedgeComponent from '../../lib/HedgeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
 import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import RollbackComponent from '../../lib/RollbackComponent'
+import SlManagerComponent from '../../lib/SlManagerComponent'
+import ExpiryTypeComponent from '../../lib/ExpiryTypeComponent'
 
 interface ATMStraddleTradeSetupFormProps {
   formHeading?: string
@@ -41,7 +46,15 @@ interface ATMStraddleTradeSetupFormProps {
   onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
-const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state, onChange, onSubmit, onCancel, isRunnable = true }: ATMStraddleTradeSetupFormProps) => {
+const TradeSetupForm = ({
+  formHeading,
+  strategy = STRATEGIES.ATM_STRADDLE,
+  state,
+  onChange,
+  onSubmit,
+  onCancel,
+  isRunnable = true
+}: ATMStraddleTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments =
@@ -51,10 +64,13 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
 
   const exitStrategies =
     strategy === STRATEGIES.ATM_STRADDLE
-      ? [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X, EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD]
+      ? [
+          EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+          EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+        ]
       : [EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X]
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = e => {
     e.preventDefault()
     onSubmit(formatFormDataForApi({ strategy, data: state }))
   }
@@ -62,13 +78,15 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
-        <Typography variant="h6" style={{ marginBottom: 16 }}>{formHeading ?? 'Setup new trade'}</Typography>
+        <Typography variant='h6' style={{ marginBottom: 16 }}>
+          {formHeading ?? 'Setup new trade'}
+        </Typography>
         <Grid container alignItems='flex-start' spacing={2}>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Instruments</FormLabel>
               <FormGroup row>
-                {enabledInstruments.map((instrument) => (
+                {enabledInstruments.map(instrument => (
                   <FormControlLabel
                     key={instrument}
                     label={INSTRUMENT_DETAILS[instrument].displayName}
@@ -96,12 +114,14 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
 
           <ProductTypeComponent state={state} onChange={onChange} />
 
+          <ExpiryTypeComponent state={state} onChange={onChange} />
+
           <Grid item xs={12}>
             <TextField
               fullWidth
               name='lots'
               value={state.lots}
-              onChange={(e) => onChange({ lots: +e.target.value || undefined })}
+              onChange={e => onChange({ lots: +e.target.value || undefined })}
               label='# Lots'
             />
           </Grid>
@@ -110,7 +130,9 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
               fullWidth
               name='maxSkewPercent'
               value={state.maxSkewPercent}
-              onChange={(e) => onChange({ maxSkewPercent: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({ maxSkewPercent: +e.target.value || undefined })
+              }
               label='Ideal skew %'
             />
           </Grid>
@@ -119,7 +141,9 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
               fullWidth
               name='thresholdSkewPercent'
               value={state.thresholdSkewPercent}
-              onChange={(e) => onChange({ thresholdSkewPercent: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({ thresholdSkewPercent: +e.target.value || undefined })
+              }
               label='Threshold skew %'
             />
           </Grid>
@@ -128,95 +152,57 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
               fullWidth
               name='expireIfUnsuccessfulInMins'
               value={state.expireIfUnsuccessfulInMins}
-              onChange={(e) => onChange({ expireIfUnsuccessfulInMins: +e.target.value || undefined })}
+              onChange={e =>
+                onChange({
+                  expireIfUnsuccessfulInMins: +e.target.value || undefined
+                })
+              }
               label='Run skew checker for (in mins)'
             />
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 16 }}>
             <FormControl component='fieldset'>
-              <FormLabel component='legend'>Once skew checker has expired</FormLabel>
+              <FormLabel component='legend'>
+                Once skew checker has expired
+              </FormLabel>
               <RadioGroup
                 aria-label='takeTradeIrrespectiveSkew'
                 name='takeTradeIrrespectiveSkew'
                 value={state.takeTradeIrrespectiveSkew}
                 onChange={() =>
-                  onChange({ takeTradeIrrespectiveSkew: !state.takeTradeIrrespectiveSkew })}
+                  onChange({
+                    takeTradeIrrespectiveSkew: !state.takeTradeIrrespectiveSkew
+                  })
+                }
               >
                 <FormControlLabel
                   value={false}
                   control={<Radio size='small' />}
                   label={
-                    <Typography variant='body2'>Reject trade as skew never converged</Typography>
+                    <Typography variant='body2'>
+                      Reject trade as skew never converged
+                    </Typography>
                   }
                 />
                 <FormControlLabel
                   value
                   control={<Radio size='small' />}
-                  label={<Typography variant='body2'>Enter trade irrespective of skew</Typography>}
+                  label={
+                    <Typography variant='body2'>
+                      Enter trade irrespective of skew
+                    </Typography>
+                  }
                 />
               </RadioGroup>
             </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Exit Strategy</FormLabel>
-              <RadioGroup
-                aria-label='exitStrategy'
-                name='exitStrategy'
-                value={state.exitStrategy}
-                onChange={(e) => onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })}
-              >
-                {exitStrategies.map((exitStrategy) => (
-                  <FormControlLabel
-                    key={exitStrategy}
-                    value={exitStrategy}
-                    control={<Radio size='small' />}
-                    label={
-                      <Typography variant='body2'>
-                        {EXIT_STRATEGIES_DETAILS[exitStrategy].label}
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
-            ? (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailEveryPercentageChangeValue'
-                    value={state.trailEveryPercentageChangeValue}
-                    onChange={(e) => onChange({ trailEveryPercentageChangeValue: +e.target.value || undefined })}
-                    label='Trail SL everytime combined premium decreases by %'
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name='trailingSlPercent'
-                    value={state.trailingSlPercent}
-                    onChange={(e) => onChange({ trailingSlPercent: +e.target.value || undefined })}
-                    label='Trailing SL %'
-                  />
-                </Grid>
-              </>
-              )
-            : null}
-
-          <Grid item xs={12} style={{ marginBottom: '16px' }}>
-            <TextField
-              fullWidth
-              name='slmPercent'
-              value={state.slmPercent}
-              onChange={(e) => onChange({ slmPercent: +e.target.value || undefined })}
-              label={state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ? 'Initial SL %' : 'SL %'}
-            />
-          </Grid>
+          <SlManagerComponent
+            state={state}
+            onChange={onChange}
+            exitStrategies={exitStrategies}
+          />
 
           <HedgeComponent
             volatilityType={state.volatilityType}
@@ -237,50 +223,47 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                       onChange={() =>
                         onChange({
                           isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
-                        })}
+                        })
+                      }
                     />
                   }
                 />
-                {state.isAutoSquareOffEnabled
-                  ? (
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <KeyboardTimePicker
-                        margin='normal'
-                        id='time-picker'
-                        label='Square off time'
-                        value={state.squareOffTime}
-                        onChange={(selectedDate) => {
-                          onChange({ squareOffTime: ensureIST(selectedDate) })
-                        }}
-                        KeyboardButtonProps={{
-                          'aria-label': 'change square off time'
-                        }}
-                      />
-                    </MuiPickersUtilsProvider>
-                    )
-                  : null}
+                {state.isAutoSquareOffEnabled ? (
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <KeyboardTimePicker
+                      margin='normal'
+                      id='time-picker'
+                      label='Square off time'
+                      value={state.squareOffTime}
+                      onChange={selectedDate => {
+                        onChange({ squareOffTime: ensureIST(selectedDate) })
+                      }}
+                      KeyboardButtonProps={{
+                        'aria-label': 'change square off time'
+                      }}
+                    />
+                  </MuiPickersUtilsProvider>
+                ) : null}
               </FormGroup>
             </FormControl>
           </Grid>
 
           <RollbackComponent rollback={state.rollback!} onChange={onChange} />
 
-          {isRunnable
-            ? (
-              <Grid item xs={12}>
-                <Button
-                  variant='contained'
-                  color='secondary'
-                  type='button'
-                  onClick={() => {
-                    onChange({ runNow: true })
-                  }}
-                >
-                  Schedule now
-                </Button>
-              </Grid>
-              )
-            : null}
+          {isRunnable ? (
+            <Grid item xs={12}>
+              <Button
+                variant='contained'
+                color='secondary'
+                type='button'
+                onClick={() => {
+                  onChange({ runNow: true })
+                }}
+              >
+                Schedule now
+              </Button>
+            </Grid>
+          ) : null}
 
           <Grid item xs={12}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -290,7 +273,7 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                 label='Schedule run'
                 value={isSchedulingDisabled ? null : state.runAt}
                 disabled={isSchedulingDisabled}
-                onChange={(selectedDate) => {
+                onChange={selectedDate => {
                   onChange({ runAt: ensureIST(selectedDate) })
                 }}
                 KeyboardButtonProps={{
@@ -312,19 +295,17 @@ const TradeSetupForm = ({ formHeading, strategy = STRATEGIES.ATM_STRADDLE, state
                 ? 'Schedule run'
                 : `Schedule for ${dayjs(state.runAt).format('hh:mma')}`}
             </Button>
-            {!isRunnable
-              ? (
-                <Button
-                  variant='contained'
-                  color='default'
-                  type='button'
-                  onClick={onCancel}
-                  style={{ marginLeft: 8 }}
-                >
-                  Cancel
-                </Button>
-                )
-              : null}
+            {!isRunnable ? (
+              <Button
+                variant='contained'
+                color='default'
+                type='button'
+                onClick={onCancel}
+                style={{ marginLeft: 8 }}
+              >
+                Cancel
+              </Button>
+            ) : null}
           </Grid>
         </Grid>
       </Paper>

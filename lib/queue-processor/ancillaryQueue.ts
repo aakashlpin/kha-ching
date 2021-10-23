@@ -25,7 +25,7 @@ function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
 
 const worker = new Worker(
   ANCILLARY_Q_NAME,
-  async (job) => {
+  async job => {
     try {
       return processJob(job.data)
     } catch (e) {
@@ -39,7 +39,7 @@ const worker = new Worker(
   }
 )
 
-worker.on('error', (err) => {
+worker.on('error', err => {
   // log the error
   console.log('🔴 [ancillaryQueue] worker error', err)
 })

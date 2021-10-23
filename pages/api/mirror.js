@@ -15,7 +15,11 @@ const apiKey = process.env.KITE_API_KEY
 // 2. TRADES_HOST_URL - the trades actually punched on his account
 // 3. SIGNALX_MIRROR_USER_TYPE=CONSUMER
 
-const { SIGNALX_MIRROR_URL, TRADES_HOST_URL, SIGNALX_MIRROR_USER_TYPE } = process.env
+const {
+  SIGNALX_MIRROR_URL,
+  TRADES_HOST_URL,
+  SIGNALX_MIRROR_USER_TYPE
+} = process.env
 
 async function updateStatus (statusCode, ...params) {
   console.log(statusCode, ...params)
@@ -53,14 +57,17 @@ async function orderUpdate (trade, isTestTrade = false) {
     }
 
     const { data: subscribersDetails } = await axios(SIGNALX_MIRROR_URL)
-    const { api_key: subscriberApiKey, access_token: subscriberAccessToken } = subscribersDetails
+    const {
+      api_key: subscriberApiKey,
+      access_token: subscriberAccessToken
+    } = subscribersDetails
 
     const kc =
       subscriberApiKey && subscriberAccessToken
         ? new KiteConnect({
-          api_key: subscriberApiKey,
-          access_token: subscriberAccessToken
-        })
+            api_key: subscriberApiKey,
+            access_token: subscriberAccessToken
+          })
         : null
 
     if (!kc) {
@@ -109,19 +116,22 @@ export default withSession(async (req, res) => {
     apiKey,
     accessToken: user.session.access_token,
     onConnect: () => updateStatus('connect'),
-    onDisconnect: (e) => updateStatus('disconnect', e),
-    onError: (e) => updateStatus('closed_with_error', e),
+    onDisconnect: e => updateStatus('disconnect', e),
+    onError: e => updateStatus('closed_with_error', e),
     onClose: () => updateStatus('clean_close'),
     onReconnect: (...args) => updateStatus('reconnect', ...args),
     onNoReconnect: () => updateStatus('noreconnect'),
-    onOrderUpdate: (trade) => orderUpdate(trade)
+    onOrderUpdate: trade => orderUpdate(trade)
   })
 
   if (req.body?.test_trade) {
-    orderUpdate(testPayload, true)// eslint-disable-line
+    orderUpdate(testPayload, true) // eslint-disable-line
   }
 
-  res.json({ mirrorUrl: SIGNALX_MIRROR_URL, userType: SIGNALX_MIRROR_USER_TYPE })
+  res.json({
+    mirrorUrl: SIGNALX_MIRROR_URL,
+    userType: SIGNALX_MIRROR_USER_TYPE
+  })
 })
 
 const testPayload = {

@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { uniqBy } from 'lodash'
 
 import withSession from '../../lib/session'
-const advancedFormat = require('dayjs/plugin/advancedFormat')
+import advancedFormat from 'dayjs/plugin/advancedFormat'
 dayjs.extend(advancedFormat)
 
 export default withSession(async (req, res) => {
@@ -28,9 +28,11 @@ export default withSession(async (req, res) => {
       return res.json({ error: 'PnL not ready yet!' })
     }
 
-    const uniqueOrders = uniqBy(orders, (order) => order.order_id)
-    const completedOrders = uniqueOrders.filter((order) => order.status === 'COMPLETE')
-    const taggedOrders = completedOrders.filter((order) => order.tag === orderTag)
+    const uniqueOrders = uniqBy(orders, order => order.order_id)
+    const completedOrders = uniqueOrders.filter(
+      order => order.status === 'COMPLETE'
+    )
+    const taggedOrders = completedOrders.filter(order => order.tag === orderTag)
     const pnl = taggedOrders.reduce((accum, order) => {
       const { transaction_type, filled_quantity, average_price } = order
       const transactedAmount = filled_quantity * average_price

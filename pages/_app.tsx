@@ -21,7 +21,7 @@ function MyApp ({ Component, pageProps }) {
     <SWRConfig
       value={{
         fetcher: fetch,
-        onError: (err) => {
+        onError: err => {
           console.error(err)
         }
       }}
@@ -33,8 +33,14 @@ function MyApp ({ Component, pageProps }) {
           name='viewport'
           content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'
         />
-        <meta name='description' content='SignalX is an open source algo trading toolkit for Indian stock markets' />
-        <meta name='keywords' content='algo trading, systematic trading, automation, strategies' />
+        <meta
+          name='description'
+          content='SignalX is an open source algo trading toolkit for Indian stock markets'
+        />
+        <meta
+          name='keywords'
+          content='algo trading, systematic trading, automation, strategies'
+        />
         <title>SignalX | Open source Algo trading toolkit</title>
 
         <link rel='manifest' href='/manifest.json' />

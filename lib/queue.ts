@@ -14,12 +14,19 @@ import {
   ms
 } from './utils'
 
-const redisUrl = `${process.env.REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
-export const TRADING_Q_NAME = 'tradingQueue'
-export const EXIT_TRADING_Q_NAME = 'exitTradingQueue'
-export const AUTO_SQUARE_OFF_Q_NAME = 'autoSquareOffQueue'
-export const WATCHER_Q_NAME = 'watcherQueue'
-export const ANCILLARY_Q_NAME = 'ancillaryQueue'
+const redisUrl = `${process.env
+  .REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
+
+const SIGNALX_API_KEY = process.env.SIGNALX_API_KEY ?? ''
+const KITE_API_KEY = process.env.KITE_API_KEY ?? ''
+
+// just a hack to ensure if someone left a placeholder in env variables
+const QID = SIGNALX_API_KEY.length === 16 ? SIGNALX_API_KEY : KITE_API_KEY
+export const TRADING_Q_NAME = `tradingQueue_${QID}`
+export const EXIT_TRADING_Q_NAME = `exitTradingQueue_${QID}`
+export const AUTO_SQUARE_OFF_Q_NAME = `autoSquareOffQueue_${QID}`
+export const WATCHER_Q_NAME = `watcherQueue_${QID}`
+export const ANCILLARY_Q_NAME = `ancillaryQueue_${QID}`
 export const redisConnection = new IORedis(redisUrl)
 const queueOptions = {
   connection: redisConnection
@@ -30,15 +37,33 @@ const schedulerQueueOptions = {
   maxStalledCount: 0
 }
 
-export const tradingQueueScheduler = new QueueScheduler(TRADING_Q_NAME, schedulerQueueOptions)
+export const tradingQueueScheduler = new QueueScheduler(
+  TRADING_Q_NAME,
+  schedulerQueueOptions
+)
 export const tradingQueue = new Queue(TRADING_Q_NAME, queueOptions)
-export const exitTradesQueueScheduler = new QueueScheduler(EXIT_TRADING_Q_NAME, schedulerQueueOptions)
+export const exitTradesQueueScheduler = new QueueScheduler(
+  EXIT_TRADING_Q_NAME,
+  schedulerQueueOptions
+)
 export const exitTradesQueue = new Queue(EXIT_TRADING_Q_NAME, queueOptions)
-export const autoSquareOffQueueScheduler = new QueueScheduler(AUTO_SQUARE_OFF_Q_NAME, schedulerQueueOptions)
-export const autoSquareOffQueue = new Queue(AUTO_SQUARE_OFF_Q_NAME, queueOptions)
-export const watcherQueueScheduler = new QueueScheduler(WATCHER_Q_NAME, schedulerQueueOptions)
+export const autoSquareOffQueueScheduler = new QueueScheduler(
+  AUTO_SQUARE_OFF_Q_NAME,
+  schedulerQueueOptions
+)
+export const autoSquareOffQueue = new Queue(
+  AUTO_SQUARE_OFF_Q_NAME,
+  queueOptions
+)
+export const watcherQueueScheduler = new QueueScheduler(
+  WATCHER_Q_NAME,
+  schedulerQueueOptions
+)
 export const watcherQueue = new Queue(WATCHER_Q_NAME, queueOptions)
-export const ancillaryQueueScheduler = new QueueScheduler(ANCILLARY_Q_NAME, schedulerQueueOptions)
+export const ancillaryQueueScheduler = new QueueScheduler(
+  ANCILLARY_Q_NAME,
+  schedulerQueueOptions
+)
 export const ancillaryQueue = new Queue(ANCILLARY_Q_NAME, queueOptions)
 
 const allQueues = [
@@ -49,12 +74,18 @@ const allQueues = [
   ancillaryQueue
 ]
 
-export async function addToNextQueue (jobData, jobResponse): Promise<Job | undefined> {
+export async function addToNextQueue (
+  jobData,
+  jobResponse
+): Promise<Job | undefined> {
   try {
     switch (jobResponse._nextTradingQueue) {
       case ANCILLARY_Q_NAME: {
         // console.log('Adding job to ancillary queue', jobData, jobResponse)
-        const marketClosing = dayjs().set('hours', 15).set('minutes', 30).set('seconds', 0)
+        const marketClosing = dayjs()
+          .set('hours', 15)
+          .set('minutes', 30)
+          .set('seconds', 0)
         return ancillaryQueue.add(
           `${ANCILLARY_Q_NAME}_${uuidv4() as string}`,
           {
@@ -87,7 +118,9 @@ export async function addToNextQueue (jobData, jobResponse): Promise<Job | undef
 
       case EXIT_TRADING_Q_NAME: {
         // console.log('Adding job to exit trade queue', jobData)
-        const queueOptions = getQueueOptionsForExitStrategy(jobData.exitStrategy)
+        const queueOptions = getQueueOptionsForExitStrategy(
+          jobData.exitStrategy
+        )
         return exitTradesQueue.add(
           `${EXIT_TRADING_Q_NAME}_${uuidv4() as string}`,
           {
@@ -114,7 +147,11 @@ export async function addToNextQueue (jobData, jobResponse): Promise<Job | undef
           queueOptions.delay = delay
         }
 
-        return tradingQueue.add(`${TRADING_Q_NAME}_${uuidv4() as string}`, jobData, queueOptions)
+        return tradingQueue.add(
+          `${TRADING_Q_NAME}_${uuidv4() as string}`,
+          jobData,
+          queueOptions
+        )
       }
 
       default: {
@@ -127,7 +164,10 @@ export async function addToNextQueue (jobData, jobResponse): Promise<Job | undef
   }
 }
 
-export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) {
+export async function addToAutoSquareOffQueue ({
+  initialJobData,
+  jobResponse
+}) {
   const {
     autoSquareOffProps: { time, deletePendingOrders }
   } = initialJobData
@@ -136,8 +176,8 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   const runAtTime = isMockOrder()
     ? time
     : dayjs(time).isAfter(dayjs(finalOrderTime))
-      ? finalOrderTime
-      : time
+    ? finalOrderTime
+    : time
 
   const delay = dayjs(runAtTime).diff(dayjs())
   // console.log(`>>> auto square off scheduled for ${Math.ceil(delay / 60000)} minutes from now`)
@@ -154,4 +194,5 @@ export async function addToAutoSquareOffQueue ({ initialJobData, jobResponse }) 
   )
 }
 
-export const cleanupQueues = async () => await Promise.all(allQueues.map(async queue => await queue.obliterate()))
+export const cleanupQueues = async () =>
+  await Promise.all(allQueues.map(async queue => await queue.obliterate()))
