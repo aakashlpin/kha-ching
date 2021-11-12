@@ -22,6 +22,21 @@ export interface INSTRUMENT_PROPERTIES {
   freezeQty: number
 }
 
+export interface KITE_INSTRUMENT_INFO {
+  exchange: string // "NFO"
+  exchange_token: string // "36320"
+  expiry: string // "2021-10-28"
+  instrument_token: string // "9297922"
+  instrument_type: string // "CE"
+  last_price: string // "0"
+  lot_size: string // "50"
+  name: string // "NIFTY"
+  segment: string // "NFO-OPT"
+  strike: string // "17350"
+  tick_size: string // "0.05"
+  tradingsymbol: string // "NIFTY21OCT17350CE"
+}
+
 export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
   [INSTRUMENTS.NIFTY]: {
     lotSize: 50,
@@ -86,6 +101,18 @@ export enum VOLATILITY_TYPE {
   SHORT = 'SHORT'
 }
 
+export enum EXPIRY_TYPE {
+  CURRENT = 'CURRENT',
+  NEXT = 'NEXT',
+  MONTHLY = 'MONTHLY'
+}
+
+export const EXPIRY_TYPE_HUMAN = {
+  [EXPIRY_TYPE.CURRENT]: 'Current weekly',
+  [EXPIRY_TYPE.NEXT]: 'Next weekly',
+  [EXPIRY_TYPE.MONTHLY]: 'Current Monthly'
+}
+
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES'
@@ -136,6 +163,7 @@ export const STRATEGIES_DETAILS = {
       trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -173,6 +201,7 @@ export const STRATEGIES_DETAILS = {
       deltaStrikes: 20,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       slOrderType: SL_ORDER_TYPE.SLL,
@@ -214,6 +243,7 @@ export const STRATEGIES_DETAILS = {
       martingaleIncrementSize: 1,
       isHedgeEnabled: true,
       productType: PRODUCT_TYPE.MIS,
+      expiryType: EXPIRY_TYPE.CURRENT,
       hedgeDistance: 2000,
       entryStrategy: DOS_ENTRY_STRATEGIES.FIXED_TIME,
       exitStrategy: EXIT_STRATEGIES.MIN_XPERCENT_OR_SUPERTREND,

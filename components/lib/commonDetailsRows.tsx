@@ -20,7 +20,8 @@ const CommonDetailsRows = ({
   volatilityType,
   liveTrailingSl,
   lastTrailingSlSetAt,
-  lastHeartbeatAt
+  lastHeartbeatAt,
+  expiryType
 }) => {
   const getAlgoStatus = useCallback(
     () =>
@@ -55,6 +56,8 @@ const CommonDetailsRows = ({
   return [
     volatilityType ? [{ value: 'Vol type' }, { value: volatilityType }] : null,
     productType ? [{ value: 'Product' }, { value: productType }] : null,
+    expiryType ? [{ value: 'Expiry' }, { value: expiryType }] : null,
+
     [
       { value: 'Exit Strategy' },
       { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }
