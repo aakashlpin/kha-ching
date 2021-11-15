@@ -1398,8 +1398,9 @@ export const convertSllToMarketOrder = async (
   order: KiteOrder
 ): Promise<void> => {
   // ensure order is not in complete state
-  const completedOrder = await getOrderHistory(kite, order.order_id!)
+  const completedOrder = await getCompletedOrderFromOrderHistoryById(kite, order.order_id!)
   if (completedOrder) {
+    console.log(`order #${order.order_id} convertSllToMarketOrder already completed`)
     return
   }
   return withRemoteRetry(() =>

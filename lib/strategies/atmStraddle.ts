@@ -5,6 +5,7 @@ import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import {
   EXPIRY_TYPE,
+  EXIT_STRATEGIES,
   INSTRUMENT_DETAILS,
   INSTRUMENT_PROPERTIES,
   PRODUCT_TYPE,
@@ -218,6 +219,7 @@ async function atmStraddle (
     isAutoSquareOffEnabled,
     isHedgeEnabled,
     hedgeDistance,
+    exitStrategy,
     productType = PRODUCT_TYPE.MIS,
     volatilityType = VOLATILITY_TYPE.SHORT,
     expiryType = EXPIRY_TYPE.CURRENT,
@@ -353,13 +355,25 @@ async function atmStraddle (
       throw Error('rolled back on onBrokenPrimaryOrders')
     }
 
-    // all hedges are enabled, turn on auto square off on those positions
-    if (isAutoSquareOffEnabled && hedgeOrders.length) {
-      await addToAutoSquareOffQueue({
-        squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
-        jobResponse: { rawKiteOrdersResponse: hedgeOrders },
-        initialJobData: jobData
-      })
+    if (isAutoSquareOffEnabled) {
+      if (exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD) {
+        await addToAutoSquareOffQueue({
+          squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+          jobResponse: { rawKiteOrdersResponse: allOrders },
+          initialJobData: jobData
+        })
+      } else {
+        // if hedges are enabled,
+        // turn on auto square off on those positions
+        // as they won't have SL orders
+        if (hedgeOrders.length) {
+          await addToAutoSquareOffQueue({
+            squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+            jobResponse: { rawKiteOrdersResponse: hedgeOrders },
+            initialJobData: jobData
+          })
+        }
+      }
     }
 
     return {

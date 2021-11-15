@@ -14,6 +14,7 @@ import {
   getQueueOptionsForExitStrategy,
   getTimeLeftInMarketClosingMs,
   isMockOrder,
+  logDeep,
   ms
 } from './utils'
 
@@ -190,14 +191,20 @@ export async function addToAutoSquareOffQueue ({
     : time
 
   const delay = dayjs(runAtTime).diff(dayjs())
-  // console.log(`>>> auto square off scheduled for ${Math.ceil(delay / 60000)} minutes from now`)
+  console.log(
+    `>>> auto square off scheduled for ${Math.ceil(
+      delay / 60000
+    )} minutes from now`
+  )
+  const queueProps = {
+    squareOffType,
+    rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
+    initialJobData
+  }
+  logDeep(queueProps)
   return autoSquareOffQueue.add(
     `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
-    {
-      squareOffType,
-      rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
-      initialJobData
-    },
+    queueProps,
     {
       delay
     }
