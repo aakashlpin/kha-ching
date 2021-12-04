@@ -1,6 +1,7 @@
 import { ATM_STRANGLE_TRADE } from '../../types/trade'
 import {
   ERROR_STRINGS,
+  EXPIRY_TYPE,
   INSTRUMENTS,
   INSTRUMENT_DETAILS,
   PRODUCT_TYPE,
@@ -13,7 +14,7 @@ import {
   apiResponseObject,
   attemptBrokerOrders,
   ensureMarginForBasketOrder,
-  getCurrentExpiryTradingSymbol,
+  getExpiryTradingSymbol,
   getHedgeForStrike,
   getIndexInstruments,
   getStrikeByDelta,
@@ -54,7 +55,8 @@ const getStrangleStrikes = async ({
   inverted = false,
   entryStrategy,
   distanceFromAtm = 1,
-  deltaStrikes
+  deltaStrikes,
+  expiryType
 }: {
   atmStrike: number
   instrument: INSTRUMENTS
@@ -62,6 +64,7 @@ const getStrangleStrikes = async ({
   entryStrategy: STRANGLE_ENTRY_STRATEGIES
   distanceFromAtm?: number
   deltaStrikes?: number
+  expiryType?: EXPIRY_TYPE
 }) => {
   const { nfoSymbol, strikeStepSize } = INSTRUMENT_DETAILS[instrument]
 
@@ -106,21 +109,21 @@ const getStrangleStrikes = async ({
     higherLegCEStrike = atmStrike + distanceFromAtm * strikeStepSize
   }
 
-  const {
-    tradingsymbol: LOWER_LEG_PE_STRING
-  } = (await getCurrentExpiryTradingSymbol({
+  const { tradingsymbol: LOWER_LEG_PE_STRING } = (await getExpiryTradingSymbol({
     nfoSymbol,
     strike: lowerLegPEStrike,
-    instrumentType: 'PE'
+    instrumentType: 'PE',
+    expiry: expiryType
   })) as TradingSymbolInterface
 
-  const {
-    tradingsymbol: HIGHER_LEG_CE_STRING
-  } = (await getCurrentExpiryTradingSymbol({
-    nfoSymbol,
-    strike: higherLegCEStrike,
-    instrumentType: 'CE'
-  })) as TradingSymbolInterface
+  const { tradingsymbol: HIGHER_LEG_CE_STRING } = (await getExpiryTradingSymbol(
+    {
+      nfoSymbol,
+      strike: higherLegCEStrike,
+      instrumentType: 'CE',
+      expiry: expiryType
+    }
+  )) as TradingSymbolInterface
 
   const PE_STRING = !inverted
     ? LOWER_LEG_PE_STRING
@@ -153,6 +156,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       distanceFromAtm = 1,
       productType = PRODUCT_TYPE.MIS,
       volatilityType = VOLATILITY_TYPE.SHORT,
+      expiryType,
       _nextTradingQueue = EXIT_TRADING_Q_NAME
     } = args
     const {
@@ -176,7 +180,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       underlyingSymbol,
       exchange,
       nfoSymbol,
-      strikeStepSize
+      strikeStepSize,
+      expiryType
     } as any)
 
     const {
@@ -190,7 +195,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       inverted,
       distanceFromAtm,
       entryStrategy,
-      deltaStrikes
+      deltaStrikes,
+      expiryType
     })
 
     const kite = syncGetKiteInstance(user)
@@ -210,7 +216,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
             strike,
             distance: hedgeDistance!,
             type,
-            nfoSymbol
+            nfoSymbol,
+            expiryType
           })
         )
       )
