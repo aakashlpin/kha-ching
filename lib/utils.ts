@@ -32,9 +32,9 @@ const MOCK_ORDERS = process.env.MOCK_ORDERS
   : false
 export const SIGNALX_URL =
   process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
-// const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
-// const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
-// const DATABASE_API_KEY = process.env.DATABASE_API_KEY
+const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
+const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
+const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 const KITE_API_KEY = process.env.KITE_API_KEY
 const ORCL_HOST_URL=process.env.ORCL_HOST_URL
 export const dayparam=dayjs().format('YYYYMMDD') // This will be helfpul to delete earlier daily plans
@@ -725,17 +725,17 @@ export async function premiumAuthCheck (): Promise<any> {
   )
 }
 
-// export const SIGNALX_AXIOS_DB_AUTH = {
-//   headers: {
-//     'x-api-key': DATABASE_API_KEY
-//   }
-// }
+export const SIGNALX_AXIOS_DB_AUTH = {
+  headers: {
+    'x-api-key': DATABASE_API_KEY
+  }
+}
 export const orclsodaUrl: string = `${ORCL_HOST_URL as string
 }/soda/latest`
 
-// export const baseTradeUrl = `${withoutFwdSlash(
-//   DATABASE_HOST_URL as string
-// )}/day_${DATABASE_USER_KEY as string}`
+export const baseTradeUrl = `${withoutFwdSlash(
+  DATABASE_HOST_URL as string
+)}/day_${DATABASE_USER_KEY as string}`
 
 export const isMockOrder = () =>
   process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
