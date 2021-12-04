@@ -1,13 +1,10 @@
-# Adam Grimes
+### List of tables in OracleDB
 
-- A range that breaks out in the continuation of the trend, is not as exciting
-  as a range that breaks out opposite to the trend - as that leads to a more sharper fallout
-
-- Ranges can expand without breaking
-
-- Consolidation against the range sets up failure
-
-  - Bouncing ball pattern near S/R levels,
-  - Multiple tests weaken the range.
-
-- Most ranges are continuation ranges - we expect trends to continue
+1. Trades: Stores executed transactions
+2. ACCESS_TOKENS: Stores tokens for each day so that it's not requeried
+3. dailyplan: This is a collection in SODA. This can be queried using `SELECT * FROM USER_SODA_COLLECTIONS`
+Stores the daily executed plans. Can be queried using SODA: ords/signalx/soda/latest/dailyplan. Sysdate -2 trades would be deleted at the EOD. SQL Query: `select json_query(json_document,'$' PRETTY),id
+from dailyplan . CREATE_TRADES procedure deletes the older trades`
+4. trade_plans : SODA_COLLECTION Stores the plans for each day.Can be queried using REST `ords/signalx/soda/latest/trade_plans/`
+Add the filter condition to query based on day `?q={"collection" : { "$eq" : "tuesday" } }`
+5. dailyProfits: View showing the profits for each strategy per day
