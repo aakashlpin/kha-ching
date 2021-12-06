@@ -8,8 +8,10 @@ import { allSettled, allSettledInterface } from './es6-promise'
 import {
   ERROR_STRINGS,
   EXIT_STRATEGIES,
+  EXPIRY_TYPE,
   INSTRUMENTS,
   INSTRUMENT_DETAILS,
+  KITE_INSTRUMENT_INFO,
   STRATEGIES,
   USER_OVERRIDE
 } from './constants'
@@ -43,7 +45,9 @@ export const logDeep = object => console.log(JSON.stringify(object, null, 2))
 
 export const ms = seconds => seconds * 1000
 
-const asyncGetIndexInstruments = (exchange = 'NFO') =>
+const asyncGetIndexInstruments = (
+  exchange = 'NFO'
+): Promise<KITE_INSTRUMENT_INFO[]> =>
   new Promise((resolve, reject) => {
     const filename = `instrument_${new Date().getTime()}.csv`
     const file = fs.createWriteStream(filename)
@@ -106,14 +110,77 @@ export const getMisOrderLastSquareOffTime = () =>
     .set('seconds', 0)
     .format()
 
-export interface TradingSymbolInterface {
-  tradingsymbol: string
-  instrument_token: string
-  strike: string
-}
+export type TradingSymbolInterface = KITE_INSTRUMENT_INFO
 export interface StrikeInterface {
   PE_STRING: string
   CE_STRING: string
+}
+
+const getSortedMatchingIntrumentsData = async ({
+  nfoSymbol,
+  strike,
+  instrumentType,
+  tradingsymbol
+}: {
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  tradingsymbol?: string
+}): Promise<KITE_INSTRUMENT_INFO[]> => {
+  const instrumentsData = await getIndexInstruments()
+  const rows: KITE_INSTRUMENT_INFO[] = instrumentsData
+    .filter(
+      item =>
+        (nfoSymbol ? item.name === nfoSymbol : true) &&
+        (strike ? item.strike == strike : true) && // eslint-disable-line
+        (tradingsymbol ? item.tradingsymbol === tradingsymbol : true) &&
+        (instrumentType ? item.instrument_type === instrumentType : true)
+    )
+    .sort((row1, row2) =>
+      dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
+    )
+  return rows
+}
+
+export const getExpiryTradingSymbol = async ({
+  nfoSymbol,
+  strike,
+  instrumentType,
+  tradingsymbol,
+  expiry = EXPIRY_TYPE.CURRENT
+}: {
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  tradingsymbol?: string
+  expiry?: EXPIRY_TYPE
+}): Promise<TradingSymbolInterface | StrikeInterface | null> => {
+  console.log('Fetching trading symbol for expiry type: ', expiry)
+  switch (expiry) {
+    case EXPIRY_TYPE.MONTHLY:
+      return getMonthlyExpiryTradingSymbol({
+        nfoSymbol,
+        strike,
+        instrumentType,
+        tradingsymbol
+      })
+
+    case EXPIRY_TYPE.NEXT:
+      return getNextExpiryTradingSymbol({
+        nfoSymbol,
+        strike,
+        instrumentType,
+        tradingsymbol
+      })
+
+    default:
+      return getCurrentExpiryTradingSymbol({
+        nfoSymbol,
+        strike,
+        instrumentType,
+        tradingsymbol
+      })
+  }
 }
 
 export const getCurrentExpiryTradingSymbol = async ({
@@ -127,29 +194,117 @@ export const getCurrentExpiryTradingSymbol = async ({
   instrumentType?: string
   tradingsymbol?: string
 }): Promise<TradingSymbolInterface | StrikeInterface | null> => {
-  const instrumentsData = await getIndexInstruments()
-  const rows = instrumentsData
-    .filter(
-      item =>
-        (nfoSymbol ? item.name === nfoSymbol : true) &&
-        (strike ? item.strike == strike : true) && // eslint-disable-line
-        (tradingsymbol ? item.tradingsymbol === tradingsymbol : true) &&
-        (instrumentType ? item.instrument_type === instrumentType : true)
-    )
-    .sort((row1, row2) =>
-      dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
-    )
+  const rows = await getSortedMatchingIntrumentsData({
+    nfoSymbol,
+    strike,
+    instrumentType,
+    tradingsymbol
+  })
 
   if (instrumentType) {
     return rows.length ? rows[0] : null
   }
-
+  // get first two entries for current expiry
   const relevantRows = rows.slice(0, 2)
 
-  const peStrike = relevantRows.find(item => item.instrument_type === 'PE')
-    .tradingsymbol
-  const ceStrike = relevantRows.find(item => item.instrument_type === 'CE')
-    .tradingsymbol
+  const peStrike = relevantRows?.find(item => item.instrument_type === 'PE')
+    ?.tradingsymbol
+  const ceStrike = relevantRows?.find(item => item.instrument_type === 'CE')
+    ?.tradingsymbol
+
+  if (!peStrike || !ceStrike) return null
+
+  return {
+    PE_STRING: peStrike,
+    CE_STRING: ceStrike
+  }
+}
+
+export const getNextExpiryTradingSymbol = async ({
+  nfoSymbol,
+  strike,
+  instrumentType,
+  tradingsymbol
+}: {
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  tradingsymbol?: string
+}): Promise<TradingSymbolInterface | StrikeInterface | null> => {
+  const rows = await getSortedMatchingIntrumentsData({
+    nfoSymbol,
+    strike,
+    instrumentType,
+    tradingsymbol
+  })
+
+  if (instrumentType) {
+    return rows.length ? rows[1] : null
+  }
+  // first two entries are CE and PE for current week. So taking the next two items here
+  const relevantRows = rows.slice(2, 4)
+
+  const peStrike = relevantRows?.find(item => item.instrument_type === 'PE')
+    ?.tradingsymbol
+  const ceStrike = relevantRows?.find(item => item.instrument_type === 'CE')
+    ?.tradingsymbol
+
+  if (!peStrike || !ceStrike) return null
+
+  return {
+    PE_STRING: peStrike,
+    CE_STRING: ceStrike
+  }
+}
+
+export const getMonthlyExpiryTradingSymbol = async ({
+  nfoSymbol,
+  strike,
+  instrumentType,
+  tradingsymbol
+}: {
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  tradingsymbol?: string
+}): Promise<TradingSymbolInterface | StrikeInterface | null> => {
+  const instrumentsData = await getSortedMatchingIntrumentsData({
+    nfoSymbol,
+    strike,
+    instrumentType,
+    tradingsymbol
+  })
+
+  // get current calendar month expiries
+  let rows = instrumentsData.filter(
+    item => dayjs().get('month') === dayjs(item.expiry).get('month')
+  )
+
+  // // get next calendar month expiries
+  if (!rows.length) {
+    const month = dayjs().get('month') === 11 ? 0 : dayjs().get('month') // to handle December current year & Jan next year cases
+    rows = instrumentsData.filter(
+      item => dayjs(item.expiry).get('month') === month
+    )
+  }
+  rows = rows.sort((row1, row2) =>
+    dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
+  )
+
+  const rowsLength = rows.length
+
+  if (instrumentType) {
+    return rows.length ? rows[rowsLength - 1] : null
+  }
+  // get last two entries for monthly expiry
+  const relevantRows = rows.slice(rowsLength - 2, rowsLength)
+
+  const peStrike = relevantRows?.find(item => item.instrument_type === 'PE')
+    ?.tradingsymbol
+  const ceStrike = relevantRows?.find(item => item.instrument_type === 'CE')
+    ?.tradingsymbol
+
+  if (!peStrike || !ceStrike) return null
 
   return {
     PE_STRING: peStrike,
@@ -585,6 +740,7 @@ interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
   pivotStrike: number
   user: SignalXUser
   greaterThanEqualToPrice?: boolean
+  expiry?: EXPIRY_TYPE
 }
 
 interface GET_LTP_ARGS {
@@ -647,7 +803,8 @@ export const getTradingSymbolsByOptionPrice = async ({
   instrumentType,
   pivotStrike,
   user,
-  greaterThanEqualToPrice = false
+  greaterThanEqualToPrice = false,
+  expiry = EXPIRY_TYPE.CURRENT
 }: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE) => {
   const kite = syncGetKiteInstance(user)
   const totalStrikes = 31 // pivot and 15 on each side
@@ -664,10 +821,11 @@ export const getTradingSymbolsByOptionPrice = async ({
     .sort((a, b) => a - b)
 
   const instruments = await Promise.map(strikes, async strike => {
-    const { tradingsymbol } = (await getCurrentExpiryTradingSymbol({
+    const { tradingsymbol } = (await getExpiryTradingSymbol({
       nfoSymbol,
       strike,
-      instrumentType
+      instrumentType,
+      expiry
     })) as TradingSymbolInterface
 
     return {
@@ -1204,19 +1362,22 @@ export const getHedgeForStrike = async ({
   strike,
   distance,
   type,
-  nfoSymbol
+  nfoSymbol,
+  expiryType = EXPIRY_TYPE.CURRENT
 }: {
   strike: number
   distance: number
   type: string
   nfoSymbol: string
+  expiryType: EXPIRY_TYPE
 }): Promise<string> => {
   const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
 
-  const { tradingsymbol } = (await getCurrentExpiryTradingSymbol({
+  const { tradingsymbol } = (await getExpiryTradingSymbol({
     nfoSymbol,
     strike: hedgeStrike,
-    instrumentType: type
+    instrumentType: type,
+    expiry: expiryType
   })) as TradingSymbolInterface
 
   return tradingsymbol

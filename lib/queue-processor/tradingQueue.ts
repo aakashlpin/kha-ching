@@ -22,6 +22,7 @@ async function processJob (job: Job) {
     data,
     data: { strategy }
   } = job
+  console.log(`[job processing] Beginning job processing for ${strategy}`)
   switch (strategy) {
     case STRATEGIES.ATM_STRADDLE: {
       return atmStraddle(data)

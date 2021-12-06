@@ -132,7 +132,7 @@ async function individualLegExitOrders ({
     throw Error('rolled back onBrokenExitOrders')
   }
 
-  if (slOrderType === SL_ORDER_TYPE.SLL && isUntestedFeaturesEnabled()) {
+  if (slOrderType === SL_ORDER_TYPE.SLL) {
     const watcherQueueJobs = statefulOrders.map(async exitOrder => {
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
