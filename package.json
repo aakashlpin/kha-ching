@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
-    "start": "node ./bootup.js & TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080} --max-old-space-size=404",
+    "start": "node ./bootup.js & TZ=Asia/Kolkata next start -H 0.0.0.0 -p ${PORT:-8080} --max-old-space-size=1024",
     "lint": "next lint --quiet",
     "test": "jest ./__tests__ --testPathIgnorePatterns support/*",
     "unit-test": "jest ./__tests__/unit --detectOpenHandles",
