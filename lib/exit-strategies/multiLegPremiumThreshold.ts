@@ -44,19 +44,14 @@ import {
 
 import { doSquareOffPositions } from './autoSquareOff'
 
-const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
-  try {
-    await patchDbTrade({
-      _id: dbId,
-      patchProps: {
-        liveTrailingSl: trailingSl,
-        lastTrailingSlSetAt: dayjs().format()
-      }
-    })
-  } catch (e) {
-    console.log('🔴 [patchTradeWithTrailingSL] error', e)
-  }
-}
+const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) =>
+  await patchDbTrade({
+    _id: dbId,
+    patchProps: {
+      liveTrailingSl: trailingSl,
+      lastTrailingSlSetAt: dayjs().format()
+    }
+  })
 
 const tradeHeartbeat = async dbId => {
   const data = await patchDbTrade({

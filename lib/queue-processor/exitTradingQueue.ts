@@ -66,7 +66,7 @@ const worker = new Worker(
       const exitOrders = await processJob(job.data)
       return exitOrders
     } catch (e) {
-      console.log(e.message ? e.message : e)
+      // console.log(e.message ? e.message : e)
       throw new Error(e)
     }
   },
