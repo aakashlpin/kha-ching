@@ -58,7 +58,7 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     strikeStepSize: 100,
     // [27501-40000]
     // freezeQty: 100
-    freezeQty: 1200
+    freezeQty: 75
   },
   [INSTRUMENTS.FINNIFTY]: {
     lotSize: 40,
