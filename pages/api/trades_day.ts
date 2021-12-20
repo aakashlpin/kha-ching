@@ -6,6 +6,7 @@ import { customAlphabet } from 'nanoid'
 import { tradingQueue, addToNextQueue, TRADING_Q_NAME } from '../../lib/queue'
 
 import { ERROR_STRINGS, STRATEGIES_DETAILS } from '../../lib/constants'
+import { EXIT_STRATEGIES } from '../../lib/constants'
 import console from '../../lib/logging'
 
 import withSession from '../../lib/session'
@@ -64,6 +65,19 @@ async function createJob ({
     return Promise.reject(
       new Error('Exchange would be offline at the scheduled time.')
     )
+  }
+
+  if (jobData.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD) {
+    if (
+      process.env.DISABLE_COMBINED_PREMIUM &&
+      JSON.parse(process.env.DISABLE_COMBINED_PREMIUM)
+    ) {
+      return Promise.reject(
+        new Error(
+          'Combined SL is temporarily unavailable due to server issues.'
+        )
+      )
+    }
   }
 
   return addToNextQueue(
