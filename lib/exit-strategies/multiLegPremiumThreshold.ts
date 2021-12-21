@@ -39,7 +39,8 @@ import {
   syncGetKiteInstance,
   withRemoteRetry,
   patchDbTrade,
-  getMultipleInstrumentPrices
+  getMultipleInstrumentPrices,
+  logDeep
 } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
@@ -275,13 +276,13 @@ async function multiLegPremiumThreshold ({
           legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
         )
       )
-      // console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
+      console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
       const bringToCostOrders = winningLegs.map(winningLeg =>
         legsOrders.find(
           legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol
         )
       )
-      // console.log('bringToCostOrders', logDeep(bringToCostOrders))
+      console.log('bringToCostOrders', logDeep(bringToCostOrders))
       // 1. square off losing legs
       await doSquareOffPositions(
         squareOffLosingLegs as KiteOrder[],
