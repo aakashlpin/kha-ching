@@ -3,9 +3,9 @@ spec:
   services:
   - name: web
     github:
-      repo: aakashlpin/kha-ching
+      repo: anil1kuppa/kha-ching
       branch: master
-      deploy_on_push: true
+      deploy_on_push: false
     build_command: yarn build
     run_command: yarn start
     envs:
@@ -22,22 +22,16 @@ spec:
     - key: NEXT_PUBLIC_DEFAULT_SKEW_PERCENT
       value: "10"
     - key: NEXT_PUBLIC_DEFAULT_SLM_PERCENT
-      value: "50"
+      value: "30"
     - key: NEXT_PUBLIC_DEFAULT_SQUARE_OFF_TIME
       value: "15:20"
     - key: SIGNALX_API_KEY
       value: "Your SignalX API Key"
-    - key: DATABASE_HOST_URL
-      value: ""
-    - key: DATABASE_USER_KEY
-      value: ""
-    - key: DATABASE_API_KEY
-      value: ""
+    - key: ORCL_HOST_URL
+      value: "Your ORCL host key"
     - key: NEXT_PUBLIC_APP_URL
       value: ${APP_URL}
     - key: NEXT_PUBLIC_GIT_HASH
       value: ${_self.COMMIT_HASH}
     - key: MOCK_ORDERS
       value: "false"
-    - key: ORCL_HOST_URL
-       value: ""
