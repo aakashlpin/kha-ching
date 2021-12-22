@@ -867,7 +867,7 @@ export async function premiumAuthCheck (): Promise<any> {
   )
 }
 
-export const orclsodaUrl: string = `${ORCL_HOST_URL}/soda/latest`
+export const orclsodaUrl = `${ORCL_HOST_URL}/soda/latest`
 
 export const isMockOrder = () =>
   process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false
