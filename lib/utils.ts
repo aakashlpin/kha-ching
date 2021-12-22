@@ -34,9 +34,6 @@ const MOCK_ORDERS = process.env.MOCK_ORDERS
   : false
 export const SIGNALX_URL =
   process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
-const DATABASE_HOST_URL = process.env.DATABASE_HOST_URL
-const DATABASE_USER_KEY = process.env.DATABASE_USER_KEY
-const DATABASE_API_KEY = process.env.DATABASE_API_KEY
 const KITE_API_KEY = process.env.KITE_API_KEY
 const ORCL_HOST_URL=process.env.ORCL_HOST_URL
 export const dayparam=dayjs().format('YYYYMMDD') // This will be helfpul to delete earlier daily plans
@@ -1268,16 +1265,11 @@ export const patchDbTrade = async ({
   patchProps
 }: {
   id: string
-  patchProps: object
-}): Promise<object> => {
-  //const endpoint = `${baseTradeUrl}/${_id}`
+  patchProps: Record<string, unknown>
+}): Promise<Record<string, unknown>> => {
   const endpoint = `${orclsodaUrl}/dailyplan/${id}`
 
   const { data } = await axios(endpoint)
-  // console.log('Data printed in patchDbTrade')
-  // logDeep(data);
-  // console.log('patchProps printed in patchDbTrade')
-  // logDeep(patchProps);
   await axios.put(
     endpoint,
     {
