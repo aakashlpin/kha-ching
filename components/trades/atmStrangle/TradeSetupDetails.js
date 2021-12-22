@@ -17,6 +17,7 @@ const Details = args => {
     inverted,
     entryStrategy,
     deltaStrikes,
+    percentfromAtm,
     distanceFromAtm
   } = args
 
@@ -40,7 +41,9 @@ const Details = args => {
         ],
         entryStrategy === STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES
           ? [{ value: 'Strikes delta' }, { value: deltaStrikes }]
-          : [{ value: 'Distance from ATM' }, { value: distanceFromAtm }],
+          : entryStrategy === STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM?
+          [{ value: 'Percent from ATM' }, { value: percentfromAtm }]:
+          [{ value: 'Distance from ATM' }, { value: distanceFromAtm }],
         ...commonDetailsRows(args)
       ]}
     />

@@ -110,7 +110,6 @@ const getStrangleStrikes = async ({
   {
     lowerLegPEStrike =  Math.round((1-(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
     higherLegCEStrike = Math.round((1+(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
-
   }
   else
   {

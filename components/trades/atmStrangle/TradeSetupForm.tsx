@@ -187,7 +187,7 @@ const TradeSetupForm = ({
               onChange={(e) =>
                 onChange({ percentfromAtm:  +e.target.value || undefined })
               }
-              label='Percent Away from ATM%'
+              label='Percent from ATM%'
             />)}
           </Grid>
 

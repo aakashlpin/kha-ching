@@ -222,6 +222,9 @@ export const STRATEGIES_DETAILS = {
       },
       [STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES]: {
         label: 'by option strike delta from live option chain ⚡️'
+      },
+      [STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM]: {
+        label: 'by percent from ATM%'
       }
     }
   },
