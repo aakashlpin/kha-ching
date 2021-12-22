@@ -4,7 +4,6 @@ import { uniq } from 'lodash'
 
 import withSession from '../../lib/session'
 import {
-  SIGNALX_AXIOS_DB_AUTH,
   syncGetKiteInstance,
   withoutFwdSlash
 } from '../../lib/utils'
@@ -37,8 +36,7 @@ export default withSession(async (req, res) => {
       await axios.delete(
         `${withoutFwdSlash(
           DATABASE_HOST_URL!
-        )}/odr_${DATABASE_USER_KEY!}/${order.collection!}/${order._id as string}`,
-        SIGNALX_AXIOS_DB_AUTH
+        )}/odr_${DATABASE_USER_KEY!}/${order.collection!}/${order._id as string}`
       )
     }
 
@@ -52,8 +50,7 @@ export default withSession(async (req, res) => {
       {
         ...newDbOrder,
         tag: orderTag
-      },
-      SIGNALX_AXIOS_DB_AUTH
+      }
     )
 
     return res.json(updatedRes)

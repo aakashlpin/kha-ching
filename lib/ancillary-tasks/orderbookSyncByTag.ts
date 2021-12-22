@@ -2,7 +2,6 @@ import axios from 'axios'
 import { SignalXUser } from '../../types/misc'
 
 import {
-  //SIGNALX_AXIOS_DB_AUTH,
   syncGetKiteInstance,
   withRemoteRetry
 } from '../utils'

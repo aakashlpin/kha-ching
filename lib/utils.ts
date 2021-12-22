@@ -586,9 +586,6 @@ export const getLastOpenDateSince = (from: Dayjs) => {
 }
 
 export const checkHasSameAccessToken = async (accessToken: string) => {
-  // const ACCESS_TOKEN_URL = `${withoutFwdSlash(
-  //   DATABASE_HOST_URL as string
-  // )}/pvt_${DATABASE_USER_KEY as string}/tokens?limit=1`
   try {
     // const {
     //   data: [token]
@@ -606,17 +603,7 @@ const { access_token: dbAccessToken } = item
 }
 
 export const storeAccessTokenRemotely = async accessToken => {
-  // const ACCESS_TOKEN_URL = `${withoutFwdSlash(
-  //   DATABASE_HOST_URL as string
-  // )}/pvt_${DATABASE_USER_KEY as string}/tokens`
    try {
-  //   await axios.post(
-  //     ACCESS_TOKEN_URL,
-  //     {
-  //       access_token: accessToken
-  //     },
-  //     SIGNALX_AXIOS_DB_AUTH
-  //   )
    await axios.post(
       `${ORCL_HOST_URL}/rest-v1/access_tokens`,
       {
@@ -883,17 +870,8 @@ export async function premiumAuthCheck (): Promise<any> {
   )
 }
 
-export const SIGNALX_AXIOS_DB_AUTH = {
-  headers: {
-    'x-api-key': DATABASE_API_KEY
-  }
-}
 export const orclsodaUrl: string = `${ORCL_HOST_URL as string
 }/soda/latest`
-
-export const baseTradeUrl = `${withoutFwdSlash(
-  DATABASE_HOST_URL as string
-)}/day_${DATABASE_USER_KEY as string}`
 
 export const isMockOrder = () =>
   process.env.MOCK_ORDERS ? JSON.parse(process.env.MOCK_ORDERS) : false

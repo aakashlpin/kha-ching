@@ -10,11 +10,9 @@ import console from '../../lib/logging'
 
 import withSession from '../../lib/session'
 import {
-  baseTradeUrl,
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
-  SIGNALX_AXIOS_DB_AUTH,
   orclsodaUrl,
   dayparam
 } from '../../lib/utils'
@@ -101,7 +99,6 @@ export default withSession(async (req, res) => {
   }
 
   const urlDateParam = dayjs().format('DDMMYYYY')
-  const endpoint = `${baseTradeUrl}/${urlDateParam}`
   const orclEndpoint=`${orclsodaUrl}/dailyplan`
   //const orclGetPoint=`${orclsodaUrl}/custom-actions/query/dailyplan`
   /*ANILTODO: 1. Check if that colletions exist
@@ -120,12 +117,6 @@ export default withSession(async (req, res) => {
         orderTag,
         dayparam
       }
-      // const response = await axios[req.method.toLowerCase()](
-      //   endpoint,
-      //   postData,
-      //   SIGNALX_AXIOS_DB_AUTH
-      // )
-      // data = response.data
       const  {data:{items:[{id}]}}=await axios.post(`${orclEndpoint}`,postData);
       const {data:getData} = await axios.get(`${orclEndpoint}/${id}`)
       data={...getData,id}
@@ -143,23 +134,6 @@ export default withSession(async (req, res) => {
         jobData: data,
         user
       })
-      // then patch the db entry with queue entry
-      // await axios.put(
-      //   `${endpoint}/${data._id!}`,
-      //   {
-      //     ...data,
-      //     status: 'QUEUE',
-      //     queue: pick(qRes, [
-      //       'id',
-      //       'name',
-      //       'opts',
-      //       'timestamp',
-      //       'stacktrace',
-      //       'returnvalue'
-      //     ])
-      //   },
-      //   SIGNALX_AXIOS_DB_AUTH
-      // )
 
       await axios.put(
         `${orclEndpoint}/${data.id!}`,
@@ -180,23 +154,13 @@ export default withSession(async (req, res) => {
       return res.json(data)
     } catch (e) {
       console.log('🔴 job creation failed', e)
-      // await axios.put(
-      //   `${endpoint}/${data._id!}`,
-      //   {
-      //     ...data,
-      //     status: 'REJECT',
-      //     status_message: e?.message
-      //   },
-      //   SIGNALX_AXIOS_DB_AUTH
-      // )
       await axios.put(
         `${orclEndpoint}/${data.id!}`,
         {
           ...data,
           status: 'REJECT',
           status_message: e?.message
-        },
-        SIGNALX_AXIOS_DB_AUTH
+        }
       )
 
       return res.json(data)
@@ -205,14 +169,6 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'DELETE') {
     try {
-      // const { data } = await axios(`${endpoint}/${req.body._id as string}`)
-      // if (data.queue?.id) {
-      //   await deleteJob(data.queue.id)
-      // }
-      // await axios.delete(
-      //   `${endpoint}/${req.body._id as string}`,
-      //   SIGNALX_AXIOS_DB_AUTH
-      // )
       const { data } = await axios(`${orclEndpoint}/${req.body.id as string}`)
       if (data.queue?.id) {
         await deleteJob(data.queue.id)
@@ -231,16 +187,6 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'PUT') {
     try {
-      // const { _id, ...props } = req.body
-      // const { data } = await axios(`${endpoint}/${_id as string}`)
-      // await axios.put(
-      //   `${endpoint}/${_id as string}`,
-      //   {
-      //     ...data,
-      //     ...props
-      //   },
-      //   SIGNALX_AXIOS_DB_AUTH
-      // )
       const { id, ...props } = req.body
       const { data } = await axios(`${orclEndpoint}/${id as string}`)
       await axios.put(
