@@ -66,7 +66,8 @@ const TradeSetupForm = ({
   ]
   const entryStrategies = [
     STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
-    STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES
+    STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES,
+    STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM
   ]
   const exitStrategies = [
     EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -165,7 +166,9 @@ const TradeSetupForm = ({
                   onChange({ distanceFromAtm: newValue })
                 }
               />
-            ) : (
+            ) : state.entryStrategy ===
+            STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES ?
+             (
               <TextField
                 fullWidth
                 name='deltaStrikes'
@@ -175,7 +178,17 @@ const TradeSetupForm = ({
                 }
                 label='Strike delta'
               />
-            )}
+            ):
+            ( <TextField
+              fullWidth
+              name='percentStrikes'
+              value={state.percentfromAtm}
+              defaultValue={2}
+              onChange={(e) =>
+                onChange({ percentfromAtm:  +e.target.value || undefined })
+              }
+              label='Percent Away from ATM%'
+            />)}
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 8 }}>

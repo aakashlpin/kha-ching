@@ -55,6 +55,7 @@ const getStrangleStrikes = async ({
   inverted = false,
   entryStrategy,
   distanceFromAtm = 1,
+  percentfromAtm=2,
   deltaStrikes,
   expiryType
 }: {
@@ -63,6 +64,7 @@ const getStrangleStrikes = async ({
   inverted?: boolean
   entryStrategy: STRANGLE_ENTRY_STRATEGIES
   distanceFromAtm?: number
+  percentfromAtm?:number
   deltaStrikes?: number
   expiryType?: EXPIRY_TYPE
 }) => {
@@ -104,7 +106,14 @@ const getStrangleStrikes = async ({
         return Promise.reject(new Error(e.response.data))
       }
     }
-  } else {
+  } else if (entryStrategy === STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM)
+  {
+    lowerLegPEStrike =  Math.round((1-(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
+    higherLegCEStrike = Math.round((1+(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
+
+  }
+  else
+  {
     lowerLegPEStrike = atmStrike - distanceFromAtm * strikeStepSize
     higherLegCEStrike = atmStrike + distanceFromAtm * strikeStepSize
   }
@@ -154,6 +163,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       deltaStrikes,
       entryStrategy = STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm = 1,
+      percentfromAtm,
       productType = PRODUCT_TYPE.MIS,
       volatilityType = VOLATILITY_TYPE.SHORT,
       expiryType,
@@ -183,6 +193,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       strikeStepSize,
       expiryType
     } as any)
+//If percent, get distancefromATM
 
     const {
       peStrike,
@@ -194,6 +205,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       instrument,
       inverted,
       distanceFromAtm,
+      percentfromAtm,
       entryStrategy,
       deltaStrikes,
       expiryType

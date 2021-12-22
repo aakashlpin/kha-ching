@@ -84,6 +84,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   hedgeDistance?: number
   distanceFromAtm: number
   deltaStrikes?: number
+  percentfromAtm?:number
   volatilityType: VOLATILITY_TYPE
   slOrderType: SL_ORDER_TYPE
   slLimitPricePercent?: number
