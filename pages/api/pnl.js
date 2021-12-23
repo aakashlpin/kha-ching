@@ -27,9 +27,6 @@ export default withSession(async (req, res) => {
     if (dayjs().isBefore(dayjs(day330)))
     return res.json({ error: 'PnL not ready yet!' })
 
-    // const { data: orders } = await axios(
-    //   `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
-    // )
     const {data:{profit}}=await axios (
      `${process.env.ORCL_HOST_URL}/rest-v1/profits/${orderTag}`
     )
@@ -40,27 +37,6 @@ export default withSession(async (req, res) => {
     }
     else
     res.json({ pnl: profit});
-
-
-    // if (!orders.length) {
-    //   return res.json({ error: 'PnL not ready yet!' })
-    // }
-
-    // const uniqueOrders = uniqBy(orders, order => order.order_id)
-    // const completedOrders = uniqueOrders.filter(
-    //   order => order.status === 'COMPLETE'
-    // )
-    // const taggedOrders = completedOrders.filter(order => order.tag === orderTag)
-    // const pnl = taggedOrders.reduce((accum, order) => {
-    //   const { transaction_type, filled_quantity, average_price } = order
-    //   const transactedAmount = filled_quantity * average_price
-    //   if (transaction_type === 'BUY') {
-    //     return accum - transactedAmount
-    //   }
-    //   return accum + transactedAmount
-    // }, 0)
-
-    // res.json({ pnl: pnl.toFixed(2) })
   } catch (e) {
     res.status(500).send(e)
   }

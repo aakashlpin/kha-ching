@@ -24,13 +24,9 @@ export default withSession(async (req, res) => {
     if (!orderTag) {
       return res.status(400).json({ error: 'expected orderTag in query' })
     }
-
-    const { data: ordersInDB } = await axios(
-      `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
-    )
-
     const kite = syncGetKiteInstance(user)
-    const rawOrders = ordersInDB?.length ? ordersInDB : await kite.getOrders()
+   // const rawOrders = ordersInDB?.length ? ordersInDB : await kite.getOrders()
+    const rawOrders = await kite.getOrders()
     const uniqueOrders = uniqBy(rawOrders, order => order.order_id)
 
     const orders = uniqueOrders
