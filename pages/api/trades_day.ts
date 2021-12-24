@@ -13,9 +13,9 @@ import {
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
-  orclsodaUrl,
-  dayparam
+  orclsodaUrl
 } from '../../lib/utils'
+const dayparam=dayjs().format('YYYYMMDD') 
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
 
@@ -98,7 +98,6 @@ export default withSession(async (req, res) => {
     return res.status(401).end()
   }
 
-  const urlDateParam = dayjs().format('DDMMYYYY')
   const orclEndpoint=`${orclsodaUrl}/dailyplan`
   //const orclGetPoint=`${orclsodaUrl}/custom-actions/query/dailyplan`
   /*ANILTODO: 1. Check if that colletions exist
@@ -207,11 +206,6 @@ export default withSession(async (req, res) => {
 
   if (req.method === 'GET') {
     try {
-      //const { data } = await axios(`${endpoint}?limit=100`)
-      // let body:Object={day:dayparam};
-      // const {data:{items}}= await axios(
-      //   `${orclGetPoint}`,
-      //   body);
       const {data:{items}}= await axios(
         `${orclEndpoint}?q={"dayparam":"${dayparam}"}`);
     

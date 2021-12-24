@@ -36,7 +36,6 @@ export const SIGNALX_URL =
   process.env.SIGNALX_URL ?? 'https://indicator.signalx.trade'
 const KITE_API_KEY = process.env.KITE_API_KEY
 const ORCL_HOST_URL=process.env.ORCL_HOST_URL
-export const dayparam=dayjs().format('YYYYMMDD') // This will be helfpul to delete earlier daily plans
 
 export const logDeep = object => console.log(JSON.stringify(object, null, 2))
 
@@ -1070,17 +1069,13 @@ export const remoteOrderSuccessEnsurer = async (args: {
   }
 
   const {data:{items}}= await axios(
-    `${orclsodaUrl}/dailyplan?q={"dayparam":"${dayparam}","orderTag": "${orderProps.tag!}"}`)
+    `${orclsodaUrl}/dailyplan?q={"orderTag": "${orderProps.tag!}"}`)
 
 const tradeSettings=items.map(items=>{
 return ({...items.value,id:items.id})
 });
 
-  // const {
-  //   data: [tradeSettings]
-  // } = await withRemoteRetry(async () =>
-  //   axios(`${baseTradeUrl}?q=orderTag:${orderProps.tag!}`)
-  // )
+
   const { user_override: userOverride } = tradeSettings
   if (userOverride === USER_OVERRIDE.ABORT) {
     console.log(
