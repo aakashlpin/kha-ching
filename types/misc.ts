@@ -21,6 +21,15 @@ export interface SignalXOrder extends KiteOrder {
   humanTradingSymbol: string
 }
 
+export interface combinedOrders {
+  tradingsymbol: string
+  order_id?: string
+  average_price?: number
+  transaction_type: 'BUY' | 'SELL'
+  status?: 'COMPLETE' | 'REJECTED' | 'CANCELLED' | 'OPEN' | 'TRIGGER PENDING'
+  tag: string
+}
+
 export interface SignalXUser {
   session: KiteProfile
   isLoggedIn: boolean

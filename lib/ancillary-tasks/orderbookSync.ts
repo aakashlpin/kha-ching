@@ -16,8 +16,7 @@ async function orderbookSync ({
   try {
     const kite = syncGetKiteInstance(user)
     const allOrders = await withRemoteRetry(() => kite.getOrders())
-    const ordersForNFO = allOrders.filter(order =>( order.exchange === 'NFO'
-                                    && order.status === 'COMPLETE'))
+    const ordersForNFO = allOrders.filter(order =>(order.status === 'COMPLETE'))
     const res=await axios.post(
       `${ORCL_HOST_URL}/rest-v1/trades`,
       ordersForNFO,

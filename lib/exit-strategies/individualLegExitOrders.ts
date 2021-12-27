@@ -1,4 +1,5 @@
 import { KiteOrder } from '../../types/kite'
+import { combinedOrders } from '../../types/misc'
 import { SL_ORDER_TYPE } from '../../types/plans'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
@@ -9,8 +10,8 @@ import {
   isUntestedFeaturesEnabled,
   remoteOrderSuccessEnsurer,
   round,
-  syncGetKiteInstance
-} from '../utils'
+  syncGetKiteInstance,
+  logDeep} from '../utils'
 import { doDeletePendingOrders, doSquareOffPositions } from './autoSquareOff'
 
 export const convertSlmToSll = (
@@ -67,7 +68,8 @@ async function individualLegExitOrders ({
 
   const slOrderType = SL_ORDER_TYPE.SLL
   const kite = _kite || syncGetKiteInstance(user)
-
+  
+  let totalOrders: combinedOrders []
   const exitOrders = completedOrders.map(order => {
     const {
       tradingsymbol,
@@ -77,6 +79,13 @@ async function individualLegExitOrders ({
       quantity,
       average_price: avgOrderPrice
     } = order
+    totalOrders.push ({tradingsymbol,
+                  order_id:order.order_id,
+                   average_price:avgOrderPrice,
+                   transaction_type:transactionType,
+                   status:order.status,
+                   tag:orderTag!
+                })
     let exitOrderTransactionType
     let exitOrderTriggerPrice
 
@@ -134,11 +143,20 @@ async function individualLegExitOrders ({
 
   if (slOrderType === SL_ORDER_TYPE.SLL) {
     const watcherQueueJobs = statefulOrders.map(async exitOrder => {
+      totalOrders.push ({tradingsymbol:exitOrder.tradingsymbol,
+        order_id:exitOrder.order_id,
+        average_price:exitOrder.average_price,
+        transaction_type:exitOrder.transaction_type,
+        status:exitOrder.status,
+        tag:orderTag!
+      })
+      logDeep(totalOrders);
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
         rawKiteOrderResponse: exitOrder
       })
     })
+  // Send all the 4 (sell and buy) to array
 
     try {
       await Promise.all(watcherQueueJobs)

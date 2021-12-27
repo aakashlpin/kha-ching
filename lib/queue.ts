@@ -66,11 +66,11 @@ export const ancillaryQueueScheduler = new QueueScheduler(
 export const ancillaryQueue = new Queue(ANCILLARY_Q_NAME, queueOptions)
 
 const allQueues = [
-  tradingQueue,
-  exitTradesQueue,
-  autoSquareOffQueue,
-  watcherQueue,
-  ancillaryQueue
+  tradingQueue, // Orders are punched here
+  exitTradesQueue, // Stop loss orders or combined SL orders are punched
+  autoSquareOffQueue, // Square off is punched in this queue
+  watcherQueue, // Converts SLL to market order if not filled
+  ancillaryQueue //Orderbook sync to DB is done here
 ]
 
 export async function addToNextQueue (

@@ -215,6 +215,40 @@ const TradeSetupForm = ({
             <FormControl component='fieldset'>
               <FormGroup>
                 <FormControlLabel
+                  key='maxLossPoints'
+                  label='Square off if losses breach (in points)'
+                  control={
+                    <Checkbox
+                      checked={state.isMaxLossEnabled}
+                      onChange={() =>
+                        onChange({
+                          isMaxLossEnabled: !state.isMaxLossEnabled
+                        })
+                      }
+                    />
+                  }
+                />
+                {state.isMaxLossEnabled ? (
+            <TextField
+            fullWidth
+            name='maxLossPoints'
+            value={20}
+            onChange={e =>
+              onChange({
+                maxLossPoints: +e.target.value || undefined
+              })
+            }
+            label='Max Loss in points'
+          />
+                ) : null}
+              </FormGroup>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControl component='fieldset'>
+              <FormGroup>
+                <FormControlLabel
                   key='autoSquareOff'
                   label='Auto Square off'
                   control={

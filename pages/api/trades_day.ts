@@ -15,7 +15,6 @@ import {
   premiumAuthCheck,
   orclsodaUrl
 } from '../../lib/utils'
-const dayparam=dayjs().format('YYYYMMDD') 
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
 
@@ -93,6 +92,7 @@ async function deleteJob (id) {
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')
+  const dayparam=dayjs().format('YYYYMMDD') 
 
   if (!user) {
     return res.status(401).end()
@@ -109,7 +109,6 @@ export default withSession(async (req, res) => {
     const orderTag = nanoid()
     try {
       //Check if collection is already created
-      
       // for every new job, first create a db entry
       const postData = {
         ...req.body,

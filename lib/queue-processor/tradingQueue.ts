@@ -53,31 +53,18 @@ const worker = new Worker(
       // schedule a task to sync orderbook by orderTag end of day
       const { orderTag, user } = job.data
       const numberOfJobs:number=await ancillaryQueue.count()
-      /*ANILTODO: 1.Check if there are any jobs in the queue 
-                  2.If there are no jobs, add to queue. Else add. */
       console.log(`Jobs in ancillaryQueue=${numberOfJobs}`);
       if (numberOfJobs ===0)
-      // console.log('enabling orderbook sync by tag = ', orderTag)
-      // await addToNextQueue(
-      //   {
-      //     ancillaryTask: ANCILLARY_TASKS.ORDERBOOK_SYNC_BY_TAG,
-      //     orderTag,
-      //     user
-      //   },
-      //   {
-      //     _nextTradingQueue: ANCILLARY_Q_NAME
-      //   }
-      // )
-      await addToNextQueue(
-        {
-          ancillaryTask: ANCILLARY_TASKS.ORDERBOOKSYNC,
-          orderTag,
-          user
-        },
-        {
-          _nextTradingQueue: ANCILLARY_Q_NAME
-        }
-      )
+        await addToNextQueue(
+          {
+            ancillaryTask: ANCILLARY_TASKS.ORDERBOOKSYNC,
+            orderTag,
+            user
+          },
+          {
+            _nextTradingQueue: ANCILLARY_Q_NAME
+          }
+        )
     } catch (e) {
       console.log('[error] enabling orderbook sync by tag...', e)
     }
@@ -118,7 +105,7 @@ worker.on('completed', job => {
   const { data, returnvalue } = job
   try {
     if (job.returnvalue?._nextTradingQueue) {
-      addToNextQueue(data, returnvalue)
+      addToNextQueue(data, returnvalue) //adds SL orders
     }
   } catch (e) {
     console.log('job return value', job.returnvalue)
