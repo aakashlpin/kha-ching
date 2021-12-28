@@ -210,7 +210,8 @@ const TradeSetupForm = ({
             hedgeDistance={state.hedgeDistance}
             onChange={onChange}
           />
-
+          {state.exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X?(
+            <>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormGroup>
@@ -232,7 +233,7 @@ const TradeSetupForm = ({
             <TextField
             fullWidth
             name='maxLossPoints'
-            value={20}
+            value={state.maxLossPoints}
             onChange={e =>
               onChange({
                 maxLossPoints: +e.target.value || undefined
@@ -244,7 +245,7 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
-
+</>):null}
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormGroup>

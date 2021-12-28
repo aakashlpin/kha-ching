@@ -16,16 +16,14 @@ import {
 
 const redisUrl = `${process.env.REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
 
-const SIGNALX_API_KEY = process.env.SIGNALX_API_KEY ?? ''
-const KITE_API_KEY = process.env.KITE_API_KEY ?? ''
-
 // just a hack to ensure if someone left a placeholder in env variables
-const QID = SIGNALX_API_KEY.length === 16 ? SIGNALX_API_KEY : KITE_API_KEY
+const QID = process.env.KITE_API_KEY
 export const TRADING_Q_NAME = `tradingQueue_${QID}`
 export const EXIT_TRADING_Q_NAME = `exitTradingQueue_${QID}`
 export const AUTO_SQUARE_OFF_Q_NAME = `autoSquareOffQueue_${QID}`
 export const WATCHER_Q_NAME = `watcherQueue_${QID}`
 export const ANCILLARY_Q_NAME = `ancillaryQueue_${QID}`
+export const TARGETPNL_Q_NAME = `targetPnlQueue_${QID}`
 export const redisConnection = new IORedis(redisUrl)
 const queueOptions = {
   connection: redisConnection
@@ -41,6 +39,12 @@ export const tradingQueueScheduler = new QueueScheduler(
   schedulerQueueOptions
 )
 export const tradingQueue = new Queue(TRADING_Q_NAME, queueOptions)
+
+export const targetPnLQueueScheduler = new QueueScheduler(
+  TARGETPNL_Q_NAME,
+  schedulerQueueOptions
+)
+export const targetPnLQueue = new Queue(TARGETPNL_Q_NAME, queueOptions)
 export const exitTradesQueueScheduler = new QueueScheduler(
   EXIT_TRADING_Q_NAME,
   schedulerQueueOptions
@@ -70,7 +74,8 @@ const allQueues = [
   exitTradesQueue, // Stop loss orders or combined SL orders are punched
   autoSquareOffQueue, // Square off is punched in this queue
   watcherQueue, // Converts SLL to market order if not filled
-  ancillaryQueue //Orderbook sync to DB is done here
+  ancillaryQueue, //Orderbook sync to DB is done here
+  targetPnLQueue //For target loss or profit
 ]
 
 export async function addToNextQueue (
@@ -80,7 +85,6 @@ export async function addToNextQueue (
   try {
     switch (jobResponse._nextTradingQueue) {
       case ANCILLARY_Q_NAME: {
-        // console.log('Adding job to ancillary queue', jobData, jobResponse)
         const marketClosing = dayjs()
           .set('hours', 15)
           .set('minutes', 30)
@@ -152,6 +156,23 @@ export async function addToNextQueue (
           queueOptions
         )
       }
+      case TARGETPNL_Q_NAME: {  
+        console.log(`[queue] added to ${TARGETPNL_Q_NAME}`)
+        return targetPnLQueue.add(
+          `${TARGETPNL_Q_NAME}_${uuidv4() as string}`,
+          {
+            initialJobData: jobData,
+            jobResponse
+          },
+          {
+            attempts: Math.ceil(getTimeLeftInMarketClosingMs() / ms(3)),
+            backoff: {
+              type: 'fixed',
+              delay: ms(3)
+            }
+          }
+        )
+          }
 
       default: {
         break

@@ -1,4 +1,5 @@
 import { KiteOrder } from '../../types/kite'
+import axios from 'axios'
 import {
   ATM_STRADDLE_TRADE,
   ATM_STRANGLE_TRADE,
@@ -13,6 +14,8 @@ import {
   syncGetKiteInstance,
   withRemoteRetry
 } from '../utils'
+
+const ORCL_HOST_URL=process.env.ORCL_HOST_URL
 
 export async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
   const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders())
@@ -133,6 +136,15 @@ async function autoSquareOffStrat ({
   const { user } = initialJobData
   const kite = syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
+  console.log(`[autoSquareOff] ${initialJobData}`);
+  const endpoint = `${ORCL_HOST_URL}/soda/latest/dailyplan/${initialJobData.id}`
+  const {data}=await axios(endpoint);
+  const {user_override}=data
+  if (user_override===USER_OVERRIDE.ABORT)
+  {
+    console.log('Not squaring off as user aborted');
+    return;
+  }
 
   if (deletePendingOrders) {
      console.log('deletePendingOrders init')

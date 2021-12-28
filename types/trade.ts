@@ -7,7 +7,6 @@ import {
 } from './plans'
 
 export interface TradeMeta extends DBMeta {
-  //_collection?: string
   collection?: string
   isAutoSquareOffEnabled: boolean
   runNow?: boolean
