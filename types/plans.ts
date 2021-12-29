@@ -20,6 +20,8 @@ export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
   isAutoSquareOffEnabled: boolean
   isMaxLossEnabled:boolean
   maxLossPoints?:number
+  isMaxProfitEnabled:boolean
+  maxProfitPoints?:number
   runNow?: boolean
   autoSquareOffProps?: { time: string; deletePendingOrders: boolean }
   runAt?: string

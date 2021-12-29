@@ -63,7 +63,9 @@ async function individualLegExitOrders ({
     orderTag,
     rollback,
     slLimitPricePercent = 1,
-    instrument
+    instrument,
+    isMaxLossEnabled,
+    isMaxProfitEnabled
   } = initialJobData
 
   const slOrderType = SL_ORDER_TYPE.SLL
@@ -79,6 +81,7 @@ async function individualLegExitOrders ({
       quantity,
       average_price: avgOrderPrice
     } = order
+    if (isMaxLossEnabled ||isMaxProfitEnabled)
     totalOrders.push (order);
     let exitOrderTransactionType
     let exitOrderTriggerPrice
@@ -137,7 +140,8 @@ async function individualLegExitOrders ({
 
   if (slOrderType === SL_ORDER_TYPE.SLL) {
     const watcherQueueJobs = statefulOrders.map(async exitOrder => {
-      totalOrders.push (exitOrder)
+      if (isMaxLossEnabled ||isMaxProfitEnabled)
+        totalOrders.push (exitOrder)
       logDeep(totalOrders);
       return addToNextQueue(initialJobData, {
         _nextTradingQueue: WATCHER_Q_NAME,
@@ -152,7 +156,7 @@ async function individualLegExitOrders ({
       console.log(e.message ? e.message : e)
     }
   }
-  if (initialJobData.isMaxLossEnabled)
+  if (isMaxLossEnabled ||isMaxProfitEnabled)
   {
    await addToNextQueue(initialJobData, {
     _nextTradingQueue: TARGETPNL_Q_NAME,

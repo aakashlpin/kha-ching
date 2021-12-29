@@ -8,8 +8,6 @@ import targetPnL from '../targetPnL'
 async function processJob (jobData) {
   const { initialJobData, jobResponse } = jobData
   const { orders } = jobResponse
-  console.log('[targetPnlQueue] Processing job in queue ')
-  console.log(`[targetPnlQueue] ${orders}`)
   return targetPnL ({
     initialJobData,
     orders
@@ -19,10 +17,17 @@ async function processJob (jobData) {
 const worker = new Worker(
   TARGETPNL_Q_NAME,
   async job => {
-    console.log(`processing trargetPnlQueu id ${job.id}`, job.data)
+    try
+  {
+    console.log(`processing trargetPnlQueu id ${job.id}`)
     const result = await processJob(job.data)
     return result
-  },
+  }
+  catch (e) {
+    console.log(e.message ? e.message : e)
+    throw new Error(e)
+  }
+},
   {
     connection: redisConnection,
     concurrency: 30,

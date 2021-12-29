@@ -168,6 +168,7 @@ export const STRATEGIES_DETAILS = {
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       maxLossPoints:20,
+      maxProfitPoints:20,
       expireIfUnsuccessfulInMins: 10,
       exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
       slOrderType: SL_ORDER_TYPE.SLL,

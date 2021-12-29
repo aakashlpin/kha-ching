@@ -115,9 +115,9 @@ export default withSession(async (req, res) => {
         orderTag,
         dayparam
       }
-      const  {data:{items:[{id}]}}=await axios.post(`${orclEndpoint}`,postData);
+      const  {data:{items:[{id,lastModified,created}]}}=await axios.post(`${orclEndpoint}`,postData);
       const {data:getData} = await axios.get(`${orclEndpoint}/${id}`)
-      data={...getData,id}
+      data={...getData,id,lastModified,created}
       console.log(`[trades_Day] ${id} posted in daily_trades`)
     } catch (e) {
       console.log('🔴 failed to post', e)
@@ -171,6 +171,7 @@ export default withSession(async (req, res) => {
       if (data.queue?.id) {
         await deleteJob(data.queue.id)
       }
+      
       await axios.delete(
         `${orclEndpoint}/${req.body.id as string}`
       )

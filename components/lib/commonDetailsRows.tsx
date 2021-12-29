@@ -11,11 +11,17 @@ import {
 const CommonDetailsRows = ({
   runNow,
   runAt,
-  _createdOn,
+  created,
   exitStrategy,
   slmPercent,
+  orderTag,
   isAutoSquareOffEnabled,
   squareOffTime,
+  isMaxProfitEnabled,
+  maxProfitPoints,
+  isMaxLossEnabled,
+  maxLossPoints,
+  currentPoints,
   productType,
   volatilityType,
   liveTrailingSl,
@@ -32,10 +38,10 @@ const CommonDetailsRows = ({
         : '⚡️ Online',
     [lastHeartbeatAt]
   )
-
+ 
   const [algoStatus, setAlgoStatus] = useState(() => getAlgoStatus())
   const scheduleString = runNow || dayjs().isAfter(runAt) ? 'Run at' : 'ETA'
-  const humanTime = dayjs(runNow ? _createdOn : runAt).format('hh:mma')
+  const humanTime = dayjs(runNow ? created : runAt).format('hh:mma')
   const squareOffString = !isAutoSquareOffEnabled
     ? 'Manual'
     : dayjs(squareOffTime).format('hh:mma')
@@ -63,12 +69,19 @@ const CommonDetailsRows = ({
       { value: EXIT_STRATEGIES_DETAILS[exitStrategy].label }
     ],
     [{ value: 'SL' }, { value: `${slmPercent as string}%` }],
+    isMaxProfitEnabled?[{value: 'Max Profit '},{value:maxProfitPoints}]:null,
+    isMaxLossEnabled?[{value: 'Max Loss '},{value:maxLossPoints}]:null,
+    [{value:'Tag'},{value:orderTag}],
+    (isMaxLossEnabled||isMaxProfitEnabled)
+    ? [{ value: 'Current Points' }, { value: currentPoints }]
+    : null,
     [{ value: scheduleString }, { value: humanTime }],
     [{ value: 'Auto Square-off' }, { value: squareOffString }],
     exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
       ? [{ value: 'Last Trail time' }, { value: lastTrailedAtString }]
       : null,
-    exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
+    (exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD||
+    isMaxLossEnabled||isMaxProfitEnabled)
       ? [{ value: 'Last Heartbeat' }, { value: lastHeartbeatAtString }]
       : null,
     exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD

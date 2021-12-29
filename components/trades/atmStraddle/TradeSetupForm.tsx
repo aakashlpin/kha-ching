@@ -245,6 +245,39 @@ const TradeSetupForm = ({
               </FormGroup>
             </FormControl>
           </Grid>
+          <Grid item xs={12}>
+            <FormControl component='fieldset'>
+              <FormGroup>
+                <FormControlLabel
+                  key='maxProfitPoints'
+                  label='Square off if profits breach (in points)'
+                  control={
+                    <Checkbox
+                      checked={state.isMaxProfitEnabled}
+                      onChange={() =>
+                        onChange({
+                          isMaxProfitEnabled: !state.isMaxProfitEnabled
+                        })
+                      }
+                    />
+                  }
+                />
+                {state.isMaxProfitEnabled ? (
+            <TextField
+            fullWidth
+            name='maxProfitPoints'
+            value={state.maxProfitPoints}
+            onChange={e =>
+              onChange({
+                maxProfitPoints: +e.target.value || undefined
+              })
+            }
+            label='Max Profit in points'
+          />
+                ) : null}
+              </FormGroup>
+            </FormControl>
+          </Grid>
 </>):null}
           <Grid item xs={12}>
             <FormControl component='fieldset'>

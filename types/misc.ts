@@ -36,7 +36,7 @@ export interface SignalXUser {
 }
 
 export interface DBMeta {
-  _id?: string
-  _createdOn?: string
-  _updatedOn?: string
+  id?: string
+  created?: string
+  lastModified?: string
 }
