@@ -21,7 +21,7 @@ interface totalPointsInterface {
     points:number, 
     areAllOrdersCompleted:boolean, 
     pendingorders:KiteOrder[]
-    completedOrders:KiteOrder[]
+    currentOrders:KiteOrder[]
  }
 
 const targetPnL = async ({
@@ -40,14 +40,14 @@ const targetPnL = async ({
         const accm=await(acc);
         if (curentVal.status==='COMPLETE' && curentVal.transaction_type==='SELL')
         {
-          accm.completedOrders.push(curentVal);
-            accm.points+=curentVal.average_price!;
+          accm.currentOrders.push(curentVal);
+          accm.points+=curentVal.average_price!;
             //return {points:previousVal.average_price!+(curentVal.average_price!);
         }
         else if (curentVal.status==='COMPLETE' && curentVal.transaction_type==='BUY')
         {
-          accm.completedOrders.push(curentVal);
-            accm.points-=curentVal.average_price!;
+          accm.currentOrders.push(curentVal);
+          accm.points-=curentVal.average_price!;
            //return await(previousVal) - curentVal.average_price!;
         }
         else
@@ -61,18 +61,19 @@ const targetPnL = async ({
               accm.areAllOrdersCompleted=false;
               accm.points=accm.points+(curentVal.transaction_type==='SELL'?underlyingLTP:-underlyingLTP);
               accm.pendingorders.push(curentVal);
+              accm.currentOrders.push(curentVal);
             }
             else{
                 accm.points=accm.points+ (completedOrder.transaction_type==='SELL'?
                 completedOrder.average_price:-completedOrder.average_price);
-                accm.completedOrders.push(completedOrder);
+                accm.currentOrders.push(completedOrder);
             }
         }
         return accm;
         },Promise.resolve(<totalPointsInterface>{points:0,
             areAllOrdersCompleted:true,
             pendingorders:[],
-            completedOrders:[]
+            currentOrders:[]
             })
         );
         totalPoints.points=round(totalPoints.points);
@@ -94,12 +95,13 @@ const targetPnL = async ({
          console.log(`[targetPnL] ${orderTag} all orders are completed`);
          return Promise.resolve('[targetPnL] all orders are completed')
         }
-        else if (totalPoints.completedOrders.length>orders.filter(order => order.status==='COMPLETE').length)
+        else if (totalPoints.currentOrders.filter(order => order.status==='COMPLETE').length>
+            orders.filter(order => order.status==='COMPLETE').length)
         {
           console.log(`[targetPnL] Points: ${totalPoints.points} for tag:  ${orderTag} ; Adding to queue again`);
           await addToNextQueue(initialJobData, {
             _nextTradingQueue: TARGETPNL_Q_NAME,
-             orders:totalPoints.completedOrders
+             orders:totalPoints.currentOrders
           });
 
           return Promise.resolve('[targetPnL] Some more orders are completed')
@@ -127,7 +129,7 @@ const targetPnL = async ({
       }
         else
         {
-          const rejectMsg = `🟢('[targetPnL] retry for tag: ${orderTag} Points: ${totalPoints.points} ')`;
+          const rejectMsg = `🟢[targetPnL] retry for tag: ${orderTag} Points: ${totalPoints.points} `;
           return Promise.reject(new Error(rejectMsg));
         }
     
