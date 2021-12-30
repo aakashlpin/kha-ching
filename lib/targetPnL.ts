@@ -15,7 +15,8 @@ import {
   syncGetKiteInstance,
   getCompletedOrderFromOrderHistoryById,
   withRemoteRetry,
-  logDeep
+  getTimeLeftInMarketClosingMs,
+  isTimeAfterAutoSquareOff
 } from './utils'
 interface totalPointsInterface { 
     points:number, 
@@ -32,8 +33,19 @@ const targetPnL = async ({
      orders: KiteOrder []
   }) :Promise<any> =>
   {
-    const {maxLossPoints,isMaxLossEnabled,orderTag,isMaxProfitEnabled,maxProfitPoints} = initialJobData;
+    const {maxLossPoints,isMaxLossEnabled,orderTag,isMaxProfitEnabled,
+      maxProfitPoints
+    ,isAutoSquareOffEnabled,
+    autoSquareOffProps:{time}={}} = initialJobData;
     const kite = syncGetKiteInstance(initialJobData.user)
+
+    if (getTimeLeftInMarketClosingMs() < 0 ||
+    (isAutoSquareOffEnabled &&
+      isTimeAfterAutoSquareOff(time!))) {
+    return Promise.resolve(
+      '🟢 [targetPnL] Terminating the targetPnl queue as market closing or after square off time..'
+    )
+  }
     try{
      const totalPoints=await orders.reduce(async (acc,curentVal)=>
      {  
