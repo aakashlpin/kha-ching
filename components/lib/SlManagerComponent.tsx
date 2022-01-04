@@ -28,7 +28,10 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
             name='exitStrategy'
             value={state.exitStrategy}
             onChange={e =>
-              onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES })
+              onChange({ exitStrategy: e.target.value as EXIT_STRATEGIES,
+                isMaxLossEnabled:false,
+                isMaxProfitEnabled:false,
+               })
             }
           >
             {exitStrategies.map(exitStrategy => (

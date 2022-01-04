@@ -136,7 +136,6 @@ async function autoSquareOffStrat ({
   const { user } = initialJobData
   const kite = syncGetKiteInstance(user)
   const completedOrders = rawKiteOrdersResponse
-  console.log(`[autoSquareOff] ${initialJobData}`);
   const endpoint = `${ORCL_HOST_URL}/soda/latest/dailyplan/${initialJobData.id}`
   const {data}=await axios(endpoint);
   const {user_override}=data
@@ -147,7 +146,6 @@ async function autoSquareOffStrat ({
   }
 
   if (deletePendingOrders) {
-     console.log('deletePendingOrders init')
     try {
       await doDeletePendingOrders(completedOrders, kite)
       // console.log('🟢 deletePendingOrders success', res)
