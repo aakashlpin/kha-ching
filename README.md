@@ -76,7 +76,7 @@ Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh set
 
 #### `ORCL_HOST_URL`
 
-[Follow the guide here](https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2#7a05ef9737904c148ea299177f1de8f0) to create Oracle autonomous DB.
+[Follow the guide here](https://sunrise-flier-24f.notion.site/Create-Autonomous-DB-in-OCI-d714d8d0c41443d0a756961b9a3316e2) to create Oracle autonomous DB.
 
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
