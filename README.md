@@ -74,17 +74,10 @@ Default square off time of the strategy. The value here only serves as a default
 
 Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh setup as the value will be correctly prefilled for you.
 
-#### `SIGNALX_API_KEY`
+#### `ORCL_HOST_URL`
 
-Upgrade to [SignalX Premium](https://imjo.in/q6g7cB) to receive your API key. SignalX Premium gives you access to technical indicators required to trade certain strategies.
+[Follow the guide here](https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2#7a05ef9737904c148ea299177f1de8f0) to create Oracle autonomous DB.
 
-#### `DATABASE_HOST_URL`
-
-#### `DATABASE_USER_KEY`
-
-#### `DATABASE_API_KEY`
-
-[Follow the upgrade guide here](https://www.notion.so/Release-notes-20-06-2021-84859083abca4f5bb2ed229eea8642f2#7a05ef9737904c148ea299177f1de8f0) to get values for all these 3 variables.
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
 
