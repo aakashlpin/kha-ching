@@ -64,7 +64,7 @@ const targetPnL = async ({
         }
         else
         {
-            const completedOrder= await getCompletedOrderFromOrderHistoryById(kite,curentVal.order_id);
+            const completedOrder= await withRemoteRetry(async () => getCompletedOrderFromOrderHistoryById(kite,curentVal.order_id));
             if (completedOrder===undefined)
             {
                 const underlyingLTP = await withRemoteRetry(async () =>
@@ -90,7 +90,7 @@ const targetPnL = async ({
         );
         totalPoints.points=round(totalPoints.points);
     
-        console.log(`[targetPnL] Points: ${totalPoints.points} for tag:  ${orderTag} `);
+        //console.log(`[targetPnL] Points: ${totalPoints.points} for tag:  ${orderTag} `);
         try {
           await patchDbTrade({
             id: initialJobData.id!,

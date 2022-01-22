@@ -36,9 +36,9 @@ export default withSession(async (req, res) => {
 
     // prepare the day
     // fire and forget
-    premiumAuthCheck().catch(e => {
-      console.log(e)
-    })
+    // premiumAuthCheck().catch(e => {
+    //   console.log(e)
+    // })
     getIndexInstruments().catch(e => {
       console.log(e)
     })

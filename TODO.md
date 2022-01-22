@@ -24,3 +24,7 @@ TODO
 - Allow interrupts from even when queue is in progress (by checking for db props before punching orders)
 - Move terminate trades button to profile page
 - button to cleanup redis memory
+- Add label to every trade
+- Update the orders in DB with strategy
+- Option to square off 
+- 

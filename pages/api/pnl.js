@@ -1,7 +1,5 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { uniqBy } from 'lodash'
-
 import withSession from '../../lib/session'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 dayjs.extend(advancedFormat)
