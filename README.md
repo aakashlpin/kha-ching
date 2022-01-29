@@ -19,19 +19,15 @@ Once you've gone through the Notion doc above, come back here for instructions t
 
    - Activate your database and name it `signalx`
    - Copy the `Endpoint` and `User Password` fields to construct the following Redis URL - `redis://:{User Password}@{Endpoint}`. Keep this handy. (remove the curly braces)
+4) Go to cloud.oracle.com and sign up for free Oracle Autonomous DB. You can follow the instructions  [here](https://github.com/anil1kuppa/oci_cs_adb). Unlike SignalX, this uses free Oracle cloud database.
 
 _Update - Redislabs free tier drops connections very often. Recommend upgrading to a paid tier for a seamless trading experience._
 
 ## 1-click Installation
 
-_Update - DigitalOcean's app platform is terribly slow. Recommend using render.com for all new installations. All other instructions remain as is._
+Deploy the application on DigitalOcean's (DO) apps platform.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-
-or, deploy the application on DigitalOcean's (DO) apps platform.
-
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/aakashlpin/kha-ching/tree/master&refcode=d9db955b428e)
-
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://anil1kuppa/kha-ching/tree/master&refcode=50a17c5480fb)
 ## Environment variables
 
 > Environment variables are private setting variables that configures this application to run on your Zerodha account.
@@ -76,7 +72,7 @@ Enter `${APP_URL}` here or leave this value as it is if you're doing a fresh set
 
 #### `ORCL_HOST_URL`
 
-[Follow the guide here](https://sunrise-flier-24f.notion.site/Create-Autonomous-DB-in-OCI-d714d8d0c41443d0a756961b9a3316e2) to create Oracle autonomous DB.
+[Follow the guide here](https://github.com/anil1kuppa/oci_cs_adb) to create Oracle autonomous DB.
 
 
 #### `NEXT_PUBLIC_DEFAULT_SLM_PERCENT`
