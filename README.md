@@ -2,9 +2,10 @@
 
 SignalX is a trading app for anyone looking to diversify their funds into systematic and algorithmic intraday trading strategies.
 
-✅ Read everything about SignalX [here](https://signalx.club).
+✅ Read everything about SignalX [here](https://signalx.club). 
 
 Once you've gone through the Notion doc above, come back here for instructions to setup SignalX!
+If you're migrating from Aakash's SignalX, please follow the instructions [here](https://sunrise-flier-24f.notion.site/Steps-to-migrate-from-Aakash-s-SignalX-to-kha-ching-d714d8d0c41443d0a756961b9a3316e2)
 
 ## Setup Prerequisites:
 
