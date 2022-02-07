@@ -82,6 +82,16 @@ const TradeSetupForm = ({
           {formHeading ?? 'Setup new trade'}
         </Typography>
         <Grid container alignItems='flex-start' spacing={2}>
+        <Grid item xs={12}>
+            <TextField
+              fullWidth
+              name='name'
+              value={state.name}
+              onChange={e => onChange({ name: e.target.value || undefined })}
+              label='Name of trade '
+            />
+         </Grid>
+      
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormLabel component='legend'>Instruments</FormLabel>

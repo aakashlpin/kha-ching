@@ -9,6 +9,7 @@ const Details = args => {
     maxSkewPercent,
     thresholdSkewPercent,
     instrument,
+    strategy,
     expireIfUnsuccessfulInMins,
     takeTradeIrrespectiveSkew = true
   } = args
@@ -20,6 +21,7 @@ const Details = args => {
   return (
     <OrdersTable
       rows={[
+        [{value:'Strategy'},{value: strategy}],
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
         [{ value: 'Ideal Skew' }, { value: `${maxSkewPercent}%` }],

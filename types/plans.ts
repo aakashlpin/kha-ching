@@ -47,6 +47,7 @@ export enum COMBINED_SL_EXIT_STRATEGY {
 
 export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
   instruments: Record<INSTRUMENTS, boolean>
+  name:string
   lots: number
   thresholdSkewPercent: number
   takeTradeIrrespectiveSkew: boolean
@@ -71,6 +72,7 @@ export interface ATM_STRADDLE_CONFIG extends SavedPlanMeta {
 
 export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   instruments: Record<INSTRUMENTS, boolean>
+  name:string
   lots: number
   slmPercent: number
   inverted: boolean
@@ -97,6 +99,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
 
 export interface DIRECTIONAL_OPTION_SELLING_CONFIG extends SavedPlanMeta {
   instruments: Record<INSTRUMENTS, boolean>
+  name:string
   lots: number
   slmPercent: number
   maxTrades: number

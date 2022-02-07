@@ -16,6 +16,7 @@ const Details = args => {
     instrument,
     inverted,
     entryStrategy,
+    strategy,
     deltaStrikes,
     percentfromAtm,
     distanceFromAtm
@@ -24,6 +25,7 @@ const Details = args => {
   return (
     <OrdersTable
       rows={[
+        [{value:'Strategy'},{value: strategy}],
         [{ value: 'Instrument' }, { value: instrument }],
         [{ value: 'Lots' }, { value: lots }],
         [

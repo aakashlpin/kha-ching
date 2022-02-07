@@ -412,15 +412,12 @@ const Plan = () => {
                       )
                       .map(strategyKey => {
                         const config = dayProps.strategies[strategyKey]
+                        console.log(config.name);
                         return (
                           <Chip
                             color='secondary'
                             key={`${dayOfWeek}_${strategyKey}`}
-                            label={`${
-                              STRATEGIES_DETAILS[config.strategy].heading
-                            }/${
-                              INSTRUMENT_DETAILS[config.instrument].displayName
-                            }`}
+                            label={`${config.name}`}
                             onClick={() =>
                               handleEditStrategyConfig({
                                 dayOfWeek,

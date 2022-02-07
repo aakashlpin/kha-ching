@@ -158,7 +158,7 @@ const PlanDash = () => {
           <div key={plan.id}>
             <Paper style={{ padding: 16, marginBottom: 32 }}>
               <h4>
-                {`${idx + 1}`} · {STRATEGIES_DETAILS[plan.strategy].heading}
+                {`${idx + 1}`} · {plan.name}
               </h4>
 
               <TradeDetails strategy={plan.strategy} tradeDetails={plan} />

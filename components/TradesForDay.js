@@ -64,7 +64,7 @@ const WrapperComponent = props => {
 
     return (
       <Typography component='p' color=''>
-        #{props.queue.id} · {strategyDetails.heading}
+        #{props.queue.id} · {props.name}
       </Typography>
     )
   }
