@@ -1,5 +1,3 @@
-import { AxiosResponse } from 'axios'
-import { KiteConnect } from 'kiteconnect'
 import { cleanupQueues } from '../../lib/queue'
 
 import withSession from '../../lib/session'
@@ -7,16 +5,11 @@ import {
   getIndexInstruments,
   premiumAuthCheck,
   storeAccessTokenRemotely,
-  checkHasSameAccessToken
+  checkHasSameAccessToken,
+  invesKite
 } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
-
-const apiKey = process.env.KITE_API_KEY
-const kiteSecret = process.env.KITE_API_SECRET
-const kc = new KiteConnect({
-  api_key: apiKey
-})
 
 export default withSession(async (req, res) => {
   const { request_token: requestToken } = req.query
@@ -26,10 +19,7 @@ export default withSession(async (req, res) => {
   }
 
   try {
-    const sessionData: KiteProfile = await kc.generateSession(
-      requestToken,
-      kiteSecret
-    )
+    const sessionData: KiteProfile = await invesKite.init({requestToken: req.query.request_token});
     const user: SignalXUser = { isLoggedIn: true, session: sessionData }
     req.session.set('user', user)
     await req.session.save()

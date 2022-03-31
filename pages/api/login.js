@@ -1,15 +1,11 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { KiteConnect } from 'kiteconnect'
-
 import withSession from '../../lib/session'
-
-const kc = new KiteConnect({
-  api_key: process.env.KITE_API_KEY
-})
+import { invesKite } from '../../lib/utils'
 
 export default withSession(async (req, res) => {
-  const user = req.session.get('user')
+  const user = req.session.get('user');
+  const kc = invesKite.getKC(user?.session?.access_token);
 
   if (!user) {
     return res.redirect(kc.getLoginURL())
