@@ -139,7 +139,14 @@ async function multiLegPremiumThreshold ({
         '🔴 [multiLegPremiumThreshold] getInstrumentPrice error',
         error
       )
-      return Promise.reject(new Error('Kite APIs acting up'))
+      // [TODO] see if we can resolve this and add back to the queue to prevent memory leak issues
+      await addToNextQueue(initialJobData, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse,
+        squareOffOrders
+      })
+
+      return Promise.resolve('Kite APIs acting up!')
     }
 
     const liveTotalPremium = tradingSymbols.reduce((sum, tradingSymbol) => {
@@ -221,7 +228,12 @@ async function multiLegPremiumThreshold ({
 
     if (liveTotalPremium < checkAgainstSl) {
       const rejectMsg = `🟢 [multiLegPremiumThreshold] liveTotalPremium (${liveTotalPremium}) < threshold (${checkAgainstSl})`
-      return Promise.reject(new Error(rejectMsg))
+      await addToNextQueue(initialJobData, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse,
+        squareOffOrders
+      })
+      return Promise.resolve(rejectMsg)
     }
 
     // terminate the checker
