@@ -4,6 +4,7 @@ import { SignalXUser } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import {
+  BROKER,
   EXPIRY_TYPE,
   INSTRUMENT_DETAILS,
   INSTRUMENT_PROPERTIES,
@@ -79,7 +80,7 @@ export async function getATMStraddle (
      * and then eventually if the timer expires, then decide basis `takeTradeIrrespectiveSkew`
      */
 
-    const kite = _kite || syncGetKiteInstance(user)
+    const kite = _kite || syncGetKiteInstance(user, BROKER.KITE)
     const totalTime = dayjs(expiresAt).diff(startTime!)
     const remainingTime = dayjs(expiresAt).diff(dayjs())
     const timeExpired = dayjs().isAfter(dayjs(expiresAt))
@@ -180,7 +181,7 @@ export const createOrder = ({
   transactionType?: string
   productType: PRODUCT_TYPE
 }): KiteOrder => {
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
   return {
     tradingsymbol: symbol,
     quantity: lotSize * lots,
@@ -219,7 +220,7 @@ async function atmStraddle ({
     }
   | undefined
 > {
-  const kite = _kite || syncGetKiteInstance(user)
+  const kite = _kite || syncGetKiteInstance(user, BROKER.KITE)
 
   const {
     underlyingSymbol,

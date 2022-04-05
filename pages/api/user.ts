@@ -6,13 +6,13 @@ const apiKey = process.env.KITE_API_KEY
 
 export default withSession(async (req, res) => {
   const user: SignalXUser = req.session.get('user')
-  const kc = invesKite;
+  const kc = invesKite.getInstance();
 
   if (user) {
     try {
       // see if we're able to fetch profile with the access token
       // in case access token is expired, then log out the user
-      const kcInstance = kc.getKC(user.session.access_token);
+      const kcInstance = kc.getKC(user.session?.KITE?.access_token);
       await kcInstance.getProfile();
 
       res.json({

@@ -6,6 +6,7 @@ import { KiteOrder } from '../../types/kite'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import {
+  BROKER,
   INSTRUMENT_DETAILS,
   PRODUCT_TYPE,
   STRATEGIES_DETAILS
@@ -173,7 +174,7 @@ export default async function directionalOptionSelling (
           // [NB] let this happen at least once before enabling it for everyone else
           if (isUntestedFeaturesEnabled()) {
             console.log('🔴 [dos black swan] reverting bad position')
-            const kite = syncGetKiteInstance(user)
+            const kite = syncGetKiteInstance(user, BROKER.KITE)
             // 1. square off last trade
             await doSquareOffPositions(lastTradeOrders, kite, initialJobData)
             // 2. prevent next trade from happening
@@ -255,7 +256,7 @@ async function punchOrders (
     expiryType
   } = initialJobData
   const strikeByPriceNumber = strikeByPrice ? Number(strikeByPrice) : null
-  const kite = _kite || syncGetKiteInstance(user)
+  const kite = _kite || syncGetKiteInstance(user, BROKER.KITE)
   const { nfoSymbol, strikeStepSize, lotSize } = INSTRUMENT_DETAILS[instrument]
 
   const { close, ST_10_3 } = superTrend

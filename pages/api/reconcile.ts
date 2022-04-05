@@ -1,6 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { uniq } from 'lodash'
+import { BROKER } from '../../lib/constants'
 
 import withSession from '../../lib/session'
 import {
@@ -22,7 +23,7 @@ export default withSession(async (req, res) => {
     return res.status(401).send('Unauthorized')
   }
 
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
   const orders: KiteOrder[] = await kite.getOrders()
 
   if (req.method === 'PUT') {

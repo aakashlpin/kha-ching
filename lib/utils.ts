@@ -8,6 +8,7 @@ import process from "process";
 
 
 import {
+  BROKER,
   ERROR_STRINGS,
   EXIT_STRATEGIES,
   EXPIRY_TYPE,
@@ -350,16 +351,19 @@ export async function getSkew(kite, instrument1, instrument2, exchange) {
   };
 }
 
-export function syncGetKiteInstance(user) {
-  const accessToken = user?.session?.access_token;
+export function syncGetKiteInstance(user, broker) {
+  const accessToken = user?.session?.[broker].access_token;
   if (!accessToken) {
     throw new Error(
       "missing access_token in `user` object, or `user` is undefined"
     );
   }
-  
-  const kc = invesKite.getKC(user.session.access_token);
-  return kc;
+
+  if (broker == BROKER.KITE) {
+    const kc = invesKite.getInstance().getKC(user.session?.KITE.access_token);
+    console.log("Reunning from KIte..");
+    return kc;
+  }
 }
 
 export async function getCompletedOrderFromOrderHistoryById(kite, orderId) {
@@ -628,7 +632,7 @@ export const getNextNthMinute = (intervalMs) => {
 };
 
 export const ensureMarginForBasketOrder = async (user, orders) => {
-  const kite = syncGetKiteInstance(user);
+  const kite = syncGetKiteInstance(user, BROKER.KITE);
   const {
     equity: { net },
   } = await kite.getMargins();
@@ -642,7 +646,7 @@ export const ensureMarginForBasketOrder = async (user, orders) => {
       headers: {
         "X-Kite-Version": 3,
         Authorization: `token ${KITE_API_KEY as string}:${
-          user.session.access_token as string
+          user.session?.KITE.access_token as string
         }`,
         "Content-Type": "application/json",
       },
@@ -744,7 +748,7 @@ export const getMultipleInstrumentPrices = async (
         headers: {
           "X-Kite-Version": 3,
           Authorization: `token ${KITE_API_KEY as string}:${
-            user.session.access_token as string
+            user?.session?.KITE?.access_token as string
           }`,
         },
       }
@@ -781,7 +785,7 @@ export const getTradingSymbolsByOptionPrice = async ({
   greaterThanEqualToPrice = false,
   expiry = EXPIRY_TYPE.CURRENT,
 }: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE) => {
-  const kite = syncGetKiteInstance(user);
+  const kite = syncGetKiteInstance(user, BROKER.KITE);
   const totalStrikes = 31; // pivot and 15 on each side
   const { strikeStepSize } = INSTRUMENT_DETAILS[nfoSymbol!];
   const strikes = [...new Array(totalStrikes)]
@@ -1082,7 +1086,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
     throw Error(USER_OVERRIDE.ABORT);
   }
 
-  const kite = _kite ?? syncGetKiteInstance(user);
+  const kite = _kite ?? syncGetKiteInstance(user, BROKER.KITE);
 
   const { freezeQty } = INSTRUMENT_DETAILS[instrument];
   if (orderProps.quantity! > freezeQty) {
@@ -1386,7 +1390,17 @@ export function round(value: number, step = 0.5): number {
   return Math.round(value * inv) / inv;
 }
 
-export const invesKite = IConnect("KITE", {
+export let invesKite = IConnect(BROKER.KITE, {
   api_key: process.env.KITE_API_KEY || "",
   api_secret: process.env.KITE_API_SECRET || "",
-}).getInstance();
+});
+
+export const initialiseBroker = async (broker: BROKER, requestToken: string) => {
+  switch (broker) {
+    case BROKER.KITE:
+      const session = await invesKite.init({requestToken: requestToken});
+      return session
+    default:
+      return null
+  }
+}

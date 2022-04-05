@@ -22,6 +22,7 @@
 import { KiteOrder } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { BROKER } from '../constants'
 import console from '../logging'
 import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import {
@@ -66,7 +67,7 @@ const slmWatcher = async ({
    * - we'll need to pass through the original trigger price down the rabbit hole
    */
   try {
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
     const orderHistory = (
       await withRemoteRetry(() => kite.getOrderHistory(slmOrderId))
     ).reverse()

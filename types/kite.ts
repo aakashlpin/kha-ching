@@ -81,3 +81,7 @@ export interface KitePosition {
   unrealised: number
   value: number
 }
+
+export interface KiteSession {
+  KITE?: KiteProfile
+}

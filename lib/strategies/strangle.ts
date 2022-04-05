@@ -1,5 +1,6 @@
 import { ATM_STRANGLE_TRADE } from '../../types/trade'
 import {
+  BROKER,
   ERROR_STRINGS,
   EXPIRY_TYPE,
   INSTRUMENTS,
@@ -199,7 +200,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       expiryType
     })
 
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
 
     let allOrdersLocal: KiteOrder[] = []
     let hedgeOrdersLocal: KiteOrder[] = []

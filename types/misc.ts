@@ -1,5 +1,5 @@
 import { STRATEGIES } from '../lib/constants'
-import { KiteOrder, KiteProfile } from './kite'
+import { KiteOrder, KiteProfile, KiteSession } from './kite'
 import { AvailablePlansConfig } from './plans'
 
 export type DailyPlansDayKey =
@@ -22,7 +22,7 @@ export interface SignalXOrder extends KiteOrder {
 }
 
 export interface SignalXUser {
-  session: KiteProfile
+  session: KiteSession
   isLoggedIn: boolean
 }
 

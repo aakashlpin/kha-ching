@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { SignalXUser } from '../../types/misc'
+import { BROKER } from '../constants'
 
 import {
   SIGNALX_AXIOS_DB_AUTH,
@@ -18,7 +19,7 @@ async function orderbookSyncByTag ({
   user: SignalXUser
 }) {
   try {
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
     const allOrders = await withRemoteRetry(() => kite.getOrders())
     const ordersForTag = allOrders.filter(order => order.tag === orderTag)
     const res = await axios.post(

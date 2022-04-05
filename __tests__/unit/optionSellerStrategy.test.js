@@ -1,4 +1,4 @@
-import { INSTRUMENTS } from '../../lib/constants'
+import { INSTRUMENTS, BROKER } from '../../lib/constants'
 import optionSellerOptionEntry from '../../lib/queue-processor/optionSellerStrategy/optionEntry'
 import optionSellerEntryWatcher from '../../lib/queue-processor/optionSellerStrategy/optionEntryWatcher'
 import { COMPLETED_ORDER_RESPONSE } from '../../lib/strategies/mockData/orderResponse'
@@ -14,7 +14,7 @@ test('Should fetch 15 min data', async () => {
 
   // const optionEvaluation = await Promise.all(optionInstruments.map(optionInstrument => optionSellerOptionEntry({ optionStrike: optionInstrument, initialJobData: { user, lots: 1, orderTag: 'dsasdad', instrument: INSTRUMENTS.NIFTY } })))
 
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
 
   // console.log({ optionEvaluation })
 

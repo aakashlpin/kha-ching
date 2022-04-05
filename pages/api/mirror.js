@@ -114,7 +114,7 @@ export default withSession(async (req, res) => {
 
   useKiteTicker({
     apiKey,
-    accessToken: user.session.access_token,
+    accessToken: user.session?.KITE.access_token,
     onConnect: () => updateStatus('connect'),
     onDisconnect: e => updateStatus('disconnect', e),
     onError: e => updateStatus('closed_with_error', e),

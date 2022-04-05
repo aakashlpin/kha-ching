@@ -7,7 +7,7 @@ import {
   withRemoteRetry
 } from '../../lib/utils'
 import { Promise } from 'bluebird'
-import { INSTRUMENTS } from '../../lib/constants'
+import { INSTRUMENTS, BROKER } from '../../lib/constants'
 
 jest.setTimeout(ms(60))
 
@@ -40,7 +40,7 @@ const user = JSON.parse(process.env.USER_SESSION)
 test('should return true for successful order', async () => {
   jest.setTimeout(ms(60))
 
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
   expect(kite).toBeDefined()
 
   kite.placeOrder = jest.fn().mockResolvedValue({
@@ -79,7 +79,7 @@ test('should return true for successful order', async () => {
 test('should retry 3 times for orders that after punching continue to not exist, and then throw timeout', async () => {
   jest.setTimeout(ms(60))
 
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest.fn().mockRejectedValue({
@@ -107,7 +107,7 @@ test('should retry 3 times for orders that after punching continue to not exist,
 })
 
 test('should return false when order history api check times out', async () => {
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest.fn().mockResolvedValue({
@@ -143,7 +143,7 @@ test('should return false when order history api check times out', async () => {
 })
 
 test('should handle `placeOrder` NetworkException and then find an existing completed order in broker system', async () => {
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest.fn().mockRejectedValue({
@@ -212,7 +212,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
 })
 
 test('should handle `placeOrder` NetworkException, and then successfully retry when no such order exists with broker', async () => {
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest
@@ -280,7 +280,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
    * 4. places another order if attemptCount < retryAttempts
    * 5. ensures this order is COMPLETE
    */
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest
@@ -402,7 +402,7 @@ test('attemptBrokerOrders should work', async () => {
 })
 
 test('freeze qty should work', async () => {
-  let kite = syncGetKiteInstance(user)
+  let kite = syncGetKiteInstance(user, BROKER.KITE)
   kite = {
     ...kite,
     placeOrder: jest.fn(() =>

@@ -515,3 +515,9 @@ export const SUBSCRIBER_TYPE = {
   PREMIUM: 'PREMIUM',
   CLUB: 'CLUB'
 }
+
+export const enum BROKER {
+  KITE = 'KITE',
+  FYER = 'FYER',
+  UPSTOX = 'UPSTOX',
+}

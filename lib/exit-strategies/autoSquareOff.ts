@@ -4,7 +4,7 @@ import {
   ATM_STRANGLE_TRADE,
   SUPPORTED_TRADE_CONFIG
 } from '../../types/trade'
-import { USER_OVERRIDE } from '../constants'
+import { BROKER, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import {
   // logDeep,
@@ -131,7 +131,7 @@ async function autoSquareOffStrat ({
   initialJobData: SUPPORTED_TRADE_CONFIG
 }): Promise<any> {
   const { user } = initialJobData
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
   const completedOrders = rawKiteOrdersResponse
 
   if (deletePendingOrders) {
