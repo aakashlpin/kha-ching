@@ -32,7 +32,7 @@
     "dayjs": "^1.10.4",
     "esm": "^3.2.25",
     "fyers-api": "^1.1.0",
-    "inveslib": "git+ssh://git@github.com:toolboxco/inveslib#ft-multi-broker-support",
+    "inveslib": "0.0.1",
     "ioredis": "^4.22.0",
     "lodash": "^4.17.21",
     "memoizee": "^0.4.15",

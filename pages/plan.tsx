@@ -389,7 +389,7 @@ const Plan = () => {
               aria-controls={`${dayOfWeek}-content`}
               id={`${dayOfWeek}-header`}
             >
-              <Typography className={classes.paper}>
+              <Typography className={classes.formControl}>
                 {dayProps.heading}
               </Typography>
             </AccordionSummary>
