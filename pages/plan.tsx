@@ -52,10 +52,10 @@ const useStyles = makeStyles(theme => ({
   flexVertical: {
     flexDirection: 'column'
   },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    fontWeight: theme.typography.fontWeightRegular
-  },
+  // heading: {
+  //   fontSize: theme.typography.pxToRem(15),
+  //   fontWeight: theme.typography.fontWeightRegular
+  // },
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120
@@ -389,7 +389,7 @@ const Plan = () => {
               aria-controls={`${dayOfWeek}-content`}
               id={`${dayOfWeek}-header`}
             >
-              <Typography className={classes.heading}>
+              <Typography className={classes.paper}>
                 {dayProps.heading}
               </Typography>
             </AccordionSummary>

@@ -69,10 +69,10 @@ const Header = () => {
               <li>
                 <Link href='/profile'>
                   <a>
-                    {user?.session?.avatar_url && (
+                    {user?.session?.KITE?.avatar_url && (
                       <img
-                        alt={user.session.user_shortname}
-                        src={user.session.avatar_url}
+                        alt={user.session.KITE.user_shortname}
+                        src={user.session.KITE.avatar_url}
                         width={20}
                         height={20}
                       />
