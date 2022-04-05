@@ -1403,15 +1403,16 @@ export function round(value: number, step = 0.5): number {
   return Math.round(value * inv) / inv;
 }
 
-export let invesKite = IConnect(BROKER.KITE, {
+export const invesKite = IConnect(BROKER.KITE, {
   api_key: process.env.KITE_API_KEY || "",
   api_secret: process.env.KITE_API_SECRET || "",
 });
 
 export const initialiseBroker = async (broker: BROKER, requestToken: string) => {
+  let session;
   switch (broker) {
     case BROKER.KITE:
-      const session = await invesKite.init({requestToken: requestToken});
+      session = await invesKite.init({requestToken: requestToken});
       return session
     default:
       return null
