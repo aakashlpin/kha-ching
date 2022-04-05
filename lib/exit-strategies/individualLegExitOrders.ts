@@ -1,6 +1,7 @@
 import { KiteOrder } from '../../types/kite'
 import { SL_ORDER_TYPE } from '../../types/plans'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { BROKER } from '../constants'
 import console from '../logging'
 import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
@@ -66,7 +67,7 @@ async function individualLegExitOrders ({
   } = initialJobData
 
   const slOrderType = SL_ORDER_TYPE.SLL
-  const kite = _kite || syncGetKiteInstance(user)
+  const kite = _kite || syncGetKiteInstance(user, BROKER.KITE)
 
   const exitOrders = completedOrders.map(order => {
     const {

@@ -31,7 +31,7 @@ import { Await } from '../../types'
 import { KiteOrder } from '../../types/kite'
 import { COMBINED_SL_EXIT_STRATEGY } from '../../types/plans'
 import { ATM_STRADDLE_TRADE, ATM_STRANGLE_TRADE } from '../../types/trade'
-import { EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
+import { BROKER, EXIT_STRATEGIES, USER_OVERRIDE } from '../constants'
 import console from '../logging'
 import { addToNextQueue, EXIT_TRADING_Q_NAME } from '../queue'
 import {
@@ -96,7 +96,7 @@ async function multiLegPremiumThreshold ({
       combinedExitStrategy = COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
       _id: dbId
     } = initialJobData
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
 
     try {
       // notify db that the worker is active and check current user override settings

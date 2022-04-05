@@ -1,5 +1,6 @@
 import withSession from '../../lib/session'
 import { syncGetKiteInstance } from '../../lib/utils'
+import { BROKER } from '../../constants'
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')
@@ -8,7 +9,7 @@ export default withSession(async (req, res) => {
     return res.status(401).send('Unauthorized')
   }
 
-  const kite = syncGetKiteInstance(user)
+  const kite = syncGetKiteInstance(user, BROKER.KITE)
 
   const { id: orderId } = req.query
 

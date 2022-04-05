@@ -10,6 +10,7 @@
 
 import { Promise } from 'bluebird'
 import { SignalXUser } from '../../types/misc'
+import { BROKER } from '../constants'
 import console from '../logging'
 import {
   finiteStateChecker,
@@ -27,7 +28,7 @@ const sllWatcher = async ({
   user: SignalXUser
 }) => {
   try {
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
     const orderHistory = (
       await withRemoteRetry(() => kite.getOrderHistory(sllOrderId))
     ).reverse()

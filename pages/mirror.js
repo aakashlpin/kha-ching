@@ -37,7 +37,7 @@ const Mirror = () => {
       await axios.put(mirrorDetails?.mirrorUrl, {
         ...data,
         api_key: user.session.api_key,
-        access_token: user.session.access_token
+        access_token: user.session?.KITE.access_token
       })
       mutate(mirrorDetails.mirrorUrl)
     } catch (e) {

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { uniqBy } from 'lodash'
-import { Promise } from 'bluebird'
+import { BROKER } from '../../lib/constants'
 
 import withSession from '../../lib/session'
 import {
@@ -29,7 +29,7 @@ export default withSession(async (req, res) => {
       `${process.env.DATABASE_HOST_URL}/odr_${process.env.DATABASE_USER_KEY}/${orderTag}`
     )
 
-    const kite = syncGetKiteInstance(user)
+    const kite = syncGetKiteInstance(user, BROKER.KITE)
     const rawOrders = ordersInDB?.length ? ordersInDB : await kite.getOrders()
     const uniqueOrders = uniqBy(rawOrders, order => order.order_id)
 
