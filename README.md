@@ -24,8 +24,6 @@ _Update - Redislabs free tier drops connections very often. Recommend upgrading 
 
 ## 1-click Installation
 
-_Update - DigitalOcean's app platform is terribly slow. Recommend using render.com for all new installations. All other instructions remain as is._
-
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 or, deploy the application on DigitalOcean's (DO) apps platform.

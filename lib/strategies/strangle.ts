@@ -6,10 +6,11 @@ import {
   INSTRUMENT_DETAILS,
   PRODUCT_TYPE,
   STRANGLE_ENTRY_STRATEGIES,
-  VOLATILITY_TYPE
+  VOLATILITY_TYPE,
+  EXIT_STRATEGIES
 } from '../constants'
 import console from '../logging'
-import { EXIT_TRADING_Q_NAME } from '../queue'
+import { addToAutoSquareOffQueue, EXIT_TRADING_Q_NAME } from '../queue'
 import {
   apiResponseObject,
   attemptBrokerOrders,
@@ -28,6 +29,7 @@ import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import axios from 'axios'
+import { ASO_TYPE } from '../../types/misc'
 
 export const getNearestContractDate = async (
   atmStrike: number,
@@ -140,7 +142,7 @@ const getStrangleStrikes = async ({
   }
 }
 
-async function atmStrangle (args: ATM_STRANGLE_TRADE) {
+async function atmStrangle (jobData: ATM_STRANGLE_TRADE) {
   try {
     const {
       instrument,
@@ -157,8 +159,10 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       productType = PRODUCT_TYPE.MIS,
       volatilityType = VOLATILITY_TYPE.SHORT,
       expiryType,
+      isAutoSquareOffEnabled,
+      exitStrategy,
       _nextTradingQueue = EXIT_TRADING_Q_NAME
-    } = args
+    } = jobData
     const {
       lotSize,
       nfoSymbol,
@@ -170,7 +174,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     const sourceData = await getIndexInstruments()
 
     const { atmStrike } = await getATMStrikes({
-      ...args,
+      ...jobData,
       takeTradeIrrespectiveSkew: true,
       instrumentsData: sourceData,
       startTime: dayjs(),
@@ -203,6 +207,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
 
     let allOrdersLocal: KiteOrder[] = []
     let hedgeOrdersLocal: KiteOrder[] = []
+    let hedgeOrders: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
 
     if (volatilityType === VOLATILITY_TYPE.SHORT && isHedgeEnabled) {
@@ -278,6 +283,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
         throw Error('rolled back onBrokenHedgeOrders')
       }
 
+      hedgeOrders = [...statefulOrders]
       allOrders = [...statefulOrders]
     }
 
@@ -299,6 +305,27 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       })
 
       throw Error('rolled back on onBrokenPrimaryOrders')
+    }
+
+    if (isAutoSquareOffEnabled) {
+      if (exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD) {
+        await addToAutoSquareOffQueue({
+          squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+          jobResponse: { rawKiteOrdersResponse: allOrders },
+          initialJobData: jobData
+        })
+      } else {
+        // all hedges are enabled,
+        // turn on auto square off on those positions
+        // as they won't have SL orders
+        if (hedgeOrders.length) {
+          await addToAutoSquareOffQueue({
+            squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+            jobResponse: { rawKiteOrdersResponse: hedgeOrders },
+            initialJobData: jobData
+          })
+        }
+      }
     }
 
     return {

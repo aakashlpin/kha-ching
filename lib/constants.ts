@@ -57,7 +57,6 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     exchange: 'NSE',
     strikeStepSize: 100,
     // [27501-40000]
-    // freezeQty: 100
     freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {

@@ -2,6 +2,9 @@ import { Queue, QueueScheduler, JobsOptions, Job } from 'bullmq'
 import dayjs from 'dayjs'
 import IORedis from 'ioredis'
 import { v4 as uuidv4 } from 'uuid'
+import { KiteOrder } from '../types/kite'
+import { ASO_TYPE } from '../types/misc'
+import { SUPPORTED_TRADE_CONFIG } from '../types/trade'
 
 import console from './logging'
 import {
@@ -11,6 +14,7 @@ import {
   getQueueOptionsForExitStrategy,
   getTimeLeftInMarketClosingMs,
   isMockOrder,
+  logDeep,
   ms
 } from './utils'
 
@@ -165,12 +169,19 @@ export async function addToNextQueue (
 }
 
 export async function addToAutoSquareOffQueue ({
+  squareOffType,
   initialJobData,
   jobResponse
-}) {
-  const {
-    autoSquareOffProps: { time, deletePendingOrders }
-  } = initialJobData
+}: {
+  squareOffType: ASO_TYPE
+  jobResponse: {
+    rawKiteOrdersResponse: KiteOrder[]
+    squareOffOrders?: KiteOrder[]
+  }
+  initialJobData: SUPPORTED_TRADE_CONFIG
+}): Promise<Job> {
+  const { autoSquareOffProps } = initialJobData
+  const { time } = autoSquareOffProps as { time: string }
   const { rawKiteOrdersResponse, squareOffOrders } = jobResponse
   const finalOrderTime = getMisOrderLastSquareOffTime()
   const runAtTime = isMockOrder()
@@ -180,19 +191,25 @@ export async function addToAutoSquareOffQueue ({
     : time
 
   const delay = dayjs(runAtTime).diff(dayjs())
-  // console.log(`>>> auto square off scheduled for ${Math.ceil(delay / 60000)} minutes from now`)
+  console.log(
+    `>>> auto square off scheduled for ${Math.ceil(
+      delay / 60000
+    )} minutes from now`
+  )
+  const queueProps = {
+    squareOffType,
+    rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
+    initialJobData
+  }
+  logDeep(queueProps)
   return autoSquareOffQueue.add(
     `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
-    {
-      rawKiteOrdersResponse: squareOffOrders || rawKiteOrdersResponse,
-      deletePendingOrders,
-      initialJobData
-    },
+    queueProps,
     {
       delay
     }
   )
 }
 
-export const cleanupQueues = async () =>
+export const cleanupQueues = async (): Promise<void[]> =>
   await Promise.all(allQueues.map(async queue => await queue.obliterate()))

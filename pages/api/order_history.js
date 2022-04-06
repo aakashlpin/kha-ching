@@ -1,5 +1,5 @@
 import withSession from '../../lib/session'
-import { syncGetKiteInstance } from '../../lib/utils'
+import { getOrderHistory, syncGetKiteInstance } from '../../lib/utils'
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')
@@ -12,8 +12,8 @@ export default withSession(async (req, res) => {
 
   const { id: orderId } = req.query
 
-  const orderHistory = await kite.getOrderHistory(orderId)
-  res.json(orderHistory.reverse())
+  const orderHistory = await getOrderHistory(kite, orderId)
+  res.json(orderHistory)
 })
 
 // 210428200252388

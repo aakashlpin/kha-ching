@@ -1,10 +1,11 @@
 import dayjs, { ConfigType } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
-import { SignalXUser } from '../../types/misc'
+import { SignalXUser, ASO_TYPE } from '../../types/misc'
 import { ATM_STRADDLE_TRADE } from '../../types/trade'
 
 import {
   EXPIRY_TYPE,
+  EXIT_STRATEGIES,
   INSTRUMENT_DETAILS,
   INSTRUMENT_PROPERTIES,
   PRODUCT_TYPE,
@@ -12,7 +13,7 @@ import {
 } from '../constants'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import console from '../logging'
-import { EXIT_TRADING_Q_NAME } from '../queue'
+import { EXIT_TRADING_Q_NAME, addToAutoSquareOffQueue } from '../queue'
 import {
   attemptBrokerOrders,
   delay,
@@ -193,24 +194,9 @@ export const createOrder = ({
   }
 }
 
-async function atmStraddle ({
-  _kite,
-  instrument,
-  lots,
-  user,
-  expiresAt,
-  orderTag,
-  rollback,
-  maxSkewPercent,
-  thresholdSkewPercent,
-  takeTradeIrrespectiveSkew,
-  isHedgeEnabled,
-  hedgeDistance,
-  productType = PRODUCT_TYPE.MIS,
-  volatilityType = VOLATILITY_TYPE.SHORT,
-  expiryType = EXPIRY_TYPE.CURRENT,
-  _nextTradingQueue = EXIT_TRADING_Q_NAME
-}: ATM_STRADDLE_TRADE): Promise<
+async function atmStraddle (
+  jobData: ATM_STRADDLE_TRADE
+): Promise<
   | {
       _nextTradingQueue: string
       straddle: Record<string, unknown>
@@ -219,6 +205,26 @@ async function atmStraddle ({
     }
   | undefined
 > {
+  const {
+    _kite,
+    instrument,
+    lots,
+    user,
+    expiresAt,
+    orderTag,
+    rollback,
+    maxSkewPercent,
+    thresholdSkewPercent,
+    takeTradeIrrespectiveSkew,
+    isAutoSquareOffEnabled,
+    isHedgeEnabled,
+    hedgeDistance,
+    exitStrategy,
+    productType = PRODUCT_TYPE.MIS,
+    volatilityType = VOLATILITY_TYPE.SHORT,
+    expiryType = EXPIRY_TYPE.CURRENT,
+    _nextTradingQueue = EXIT_TRADING_Q_NAME
+  } = jobData
   const kite = _kite || syncGetKiteInstance(user)
 
   const {
@@ -252,6 +258,7 @@ async function atmStraddle ({
 
     let allOrdersLocal: KiteOrder[] = []
     let hedgeOrdersLocal: KiteOrder[] = []
+    let hedgeOrders: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
 
     if (volatilityType === VOLATILITY_TYPE.SHORT && isHedgeEnabled) {
@@ -324,6 +331,7 @@ async function atmStraddle ({
         throw Error('rolled back onBrokenHedgeOrders')
       }
 
+      hedgeOrders = [...statefulOrders]
       allOrders = [...statefulOrders]
     }
 
@@ -345,6 +353,27 @@ async function atmStraddle ({
       })
 
       throw Error('rolled back on onBrokenPrimaryOrders')
+    }
+
+    if (isAutoSquareOffEnabled) {
+      if (exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD) {
+        await addToAutoSquareOffQueue({
+          squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+          jobResponse: { rawKiteOrdersResponse: allOrders },
+          initialJobData: jobData
+        })
+      } else {
+        // if hedges are enabled,
+        // turn on auto square off on those positions
+        // as they won't have SL orders
+        if (hedgeOrders.length) {
+          await addToAutoSquareOffQueue({
+            squareOffType: ASO_TYPE.OPEN_POSITION_SQUARE_OFF,
+            jobResponse: { rawKiteOrdersResponse: hedgeOrders },
+            initialJobData: jobData
+          })
+        }
+      }
     }
 
     return {

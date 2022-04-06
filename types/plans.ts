@@ -21,7 +21,7 @@ export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
   // _collection?: DailyPlansDayKey
   isAutoSquareOffEnabled: boolean
   runNow?: boolean
-  autoSquareOffProps?: { time: string; deletePendingOrders: boolean }
+  autoSquareOffProps?: { time: string }
   runAt?: string
   squareOffTime: string | undefined
   expiresAt?: string

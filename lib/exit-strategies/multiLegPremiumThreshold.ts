@@ -39,24 +39,20 @@ import {
   syncGetKiteInstance,
   withRemoteRetry,
   patchDbTrade,
-  getMultipleInstrumentPrices
+  getMultipleInstrumentPrices,
+  logDeep
 } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
 
-const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) => {
-  try {
-    await patchDbTrade({
-      _id: dbId,
-      patchProps: {
-        liveTrailingSl: trailingSl,
-        lastTrailingSlSetAt: dayjs().format()
-      }
-    })
-  } catch (e) {
-    console.log('🔴 [patchTradeWithTrailingSL] error', e)
-  }
-}
+const patchTradeWithTrailingSL = async ({ dbId, trailingSl }) =>
+  await patchDbTrade({
+    _id: dbId,
+    patchProps: {
+      liveTrailingSl: trailingSl,
+      lastTrailingSlSetAt: dayjs().format()
+    }
+  })
 
 const tradeHeartbeat = async dbId => {
   const data = await patchDbTrade({
@@ -144,7 +140,14 @@ async function multiLegPremiumThreshold ({
         '🔴 [multiLegPremiumThreshold] getInstrumentPrice error',
         error
       )
-      return Promise.reject(new Error('Kite APIs acting up'))
+      // [TODO] see if we can resolve this and add back to the queue to prevent memory leak issues
+      await addToNextQueue(initialJobData, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse,
+        squareOffOrders
+      })
+
+      return Promise.resolve('Kite APIs acting up!')
     }
 
     const liveTotalPremium = tradingSymbols.reduce((sum, tradingSymbol) => {
@@ -226,7 +229,12 @@ async function multiLegPremiumThreshold ({
 
     if (liveTotalPremium < checkAgainstSl) {
       const rejectMsg = `🟢 [multiLegPremiumThreshold] liveTotalPremium (${liveTotalPremium}) < threshold (${checkAgainstSl})`
-      return Promise.reject(new Error(rejectMsg))
+      await addToNextQueue(initialJobData, {
+        _nextTradingQueue: EXIT_TRADING_Q_NAME,
+        rawKiteOrdersResponse,
+        squareOffOrders
+      })
+      return Promise.resolve(rejectMsg)
     }
 
     // terminate the checker
@@ -280,13 +288,13 @@ async function multiLegPremiumThreshold ({
           legOrder => legOrder.tradingsymbol === losingLeg.tradingSymbol
         )
       )
-      // console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
+      console.log('squareOffLosingLegs', logDeep(squareOffLosingLegs))
       const bringToCostOrders = winningLegs.map(winningLeg =>
         legsOrders.find(
           legOrder => legOrder.tradingsymbol === winningLeg.tradingSymbol
         )
       )
-      // console.log('bringToCostOrders', logDeep(bringToCostOrders))
+      console.log('bringToCostOrders', logDeep(bringToCostOrders))
       // 1. square off losing legs
       await doSquareOffPositions(
         squareOffLosingLegs as KiteOrder[],

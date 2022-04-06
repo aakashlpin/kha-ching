@@ -1,7 +1,6 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { KiteOrder } from '../../types/kite'
-import { SL_ORDER_TYPE } from '../../types/plans'
 import { DIRECTIONAL_OPTION_SELLING_TRADE } from '../../types/trade'
 
 import console from '../logging'
@@ -10,6 +9,7 @@ import {
   attemptBrokerOrders,
   getLastOpenDateSince,
   getNearestCandleTime,
+  getOrderHistory,
   getPercentageChange,
   logDeep,
   remoteOrderSuccessEnsurer,
@@ -35,15 +35,14 @@ async function minXPercentOrSupertrend ({
   hedgeOrderResponse
 }: DOS_TRAILING_INTERFACE): Promise<any> {
   const { user, orderTag, slLimitPricePercent = 1, instrument } = initialJobData
-  const slOrderType = SL_ORDER_TYPE.SLL
   try {
     const kite = syncGetKiteInstance(user)
     const [rawKiteOrderResponse] = rawKiteOrdersResponse
     // NB: rawKiteOrderResponse here is of pending SLM Order
-    const orderHistory: KiteOrder[] = await withRemoteRetry(() =>
-      kite.getOrderHistory(rawKiteOrderResponse.order_id)
+    const byRecencyOrderHistory: KiteOrder[] = await getOrderHistory(
+      kite,
+      rawKiteOrderResponse.order_id!
     )
-    const byRecencyOrderHistory = orderHistory.reverse()
 
     const isSlOrderCancelled = byRecencyOrderHistory.find(
       odr => odr.status === 'CANCELLED'
@@ -126,28 +125,21 @@ async function minXPercentOrSupertrend ({
 
     // console.log('should trail SL!')
     try {
-      const sllOrderProps =
-        slOrderType === SL_ORDER_TYPE.SLL
-          ? convertSlmToSll(
-              {
-                transaction_type: kite.TRANSACTION_TYPE_BUY,
-                trigger_price: newSL
-              } as KiteOrder,
-              slLimitPricePercent!,
-              kite
-            )
-          : null
+      const sllOrderProps = convertSlmToSll(
+        {
+          transaction_type: kite.TRANSACTION_TYPE_BUY,
+          trigger_price: newSL
+        } as KiteOrder,
+        slLimitPricePercent!,
+        kite
+      )
       const res = await kite.modifyOrder(
         triggerPendingOrder!.variety,
         triggerPendingOrder!.order_id,
-        slOrderType === SL_ORDER_TYPE.SLL
-          ? {
-              trigger_price: sllOrderProps!.trigger_price,
-              price: sllOrderProps!.price
-            }
-          : {
-              trigger_price: newSL
-            }
+        {
+          trigger_price: sllOrderProps!.trigger_price,
+          price: sllOrderProps!.price
+        }
       )
       console.log(
         `🟢 [minXPercentOrSupertrend] SL modified from ${String(
@@ -175,10 +167,7 @@ async function minXPercentOrSupertrend ({
             tag: orderTag!
           }
 
-          if (slOrderType === SL_ORDER_TYPE.SLL) {
-            exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
-          }
-
+          exitOrder = convertSlmToSll(exitOrder, slLimitPricePercent!, kite)
           const remoteOrder = remoteOrderSuccessEnsurer({
             ensureOrderState: 'TRIGGER PENDING',
             instrument,

@@ -12,11 +12,12 @@ import { Promise } from 'bluebird'
 import { SignalXUser } from '../../types/misc'
 import console from '../logging'
 import {
+  convertSllToMarketOrder,
   finiteStateChecker,
+  getOrderHistory,
   ms,
   orderStateChecker,
-  syncGetKiteInstance,
-  withRemoteRetry
+  syncGetKiteInstance
 } from '../utils'
 
 const sllWatcher = async ({
@@ -28,9 +29,7 @@ const sllWatcher = async ({
 }) => {
   try {
     const kite = syncGetKiteInstance(user)
-    const orderHistory = (
-      await withRemoteRetry(() => kite.getOrderHistory(sllOrderId))
-    ).reverse()
+    const orderHistory = await getOrderHistory(kite, sllOrderId)
     const isOrderCompleted = orderHistory.find(
       order => order.status === kite.STATUS_COMPLETE
     )
@@ -39,7 +38,7 @@ const sllWatcher = async ({
     }
 
     const cancelledOrder = orderHistory.find(order =>
-      order.status.includes(kite.STATUS_CANCELLED)
+      order.status!.includes(kite.STATUS_CANCELLED)
     )
 
     if (cancelledOrder) {
@@ -71,11 +70,7 @@ const sllWatcher = async ({
           sllOrderId
         )
         try {
-          await withRemoteRetry(() =>
-            kite.modifyOrder(openOrder.variety, sllOrderId, {
-              order_type: kite.ORDER_TYPE_MARKET
-            })
-          )
+          await convertSllToMarketOrder(kite, openOrder)
           return Promise.resolve(
             `🟢 [sllWatcher] squared off open SLL order id ${sllOrderId}`
           )

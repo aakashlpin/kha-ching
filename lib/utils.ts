@@ -357,8 +357,19 @@ export function syncGetKiteInstance (user) {
   })
 }
 
-export async function getCompletedOrderFromOrderHistoryById (kite, orderId) {
-  const orders = await kite.getOrderHistory(orderId)
+export async function getOrderHistory (
+  kite: any,
+  orderId: string
+): Promise<KiteOrder[]> {
+  const history = await withRemoteRetry(() => kite.getOrderHistory(orderId))
+  return [...history].reverse()
+}
+
+export async function getCompletedOrderFromOrderHistoryById (
+  kite: any,
+  orderId: string
+): Promise<KiteOrder | undefined> {
+  const orders = await getOrderHistory(kite, orderId)
   return orders.find(odr => odr.status === 'COMPLETE')
 }
 
@@ -544,7 +555,20 @@ const marketHolidays = [
   ['October 15,2021', 'Friday'],
   ['November 04,2021', 'Thursday'],
   ['November 05,2021', 'Friday'],
-  ['November 19,2021', 'Friday']
+  ['November 19,2021', 'Friday'],
+  ['January 26,2022', 'Wednesday'],
+  ['March 01,2022', 'Tuesday'],
+  ['March 18,2022', 'Friday'],
+  ['April 14,2022', 'Thursday'],
+  ['April 15,2022', 'Friday'],
+  ['May 03,2022', 'Tuesday'],
+  ['August 09,2022', 'Tuesday'],
+  ['August 15,2022', 'Monday'],
+  ['August 31,2022', 'Wednesday'],
+  ['October 05,2022', 'Wednesday'],
+  ['October 24,2022', 'Monday'],
+  ['October 26,2022', 'Wednesday'],
+  ['November 08,2022', 'Tuesday']
 ]
 
 export const isDateHoliday = (date: Dayjs) => {
@@ -945,10 +969,7 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
         return false
       }
       try {
-        const orderHistory = await withRemoteRetry(() =>
-          kite.getOrderHistory(orderId)
-        )
-        const byRecencyOrderHistory = orderHistory.reverse()
+        const byRecencyOrderHistory = await getOrderHistory(kite, orderId)
         // if it reaches here, then order exists in broker system
 
         const expectedStateOrder = byRecencyOrderHistory.find(
@@ -963,7 +984,6 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
           orderId,
           ensureOrderState
         })
-        logDeep(orderHistory)
 
         const wasOrderRejectedOrCancelled = byRecencyOrderHistory.find(
           odr =>
@@ -1384,4 +1404,21 @@ export const getStrikeByDelta = (
 export function round (value: number, step = 0.5): number {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
+}
+
+export const convertSllToMarketOrder = async (
+  kite: any,
+  order: KiteOrder
+): Promise<void> => {
+  // ensure order is not in complete state
+  const completedOrder = await getCompletedOrderFromOrderHistoryById(kite, order.order_id!)
+  if (completedOrder) {
+    console.log(`order #${order.order_id} convertSllToMarketOrder already completed`)
+    return
+  }
+  return withRemoteRetry(() =>
+    kite.modifyOrder(order.variety, order.order_id, {
+      order_type: kite.ORDER_TYPE_MARKET
+    })
+  )
 }
