@@ -31,7 +31,7 @@ dayjs.extend(isSameOrBefore);
 import https from "https";
 import fs from "fs";
 import memoizer from "memoizee";
-import { IConnect } from "inveslib";
+import { IConnect } from "invesbroking";
 
 const MOCK_ORDERS = process.env.MOCK_ORDERS
   ? JSON.parse(process.env.MOCK_ORDERS)
@@ -361,7 +361,6 @@ export function syncGetKiteInstance(user, broker) {
 
   if (broker == BROKER.KITE) {
     const kc = invesKite.getInstance().getKC(user.session?.KITE.access_token);
-    console.log("Reunning from KIte..");
     return kc;
   }
 }

@@ -41,7 +41,7 @@ export default withSession(async (req, res) => {
     })
 
     const existingAccessToken = await checkHasSameAccessToken(
-      user.session.KITE?.access_token!
+      user?.session?.KITE?.access_token || ''
     )
     if (!existingAccessToken) {
       // first login, or revoked login
