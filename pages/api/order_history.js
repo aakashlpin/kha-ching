@@ -1,6 +1,6 @@
 import withSession from '../../lib/session'
 import { syncGetKiteInstance } from '../../lib/utils'
-import { BROKER } from '../../constants'
+import { BROKER } from '../../lib/constants'
 
 export default withSession(async (req, res) => {
   const user = req.session.get('user')
