@@ -360,7 +360,7 @@ export function syncGetKiteInstance(user, broker) {
   }
 
   if (broker == BROKER.KITE) {
-    const kc = invesKite.getInstance().getKC(user.session?.KITE.access_token);
+    const kc = invesKite.getInstance().getKC(accessToken);
     return kc;
   }
 }
@@ -820,7 +820,7 @@ export const getTradingSymbolsByOptionPrice = async ({
     })) as TradingSymbolInterface;
 
     return {
-      exchange: kite.EXCHANGE_NFO,
+      exchange: kite.kc.EXCHANGE_NFO,
       tradingSymbol: tradingsymbol,
     };
   });
@@ -983,8 +983,8 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
 
         const wasOrderRejectedOrCancelled = byRecencyOrderHistory.find(
           (odr) =>
-            odr.status === kite.STATUS_REJECTED ||
-            odr.status === kite.STATUS_CANCELLED
+            odr.status === kite.kc.STATUS_REJECTED ||
+            odr.status === kite.kc.STATUS_CANCELLED
         );
 
         if (wasOrderRejectedOrCancelled) {
@@ -992,7 +992,7 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
             "🔴 [orderStateChecker] rejected or cancelled",
             byRecencyOrderHistory
           );
-          throw new Error(kite.STATUS_REJECTED);
+          throw new Error(kite.kc.STATUS_REJECTED);
         }
 
         // in every other case, retry until its status changes to either of above states
@@ -1001,12 +1001,12 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
       } catch (e) {
         console.log("🔴 [orderStateChecker] caught", e);
         if (
-          e?.message === kite.STATUS_REJECTED ||
+          e?.message === kite.kc.STATUS_REJECTED ||
           (e?.status === "error" &&
             e?.error_type === "GeneralException" &&
             e?.message === "Couldn't find that `order_id`.")
         ) {
-          throw new Error(kite.STATUS_REJECTED);
+          throw new Error(kite.kc.STATUS_REJECTED);
         }
         // for other exceptions like network layer, retry
         await Promise.delay(ms(2));
@@ -1018,7 +1018,7 @@ export const orderStateChecker = (kite, orderId, ensureOrderState) => {
       .then(resolve)
       .catch((e) => {
         console.log("🔴 [orderStateChecker] checker error", e);
-        if (e?.message === kite.STATUS_REJECTED) {
+        if (e?.message === kite.kc.STATUS_REJECTED) {
           reject(e);
         }
       });
@@ -1154,7 +1154,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
     }
     const orderAckResponse = mockOrders
       ? { order_id: "" }
-      : await kite.placeOrder(kite.VARIETY_REGULAR, orderProps);
+      : await kite.placeOrder(kite.kc.VARIETY_REGULAR, orderProps);
     const { order_id: ackOrderId } = orderAckResponse;
     const isOrderInUltimateStatePr = orderStateChecker(
       kite,
@@ -1179,7 +1179,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
           response: [orderAckResponse],
         };
       }
-      if (e?.message === kite.STATUS_REJECTED) {
+      if (e?.message === kite.kc.STATUS_REJECTED) {
         console.log(
           "🟢 [remoteOrderSuccessEnsurer] retrying rejected order",
           orderProps
@@ -1244,7 +1244,7 @@ export const remoteOrderSuccessEnsurer = async (args: {
             response: [ultimateStateOrder],
           };
         } catch (e) {
-          if (e?.message === kite.STATUS_REJECTED) {
+          if (e?.message === kite.kc.STATUS_REJECTED) {
             return remoteOrderSuccessEnsurer({
               ...args,
               attemptCount: attemptCount + 1,

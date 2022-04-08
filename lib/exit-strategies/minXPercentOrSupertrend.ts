@@ -131,7 +131,7 @@ async function minXPercentOrSupertrend ({
         slOrderType === SL_ORDER_TYPE.SLL
           ? convertSlmToSll(
               {
-                transaction_type: kite.TRANSACTION_TYPE_BUY,
+                transaction_type: kite.kc.TRANSACTION_TYPE_BUY,
                 trigger_price: newSL
               } as KiteOrder,
               slLimitPricePercent!,
@@ -170,8 +170,8 @@ async function minXPercentOrSupertrend ({
             tradingsymbol: triggerPendingOrder!.tradingsymbol,
             quantity: triggerPendingOrder!.quantity,
             exchange: triggerPendingOrder!.exchange,
-            transaction_type: kite.TRANSACTION_TYPE_BUY,
-            order_type: kite.ORDER_TYPE_SLM,
+            transaction_type: kite.kc.TRANSACTION_TYPE_BUY,
+            order_type: kite.kc.ORDER_TYPE_SLM,
             product: triggerPendingOrder!.product,
             tag: orderTag!
           }

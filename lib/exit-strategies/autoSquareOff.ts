@@ -85,9 +85,9 @@ export async function doSquareOffPositions (
         exchange: order.exchange,
         transaction_type:
           order.quantity < 0
-            ? kite.TRANSACTION_TYPE_BUY
-            : kite.TRANSACTION_TYPE_SELL,
-        order_type: kite.ORDER_TYPE_MARKET,
+            ? kite.kc.TRANSACTION_TYPE_BUY
+            : kite.kc.TRANSACTION_TYPE_SELL,
+        order_type: kite.kc.ORDER_TYPE_MARKET,
         product: order.product,
         tag: initialJobData.orderTag
       }
@@ -96,7 +96,7 @@ export async function doSquareOffPositions (
         _kite: kite,
         orderProps: exitOrder,
         instrument: initialJobData.instrument!,
-        ensureOrderState: kite.STATUS_COMPLETE,
+        ensureOrderState: kite.kc.STATUS_COMPLETE,
         user: initialJobData.user!
       })
     })

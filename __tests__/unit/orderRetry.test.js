@@ -50,14 +50,14 @@ test('should return true for successful order', async () => {
   // kite.getOrderHistory = jest.fn().mockImplementation(() =>
   //   Promise.resolve([
   //     {
-  //       status: kite.STATUS_COMPLETE
+  //       status: kite.kc.STATUS_COMPLETE
   //     }
   //   ])
   // )
 
   const ensured = await remoteOrderSuccessEnsurer({
     _kite: kite,
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     orderProps: {
       quantity: 200
     },
@@ -72,7 +72,7 @@ test('should return true for successful order', async () => {
   console.log(ensured)
 
   // expect(ensured).toStrictEqual({
-  //   response: { status: kite.STATUS_COMPLETE },
+  //   response: { status: kite.kc.STATUS_COMPLETE },
   //   successful: true
   // })
 })
@@ -93,7 +93,7 @@ test('should retry 3 times for orders that after punching continue to not exist,
   try {
     remoteOrderSuccessEnsurer({
       _kite: kite,
-      ensureOrderState: kite.STATUS_COMPLETE,
+      ensureOrderState: kite.kc.STATUS_COMPLETE,
       orderProps: {},
       onFailureRetryAfterMs: ms(5),
       retryAttempts: 3,
@@ -127,7 +127,7 @@ test('should return false when order history api check times out', async () => {
   const ensured = await remoteOrderSuccessEnsurer({
     _kite: kite,
     orderProps: {},
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
@@ -198,7 +198,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
       exchange: 'NFO'
     },
     remoteRetryTimeout: ms(15),
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
@@ -256,7 +256,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
       transaction_type: 'SELL',
       exchange: 'NFO'
     },
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
@@ -323,13 +323,13 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
       .mockImplementation(() =>
         Promise.resolve([
           {
-            status: kite.STATUS_COMPLETE
+            status: kite.kc.STATUS_COMPLETE
           }
         ])
       )
       .mockRejectedValueOnce([
         {
-          status: kite.STATUS_REJECTED
+          status: kite.kc.STATUS_REJECTED
         }
       ])
   }
@@ -346,7 +346,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
       transaction_type: 'SELL',
       exchange: 'NFO'
     },
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),
@@ -426,7 +426,7 @@ test('freeze qty should work', async () => {
     getOrderHistory: jest.fn().mockImplementation(() =>
       Promise.resolve([
         {
-          status: kite.STATUS_COMPLETE
+          status: kite.kc.STATUS_COMPLETE
         }
       ])
     )
@@ -445,7 +445,7 @@ test('freeze qty should work', async () => {
       transaction_type: 'SELL',
       exchange: 'NFO'
     },
-    ensureOrderState: kite.STATUS_COMPLETE,
+    ensureOrderState: kite.kc.STATUS_COMPLETE,
     onFailureRetryAfterMs: ms(1),
     retryAttempts: 2,
     orderStatusCheckTimeout: ms(5),

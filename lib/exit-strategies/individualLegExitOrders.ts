@@ -23,19 +23,19 @@ export const convertSlmToSll = (
   const absoluteLimitPriceDelta =
     ((slLimitPricePercent ?? 0) / 100) * sllOrder.trigger_price!
   let absoluteLimitPrice
-  if (sllOrder.transaction_type === kite.TRANSACTION_TYPE_SELL) {
+  if (sllOrder.transaction_type === kite.kc.TRANSACTION_TYPE_SELL) {
     absoluteLimitPrice = sllOrder.trigger_price! - absoluteLimitPriceDelta
   } else {
     absoluteLimitPrice = sllOrder.trigger_price! + absoluteLimitPriceDelta
   }
 
-  sllOrder.order_type = kite.ORDER_TYPE_SL
+  sllOrder.order_type = kite.kc.ORDER_TYPE_SL
   sllOrder.price = round(absoluteLimitPrice)
 
   if (sllOrder.price === sllOrder.trigger_price) {
     // keep a min delta of 0.1 from trigger_price
     sllOrder.price =
-      sllOrder.transaction_type === kite.TRANSACTION_TYPE_BUY
+      sllOrder.transaction_type === kite.kc.TRANSACTION_TYPE_BUY
         ? sllOrder.price + 0.1
         : sllOrder.price - 0.1
   }
@@ -82,21 +82,21 @@ async function individualLegExitOrders ({
     let exitOrderTriggerPrice
 
     const absoluteSl: number = (slmPercent / 100) * avgOrderPrice!
-    if (transactionType === kite.TRANSACTION_TYPE_SELL) {
+    if (transactionType === kite.kc.TRANSACTION_TYPE_SELL) {
       // original order is short positions
       // exit orders would be buy orders with prices slmPercent above the avg sell prices
-      exitOrderTransactionType = kite.TRANSACTION_TYPE_BUY
+      exitOrderTransactionType = kite.kc.TRANSACTION_TYPE_BUY
       exitOrderTriggerPrice = avgOrderPrice! + absoluteSl
     } else {
       // original order is long positions
-      exitOrderTransactionType = kite.TRANSACTION_TYPE_SELL
+      exitOrderTransactionType = kite.kc.TRANSACTION_TYPE_SELL
       exitOrderTriggerPrice = avgOrderPrice! - absoluteSl
     }
 
     let exitOrder: KiteOrder = {
       transaction_type: exitOrderTransactionType,
       trigger_price: exitOrderTriggerPrice,
-      order_type: kite.ORDER_TYPE_SLM,
+      order_type: kite.kc.ORDER_TYPE_SLM,
       quantity: Math.abs(quantity),
       tag: orderTag!,
       product,
