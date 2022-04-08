@@ -72,14 +72,14 @@ const slmWatcher = async ({
       await withRemoteRetry(() => kite.getOrderHistory(slmOrderId))
     ).reverse()
     const isOrderCompleted = orderHistory.find(
-      order => order.status === kite.STATUS_COMPLETE
+      order => order.status === kite.kc.STATUS_COMPLETE
     )
     if (isOrderCompleted) {
       return Promise.resolve('[slmWatcher] order COMPLETED!')
     }
 
     const cancelledOrder = orderHistory.find(order =>
-      order.status.includes(kite.STATUS_CANCELLED)
+      order.status.includes(kite.kc.STATUS_CANCELLED)
     )
 
     if (!cancelledOrder) {
@@ -158,10 +158,10 @@ const slmWatcher = async ({
     )
 
     const newOrderType =
-      (transactionType === kite.TRANSACTION_TYPE_BUY && ltp < triggerPrice) ||
-      (transactionType === kite.TRANSACTION_TYPE_SELL && ltp > triggerPrice)
-        ? kite.ORDER_TYPE_SLM
-        : kite.ORDER_TYPE_MARKET
+      (transactionType === kite.kc.TRANSACTION_TYPE_BUY && ltp < triggerPrice) ||
+      (transactionType === kite.kc.TRANSACTION_TYPE_SELL && ltp > triggerPrice)
+        ? kite.kc.ORDER_TYPE_SLM
+        : kite.kc.ORDER_TYPE_MARKET
 
     const exitOrder: KiteOrder = {
       tradingsymbol,
@@ -173,7 +173,7 @@ const slmWatcher = async ({
       tag: _queueJobData.initialJobData.orderTag!
     }
 
-    if (newOrderType === kite.ORDER_TYPE_SLM) {
+    if (newOrderType === kite.kc.ORDER_TYPE_SLM) {
       exitOrder.trigger_price = triggerPrice
     }
 
@@ -182,7 +182,7 @@ const slmWatcher = async ({
       const { response } = await remoteOrderSuccessEnsurer({
         ensureOrderState: exitOrder.trigger_price
           ? 'TRIGGER PENDING'
-          : kite.STATUS_COMPLETE,
+          : kite.kc.STATUS_COMPLETE,
         orderProps: exitOrder,
         instrument: _queueJobData.initialJobData.instrument,
         user

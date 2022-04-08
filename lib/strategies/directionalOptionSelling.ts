@@ -287,7 +287,7 @@ async function punchOrders (
       })
 
   const ltp = await withRemoteRetry(async () =>
-    getInstrumentPrice(kite, optionTradingSymbol, kite.EXCHANGE_NFO)
+    getInstrumentPrice(kite, optionTradingSymbol, kite.kc.EXCHANGE_NFO)
   )
   if (ltp < 10) {
     console.log(
@@ -316,11 +316,11 @@ async function punchOrders (
       hedgeOrder = {
         tradingsymbol: hedgeTradingSymbol,
         quantity: Number(lots) * lotSize,
-        exchange: kite.EXCHANGE_NFO,
-        transaction_type: kite.TRANSACTION_TYPE_BUY,
-        order_type: kite.ORDER_TYPE_MARKET,
+        exchange: kite.kc.EXCHANGE_NFO,
+        transaction_type: kite.kc.TRANSACTION_TYPE_BUY,
+        order_type: kite.kc.ORDER_TYPE_MARKET,
         product: productType,
-        validity: kite.VALIDITY_DAY,
+        validity: kite.kc.VALIDITY_DAY,
         tag: orderTag
       }
 
@@ -329,7 +329,7 @@ async function punchOrders (
           _kite: kite,
           orderProps: hedgeOrder,
           instrument,
-          ensureOrderState: kite.STATUS_COMPLETE,
+          ensureOrderState: kite.kc.STATUS_COMPLETE,
           user: user!
         })
 
@@ -357,11 +357,11 @@ async function punchOrders (
   const order = {
     tradingsymbol: optionTradingSymbol,
     quantity: Number(lots) * lotSize,
-    exchange: kite.EXCHANGE_NFO,
-    transaction_type: kite.TRANSACTION_TYPE_SELL,
-    order_type: kite.ORDER_TYPE_MARKET,
+    exchange: kite.kc.EXCHANGE_NFO,
+    transaction_type: kite.kc.TRANSACTION_TYPE_SELL,
+    order_type: kite.kc.ORDER_TYPE_MARKET,
     product: productType,
-    validity: kite.VALIDITY_DAY,
+    validity: kite.kc.VALIDITY_DAY,
     tag: orderTag
   }
 
@@ -371,7 +371,7 @@ async function punchOrders (
       _kite: kite,
       orderProps: order,
       instrument,
-      ensureOrderState: kite.STATUS_COMPLETE,
+      ensureOrderState: kite.kc.STATUS_COMPLETE,
       user: user!
     })
 

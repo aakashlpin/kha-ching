@@ -185,11 +185,11 @@ export const createOrder = ({
   return {
     tradingsymbol: symbol,
     quantity: lotSize * lots,
-    exchange: kite.EXCHANGE_NFO,
-    transaction_type: transactionType ?? kite.TRANSACTION_TYPE_SELL,
-    order_type: kite.ORDER_TYPE_MARKET,
+    exchange: kite.kc.EXCHANGE_NFO,
+    transaction_type: transactionType ?? kite.kc.TRANSACTION_TYPE_SELL,
+    order_type: kite.kc.ORDER_TYPE_MARKET,
     product: productType,
-    validity: kite.VALIDITY_DAY,
+    validity: kite.kc.VALIDITY_DAY,
     tag: orderTag
   }
 }
@@ -274,7 +274,7 @@ async function atmStraddle ({
           lotSize,
           user: user!,
           orderTag: orderTag!,
-          transactionType: kite.TRANSACTION_TYPE_BUY,
+          transactionType: kite.kc.TRANSACTION_TYPE_BUY,
           productType
         })
       )
@@ -291,8 +291,8 @@ async function atmStraddle ({
         productType,
         transactionType:
           volatilityType === VOLATILITY_TYPE.SHORT
-            ? kite.TRANSACTION_TYPE_SELL
-            : kite.TRANSACTION_TYPE_BUY
+            ? kite.kc.TRANSACTION_TYPE_SELL
+            : kite.kc.TRANSACTION_TYPE_BUY
       })
     )
 
@@ -311,7 +311,7 @@ async function atmStraddle ({
           _kite: kite,
           orderProps: order,
           instrument,
-          ensureOrderState: kite.STATUS_COMPLETE,
+          ensureOrderState: kite.kc.STATUS_COMPLETE,
           user: user!
         })
       )
@@ -333,7 +333,7 @@ async function atmStraddle ({
         _kite: kite,
         orderProps: order,
         instrument,
-        ensureOrderState: kite.STATUS_COMPLETE,
+        ensureOrderState: kite.kc.STATUS_COMPLETE,
         user: user!
       })
     )

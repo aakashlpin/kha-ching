@@ -20,7 +20,7 @@ test('it should work when everything is okay', async () => {
     getOrderHistory: jest.fn().mockImplementation(async () =>
       Promise.resolve([
         {
-          status: kite.STATUS_COMPLETE
+          status: kite.kc.STATUS_COMPLETE
         }
       ])
     )

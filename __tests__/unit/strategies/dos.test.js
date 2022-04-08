@@ -44,7 +44,7 @@ test('it should work without hedge order', async () => {
     .mockResolvedValue([
       {
         order_id: 'original order',
-        status: kite.STATUS_COMPLETE,
+        status: kite.kc.STATUS_COMPLETE,
         variety: 'regular',
         exchange: 'NFO',
         tradingsymbol: 'BANKNIFTY2172234500PE',

@@ -129,7 +129,7 @@ async function multiLegPremiumThreshold ({
     try {
       liveSymbolPrices = await getMultipleInstrumentPrices(
         tradingSymbols.map(symbol => ({
-          exchange: kite.EXCHANGE_NFO,
+          exchange: kite.kc.EXCHANGE_NFO,
           tradingSymbol: symbol
         })),
         user!
