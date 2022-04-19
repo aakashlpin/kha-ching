@@ -5,7 +5,7 @@ const transport = new transports.DailyRotateFile({
   filename: 'application-%DATE%.log',
   datePattern: 'YYYYMMDD',
   maxFiles: '10d',
-  dirname:'../logs/'
+  dirname:'./logs/'
 });
 const formatMeta = (meta) => {
     // You can format the splat yourself
