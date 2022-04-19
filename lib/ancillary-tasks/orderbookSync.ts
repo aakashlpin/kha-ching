@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { SignalXUser } from '../../types/misc'
-
+//import console from '../logging'
+import logger from '../logger'
 import {
   syncGetKiteInstance,
   withRemoteRetry
@@ -16,12 +17,18 @@ async function orderbookSync ({
   try {
     const kite = syncGetKiteInstance(user)
     const allOrders = await withRemoteRetry(() => kite.getOrders())
-    const ordersForNFO = allOrders.filter(order =>(order.status === 'COMPLETE'))
-    const res=await axios.post(
-      `${ORCL_HOST_URL}/rest-v1/trades`,
-      ordersForNFO,
-    )
-    return res
+    const completedOrders = allOrders.filter(order =>(order.status === 'COMPLETE'))
+    if (completedOrders.length>0)
+    {
+      logger.info(`Completed orers in ancillary queue`,completedOrders);
+      const res=await axios.post(
+        `${ORCL_HOST_URL}/rest-v1/trades`,
+        completedOrders,
+      )
+      return res
+    } 
+    else
+      return null;
   } catch (e) {
     return Promise.reject(e)
   }
