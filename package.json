@@ -31,6 +31,7 @@
     "date-fns": "^2.19.0",
     "dayjs": "^1.10.4",
     "esm": "^3.2.25",
+    "fast-safe-stringify": "^2.1.1",
     "fyers-api": "^1.1.0",
     "ioredis": "^4.22.0",
     "kiteconnect": "^3.2.0",
@@ -51,7 +52,9 @@
     "request": "^2.88.2",
     "swr": "^0.4.2",
     "trace-unhandled": "^2.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.7.2",
+    "winston-daily-rotate-file": "^4.6.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",

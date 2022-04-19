@@ -4,7 +4,8 @@ import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import orderbookSyncByTag from '../ancillary-tasks/orderbookSyncByTag'
 import orderbookSync from '../ancillary-tasks/orderbookSync'
 import { ANCILLARY_TASKS } from '../constants'
-import console from '../logging'
+//import console from '../logging'
+import logger from '../logger'
 import { ANCILLARY_Q_NAME, redisConnection } from '../queue'
 
 function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
@@ -19,6 +20,7 @@ function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
       })
     }
     case ANCILLARY_TASKS.ORDERBOOKSYNC: {
+      logger.info(' [ancillaryQueue] ProcessJob started');
       return orderbookSync({
         user: user!
       })
@@ -47,5 +49,6 @@ const worker = new Worker(
 
 worker.on('error', err => {
   // log the error
-  console.log('🔴 [ancillaryQueue] worker error', err)
+  //console.log('🔴 [ancillaryQueue] worker error', err)
+  logger.error('🔴 [ancillaryQueue] worker error', err);
 })
