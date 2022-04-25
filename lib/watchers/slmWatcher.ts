@@ -23,7 +23,8 @@ import { KiteOrder } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
-import { addToNextQueue, WATCHER_Q_NAME } from '../queue'
+import { addToNextQueue} from '../queue'
+  //, WATCHER_Q_NAME 
 import {
   getInstrumentPrice,
   remoteOrderSuccessEnsurer,
@@ -188,7 +189,7 @@ const slmWatcher = async ({
       })
       // add this new job to the watcher queue and ensure it succeeds
       await addToNextQueue(_queueJobData.initialJobData, {
-        _nextTradingQueue: WATCHER_Q_NAME,
+    //    _nextTradingQueue: WATCHER_Q_NAME,
         rawKiteOrderResponse: response,
         originalTriggerPrice: triggerPrice
       })
