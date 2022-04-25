@@ -19,7 +19,7 @@ const worker = new Worker(
   async job => {
     try
   {
-    console.log(`processing trargetPnlQueu id ${job.id}`)
+    //console.log(`processing trargetPnlQueu id ${job.id}`)
     const result = await processJob(job.data)
     return result
   }
