@@ -118,27 +118,40 @@ const targetPnL = async ({
 
           return Promise.resolve('[targetPnL] Some more orders are completed')
         }
-        else if (isMaxLossEnabled && totalPoints.points<-1*(maxLossPoints!))
+        else if ( (isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))
+                  ||
+                  (isMaxLossEnabled && totalPoints.points<-1*(maxLossPoints!)))
         {
-            await autoSquareOffStrat({rawKiteOrdersResponse:totalPoints.pendingorders,
-                                      deletePendingOrders:true,
-                                      initialJobData});
-            // await doDeletePendingOrders(totalPoints.pendingorders, kite)
-            // await doSquareOffPositions(totalPoints.pendingorders, kite,
-            //      {orderTag:initialJobData.orderTag})
-            console.log(`[targetPnL] ${orderTag} squared off as max loss is breached`);
-           return Promise.resolve('[targetPnL] squared off')
+          try {
+            console.log('[targetPnL] maxLoss or maxProfit is breached, so converting to market order')
+            totalPoints.pendingorders.forEach(async openOrder=>{
+              await withRemoteRetry( () =>
+              kite.modifyOrder(openOrder.variety, openOrder.order_id, {
+                order_type: kite.ORDER_TYPE_MARKET
+              }))
+            })
+
+            return Promise.resolve('[targetPnL] squared off')
+        } catch (error) {
+          console.log(
+            `🔴 [targetPnL] error squaring off the orders`
+          )
+          return Promise.resolve(
+            `🔴 [targetPnL] error squaring off`
+          )
         }
-        else if (isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))   {
-          await autoSquareOffStrat({rawKiteOrdersResponse:totalPoints.pendingorders,
-                                    deletePendingOrders:true,
-                                    initialJobData});
-          // await doDeletePendingOrders(totalPoints.pendingorders, kite)
-          // await doSquareOffPositions(totalPoints.pendingorders, kite,
-          //      {orderTag:initialJobData.orderTag})
-          console.log(`[targetPnL] squared off ${orderTag} as max profit is reached`);
-         return Promise.resolve('[targetPnL] squared off')
-      }
+           
+        }
+      //   else if (isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))   {
+      //     await autoSquareOffStrat({rawKiteOrdersResponse:totalPoints.pendingorders,
+      //                               deletePendingOrders:true,
+      //                               initialJobData});
+      //     // await doDeletePendingOrders(totalPoints.pendingorders, kite)
+      //     // await doSquareOffPositions(totalPoints.pendingorders, kite,
+      //     //      {orderTag:initialJobData.orderTag})
+      //     console.log(`[targetPnL] squared off ${orderTag} as max profit is reached`);
+      //    return Promise.resolve('[targetPnL] squared off')
+      // }
         else
         {
           const rejectMsg = `🟢[targetPnL] retry for tag: ${orderTag} Points: ${totalPoints.points} `;

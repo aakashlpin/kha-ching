@@ -3,7 +3,7 @@ import { combinedOrders } from '../../types/misc'
 import { SL_ORDER_TYPE } from '../../types/plans'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import console from '../logging'
-import { addToNextQueue, WATCHER_Q_NAME,TARGETPNL_Q_NAME } from '../queue'
+import { addToNextQueue, TARGETPNL_Q_NAME } from '../queue'
 import orderResponse from '../strategies/mockData/orderResponse'
 import {
   attemptBrokerOrders,
@@ -143,10 +143,10 @@ async function individualLegExitOrders ({
       if (isMaxLossEnabled ||isMaxProfitEnabled)
         totalOrders.push (exitOrder)
       logDeep(totalOrders);
-      return addToNextQueue(initialJobData, {
-        _nextTradingQueue: WATCHER_Q_NAME,
-        rawKiteOrderResponse: exitOrder
-      })
+      // return addToNextQueue(initialJobData, {
+      //   _nextTradingQueue: WATCHER_Q_NAME,
+      //   rawKiteOrderResponse: exitOrder
+      // })
     })
 
     try {
