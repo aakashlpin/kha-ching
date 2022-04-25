@@ -54,6 +54,7 @@ export async function doSquareOffPositions (
 ) {
   const openPositions = await withRemoteRetry(() => kite.getPositions())
   const { net } = openPositions
+  //orders would always have +ve value and filter based on transaction_type
   const openPositionsForOrders = orders
     .filter(o => o)
     .map(order => {
@@ -64,18 +65,20 @@ export async function doSquareOffPositions (
           openPosition.product === order.product &&
           (openPosition.quantity < 0
             ? // openPosition is short order
-              openPosition.quantity <= order.quantity * -1
+              order.transaction_type=='SELL'
             : // long order
-              openPosition.quantity >= order.quantity)
+            order.transaction_type=='BUY')
       )
 
       if (!position) {
         return null
       }
+      const absquantity:number=Math.min(order.quantity,Math.abs(position.quantity))
 
       return {
         ...position,
-        quantity: position.quantity < 0 ? order.quantity * -1 : order.quantity
+        quantity: position.quantity < 0 ? absquantity * -1 : absquantity
+      
       }
     })
     .filter(o => o)

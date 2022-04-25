@@ -1,16 +1,18 @@
-import { AxiosResponse } from 'axios'
+//import { AxiosResponse } from 'axios'
 import { KiteConnect } from 'kiteconnect'
-import { cleanupQueues } from '../../lib/queue'
+import { cleanupQueues,addToNextQueue,ANCILLARY_Q_NAME } from '../../lib/queue'
 
 import withSession from '../../lib/session'
 import {
   getIndexInstruments,
-  premiumAuthCheck,
+  //premiumAuthCheck,
   storeAccessTokenRemotely,
   checkHasSameAccessToken
 } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
+//import {ANCILLARY_TASKS} from '../../lib/constants'
+import logger from '../../lib/logger'
 
 const apiKey = process.env.KITE_API_KEY
 const kiteSecret = process.env.KITE_API_SECRET
@@ -24,6 +26,7 @@ export default withSession(async (req, res) => {
   if (!requestToken) {
     return res.status(401).send('Unauthorized')
   }
+  logger.info('[redirect_url_kite_logger] Logging in..');
 
   try {
     const sessionData: KiteProfile = await kc.generateSession(
@@ -34,11 +37,6 @@ export default withSession(async (req, res) => {
     req.session.set('user', user)
     await req.session.save()
 
-    // prepare the day
-    // fire and forget
-    // premiumAuthCheck().catch(e => {
-    //   console.log(e)
-    // })
     getIndexInstruments().catch(e => {
       console.log(e)
     })
@@ -49,7 +47,7 @@ export default withSession(async (req, res) => {
     if (!existingAccessToken) {
       // first login, or revoked login
       // cleanup queue in both cases
-      console.log('cleaning up queues...')
+      logger.info('[redirect_url_kite_logger] cleaning up queues...');
       cleanupQueues().catch(e => {
         console.log(e)
       })

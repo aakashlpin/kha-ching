@@ -138,6 +138,8 @@ const getSortedMatchingIntrumentsData = async ({
   return rows
 }
 
+// export const getOpenPositionsbyTag=async
+
 export const getExpiryTradingSymbol = async ({
   nfoSymbol,
   strike,
@@ -498,15 +500,6 @@ export const getQueueOptionsForExitStrategy = exitStrategy => {
 }
 
 const marketHolidays = [
-  ['January 26,2018', 'Friday'],
-  ['February 13,2018', 'Tuesday'],
-  ['March 02,2018', 'Friday'],
-  ['March 29,2018', 'Thursday'],
-  ['March 30,2018', 'Friday'],
-  ['May 01,2018', 'Tuesday'],
-  ['August 15,2018', 'Wednesday'],
-  ['August 22,2018', 'Wednesday'],
-  ['September 13,2018', 'Thursday'],
   ['September 20,2018', 'Thursday'],
   ['October 02,2018', 'Tuesday'],
   ['October 18,2018', 'Thursday'],
@@ -556,7 +549,20 @@ const marketHolidays = [
   ['October 15,2021', 'Friday'],
   ['November 04,2021', 'Thursday'],
   ['November 05,2021', 'Friday'],
-  ['November 19,2021', 'Friday']
+  ['November 19,2021', 'Friday'],
+  ['January 26,2022', 'Wednesday'],
+  ['March 01,2022', 'Tuesday'],
+  ['March 18,2022', 'Friday'],
+  ['April 14,2022', 'Thursday'],
+  ['April 15,2022', 'Friday'],
+  ['May 03,2022', 'Tuesday'],
+  ['August 09,2022', 'Tuesday'],
+  ['August 15,2022', 'Monday'],
+  ['August 31,2022', 'Wednesday'],
+  ['October 05,2022', 'Wednesday'],
+  ['October 24,2022', 'Monday'],
+  ['October 26,2022', 'Wednesday'],
+  ['November 08,2022', 'Tuesday']
 ]
 
 export const isDateHoliday = (date: Dayjs) => {

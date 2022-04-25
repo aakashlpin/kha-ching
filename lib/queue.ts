@@ -21,7 +21,7 @@ const QID = process.env.KITE_API_KEY
 export const TRADING_Q_NAME = `tradingQueue_${QID}`
 export const EXIT_TRADING_Q_NAME = `exitTradingQueue_${QID}`
 export const AUTO_SQUARE_OFF_Q_NAME = `autoSquareOffQueue_${QID}`
-export const WATCHER_Q_NAME = `watcherQueue_${QID}`
+//export const WATCHER_Q_NAME = `watcherQueue_${QID}`
 export const ANCILLARY_Q_NAME = `ancillaryQueue_${QID}`
 export const TARGETPNL_Q_NAME = `targetPnlQueue_${QID}`
 export const redisConnection = new IORedis(redisUrl)
@@ -58,11 +58,11 @@ export const autoSquareOffQueue = new Queue(
   AUTO_SQUARE_OFF_Q_NAME,
   queueOptions
 )
-export const watcherQueueScheduler = new QueueScheduler(
-  WATCHER_Q_NAME,
-  schedulerQueueOptions
-)
-export const watcherQueue = new Queue(WATCHER_Q_NAME, queueOptions)
+// export const watcherQueueScheduler = new QueueScheduler(
+//   WATCHER_Q_NAME,
+//   schedulerQueueOptions
+// )
+// export const watcherQueue = new Queue(WATCHER_Q_NAME, queueOptions)
 export const ancillaryQueueScheduler = new QueueScheduler(
   ANCILLARY_Q_NAME,
   schedulerQueueOptions
@@ -73,7 +73,7 @@ const allQueues = [
   tradingQueue, // Orders are punched here
   exitTradesQueue, // Stop loss orders or combined SL orders are punched
   autoSquareOffQueue, // Square off is punched in this queue
-  watcherQueue, // Converts SLL to market order if not filled
+ // watcherQueue, // Converts SLL to market order if not filled
   ancillaryQueue, //Orderbook sync to DB is done here
   targetPnLQueue //For target loss or profit
 ]
@@ -101,23 +101,23 @@ export async function addToNextQueue (
         )
       }
 
-      case WATCHER_Q_NAME: {
-        // console.log('Adding job to watcher queue', jobData, jobResponse)
-        return watcherQueue.add(
-          `${WATCHER_Q_NAME}_${uuidv4() as string}`,
-          {
-            initialJobData: jobData,
-            jobResponse
-          },
-          {
-            attempts: Math.ceil(getTimeLeftInMarketClosingMs() / ms(5)),
-            backoff: {
-              type: 'fixed',
-              delay: ms(5)
-            }
-          }
-        )
-      }
+      // case WATCHER_Q_NAME: {
+      //   // console.log('Adding job to watcher queue', jobData, jobResponse)
+      //   return watcherQueue.add(
+      //     `${WATCHER_Q_NAME}_${uuidv4() as string}`,
+      //     {
+      //       initialJobData: jobData,
+      //       jobResponse
+      //     },
+      //     {
+      //       attempts: Math.ceil(getTimeLeftInMarketClosingMs() / ms(5)),
+      //       backoff: {
+      //         type: 'fixed',
+      //         delay: ms(5)
+      //       }
+      //     }
+      //   )
+      // }
 
       case EXIT_TRADING_Q_NAME: {
         // console.log('Adding job to exit trade queue', jobData)
