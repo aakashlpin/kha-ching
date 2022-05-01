@@ -39,7 +39,9 @@ import {
   syncGetKiteInstance,
   withRemoteRetry,
   patchDbTrade,
-  getMultipleInstrumentPrices
+  getMultipleInstrumentPrices,
+  delay,
+  ms
 } from '../utils'
 
 import { doSquareOffPositions } from './autoSquareOff'
@@ -139,6 +141,7 @@ async function multiLegPremiumThreshold ({
         '🔴 [multiLegPremiumThreshold] getInstrumentPrice error',
         error
       )
+      await delay(ms(5))
       // [TODO] see if we can resolve this and add back to the queue to prevent memory leak issues
       await addToNextQueue(initialJobData, {
         _nextTradingQueue: EXIT_TRADING_Q_NAME,
@@ -228,6 +231,7 @@ async function multiLegPremiumThreshold ({
 
     if (liveTotalPremium < checkAgainstSl) {
       const rejectMsg = `🟢 [multiLegPremiumThreshold] liveTotalPremium (${liveTotalPremium}) < threshold (${checkAgainstSl})`
+      await delay(ms(5))
       await addToNextQueue(initialJobData, {
         _nextTradingQueue: EXIT_TRADING_Q_NAME,
         rawKiteOrdersResponse,
