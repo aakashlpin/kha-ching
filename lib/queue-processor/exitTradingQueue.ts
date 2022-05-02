@@ -85,10 +85,11 @@ worker.on('error', err => {
   console.log('🔴 [exitTradingQueue] worker error', err)
 })
 
-// worker.on('completed', (job) => {
-//   // const { id, name } = job
-//   // console.log('// job has completed', { id, name })
-// })
+worker.on('completed', async job => {
+  await job.remove()
+  // const { id, name } = job
+  // console.log('// job has completed', { id, name })
+})
 
 // worker.on('failed', (job) => {
 //   try {
