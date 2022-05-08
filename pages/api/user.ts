@@ -14,10 +14,15 @@ const envVars = [
   'DATABASE_API_KEY'
 ]
 console.log(
-  JSON.stringify(envVars.reduce((accum, envVar) => ({
-    ...accum,
-    [envVar]: process.env[envVar]
-  }), {})
+  JSON.stringify(
+    envVars.reduce(
+      (accum, envVar) => ({
+        ...accum,
+        [envVar]: process.env[envVar]
+      }),
+      {}
+    )
+  )
 )
 
 export default withSession(async (req, res) => {
