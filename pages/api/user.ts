@@ -5,7 +5,20 @@ import { SignalXUser } from '../../types/misc'
 
 const apiKey = process.env.KITE_API_KEY
 
-console.log(JSON.stringify(process.env))
+const envVars = [
+  'KITE_API_KEY',
+  'KITE_API_SECRET',
+  'SECRET_COOKIE_PASSWORD',
+  'SIGNALX_API_KEY',
+  'DATABASE_USER_KEY',
+  'DATABASE_API_KEY'
+]
+console.log(
+  JSON.stringify(envVars.reduce((accum, envVar) => ({
+    ...accum,
+    [envVar]: process.env[envVar]
+  }), {})
+)
 
 export default withSession(async (req, res) => {
   const user: SignalXUser = req.session.get('user')
