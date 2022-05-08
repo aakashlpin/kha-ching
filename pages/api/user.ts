@@ -5,6 +5,8 @@ import { SignalXUser } from '../../types/misc'
 
 const apiKey = process.env.KITE_API_KEY
 
+console.log(JSON.stringify(process.env))
+
 export default withSession(async (req, res) => {
   const user: SignalXUser = req.session.get('user')
 
