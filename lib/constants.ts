@@ -22,6 +22,12 @@ export interface INSTRUMENT_PROPERTIES {
   freezeQty: number
 }
 
+export interface COMPLETED_BY_TAG{
+  tradingsymbol: string // "NIFTY21OCT17350CE"
+  quantity: number //-ve if sell , +ve if buy
+  points: number // sell -buy
+}
+
 export interface KITE_INSTRUMENT_INFO {
   exchange: string // "NFO"
   exchange_token: string // "36320"

@@ -19,11 +19,11 @@ export interface KiteOrder {
   parent_order_id?: string | null
   exchange_order_id?: string | null
   placed_by?: string
-  variety?: string
+  variety?: string //regular
   status?: 'COMPLETE' | 'REJECTED' | 'CANCELLED' | 'OPEN' | 'TRIGGER PENDING'
 
   tradingsymbol: string
-  exchange: string
+  exchange: string //NFO
   instrument_token?: number
   transaction_type: 'BUY' | 'SELL'
   order_type: string
@@ -44,7 +44,7 @@ export interface KiteOrder {
   order_timestamp?: string
   exchange_timestamp?: string
 
-  status_message?: string
+  status_message?: string|null
   tag: string
   tags?: string[]
   meta?: {}

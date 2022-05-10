@@ -9,20 +9,21 @@ import {
   addToNextQueue,
   ANCILLARY_Q_NAME,
   redisConnection,
-  TRADING_Q_NAME
+  TRADING_Q_NAME,
+  TARGETPNL_Q_NAME
 } from '../queue'
 import atmStraddle from '../strategies/atmStraddle'
 import directionalOptionSelling from '../strategies/directionalOptionSelling'
 import optionBuyingStrategy from '../strategies/optionBuyingStrategy'
 import strangle from '../strategies/strangle'
-import { getCustomBackoffStrategies, ms } from '../utils'
+import { getCustomBackoffStrategies, logDeep, ms } from '../utils'
 
 async function processJob (job: Job) {
   const {
     data,
     data: { strategy }
   } = job
-  console.log(`[job processing] Beginning job processing for ${strategy}`)
+  console.log(`[tradingQueue] Beginning job processing for ${strategy}`)
   switch (strategy) {
     case STRATEGIES.ATM_STRADDLE: {
       return atmStraddle(data)
@@ -104,8 +105,15 @@ const worker = new Worker(
 worker.on('completed', job => {
   const { data, returnvalue } = job
   try {
+    logDeep(returnvalue);
+    // console.log(`[tradingQueue] worker is completed ${job.returnvalue}`)
     if (job.returnvalue?._nextTradingQueue) {
       addToNextQueue(data, returnvalue) //adds SL orders
+    }
+    if (returnvalue?.isTargetEnabled)
+    {
+      const targetreturn={...returnvalue,_nextTradingQueue:TARGETPNL_Q_NAME}
+      addToNextQueue(data, targetreturn) //keeps checking if target is reached.
     }
   } catch (e) {
     console.log('job return value', job.returnvalue)
@@ -113,7 +121,7 @@ worker.on('completed', job => {
   }
 })
 
-worker.on('error', err => {
+worker.on('failed', err => {
   // log the error
   console.log('🔴 [tradingQueue] worker error', err)
 })

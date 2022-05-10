@@ -1,0 +1,124 @@
+1. job.data for tradingQ:
+{
+  "exitStrategy": "INDIVIDUAL_LEG_SLM_1X",
+  "autoSquareOffProps": {
+    "time": "2022-05-03T15:20:09+05:30",
+    "deletePendingOrders": true
+  },
+  "strategy": "ATM_STRADDLE",
+  "combinedExitStrategy": "EXIT_ALL",
+  "instrument": "NIFTY",
+  "squareOffTime": "2022-05-03T15:20:09+05:30",
+  "productType": "MIS",
+  "maxProfitPoints": 20,
+  "expireIfUnsuccessfulInMins": 10,
+  "onSquareOffSetAborted": false,
+  "expiresAt": "2022-05-03T15:17:00+05:30",
+  "slLimitPricePercent": 1,
+  "isAutoSquareOffEnabled": true,
+  "expiryType": "CURRENT",
+  "lots": 1,
+  "thresholdSkewPercent": 20,
+  "maxLossPoints": 90,
+  "dayparam": "20220503",
+  "takeTradeIrrespectiveSkew": true,
+  "slmPercent": 30,
+  "volatilityType": "SHORT",
+  "rollback": {
+    "onBrokenHedgeOrders": false,
+    "onBrokenPrimaryOrders": false,
+    "onBrokenExitOrders": false
+  },
+  "trailEveryPercentageChangeValue": 2,
+  "runNow": true,
+  "maxSkewPercent": 10,
+  "runAt": "2022-05-03T15:07:33+05:30",
+  "slOrderType": "SLL",
+  "name": "NFTEST",
+  "trailingSlPercent": 30,
+  "isMaxLossEnabled": true,
+  "orderTag": "4UKpoC8f",
+  "id": "9D88EFE32B4B45B98BC69134C7F98A6E",
+  "lastModified": "2022-05-03T09:37:34.120215000Z",
+  "created": "2022-05-03T09:37:34.120215000Z",
+  "user": {
+    "isLoggedIn": true,
+    "session": {
+      "user_type": "individual",
+      "email": "",
+      "user_name": "",
+      "user_shortname": "",
+      "broker": "ZERODHA",
+      "exchanges": [
+        "NFO",
+        "BFO",
+        "MF",
+        "NSE",
+        "BSE"
+      ],
+      "products": [
+        "CNC",
+        "NRML",
+        "MIS",
+        "BO",
+        "CO"
+      ],
+      "order_types": [
+        "MARKET",
+        "LIMIT",
+        "SL",
+        "SL-M"
+      ],
+      "avatar_url": null,
+      "user_id": "",
+      "api_key": "",
+      "access_token": "",
+      "public_token": "",
+      "refresh_token": "",
+      "enctoken": "aP3tfFvIs7a454reFCSynL8NuVATKiou615V+tViAcKglRwXftzaqVUvClJKJScR4EMvkjO+m79VK3A9Dtxc71n6Xj+6msPoSMZdZYS4akja6mjTZUpslXtZcmFfquw=",
+      "login_time": "2022-05-03T08:37:27.000Z",
+      "meta": {
+        "demat_consent": "physical"
+      }
+    }
+  }
+}
+2. Kite Orders sample :
+
+{
+  "placed_by": "ZZ0829",
+  "order_id": "220506201239431",
+  "exchange_order_id": "1100000034123352",
+  "parent_order_id": null,
+  "status": "COMPLETE",
+  "status_message": null,
+  "status_message_raw": null,
+  "order_timestamp": "2022-05-06 10:46:17",
+  "exchange_update_timestamp": "2022-05-06 10:46:17",
+  "exchange_timestamp": "2022-05-06 10:46:17",
+  "variety": "regular",
+  "modified": false,
+  "exchange": "NFO",
+  "tradingsymbol": "NIFTY2251216400PE",
+  "instrument_token": 13608194,
+  "order_type": "MARKET",
+  "transaction_type": "SELL",
+  "validity": "DAY",
+  "validity_ttl": 0,
+  "product": "MIS",
+  "quantity": 500,
+  "disclosed_quantity": 0,
+  "price": 0,
+  "trigger_price": 0,
+  "average_price": 193.21,
+  "filled_quantity": 500,
+  "pending_quantity": 0,
+  "cancelled_quantity": 0,
+  "market_protection": 0,
+  "meta": {},
+  "tag": "KJT4xGLw",
+  "tags": [
+      "KJT4xGLw"
+  ],
+  "guid": "33060XQiNzWbZGsAHe"
+}

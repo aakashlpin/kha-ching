@@ -2,42 +2,38 @@ import dayjs from 'dayjs'
 import { KiteOrder } from '../types/kite'
 import {  SUPPORTED_TRADE_CONFIG } from '../types/trade'
 import { addToNextQueue, TARGETPNL_Q_NAME } from './queue'
-import { USER_OVERRIDE } from './constants'
+import { USER_OVERRIDE,COMPLETED_BY_TAG } from './constants'
 import console from './logging'
 
 import { Promise } from 'bluebird'
-import autoSquareOffStrat  from './exit-strategies/autoSquareOff';
+import autoSquareOffStrat,{squareOffTag}  from './exit-strategies/autoSquareOff';
 import {
   // logDeep,
   patchDbTrade,
   round,
   getInstrumentPrice,
   syncGetKiteInstance,
-  getCompletedOrderFromOrderHistoryById,
   withRemoteRetry,
   getTimeLeftInMarketClosingMs,
-  isTimeAfterAutoSquareOff
+  isTimeAfterAutoSquareOff,
+  getCompletedOrdersbyTag
 } from './utils'
-interface totalPointsInterface { 
-    points:number, 
-    areAllOrdersCompleted:boolean, 
-    pendingorders:KiteOrder[]
-    currentOrders:KiteOrder[]
- }
 
 const targetPnL = async ({
-    initialJobData,
-    orders
+  _kite,
+  initialJobData,
+    rawKiteOrdersResponse
   }:{
+    _kite?:any,
     initialJobData: SUPPORTED_TRADE_CONFIG
-     orders: KiteOrder []
+    rawKiteOrdersResponse: KiteOrder []
   }) :Promise<any> =>
   {
     const {maxLossPoints,isMaxLossEnabled,orderTag,isMaxProfitEnabled,
       maxProfitPoints
     ,isAutoSquareOffEnabled,
     autoSquareOffProps:{time}={}} = initialJobData;
-    const kite = syncGetKiteInstance(initialJobData.user)
+
 
     if (getTimeLeftInMarketClosingMs() < 0 ||
     (isAutoSquareOffEnabled &&
@@ -46,125 +42,61 @@ const targetPnL = async ({
       '🟢 [targetPnL] Terminating the targetPnl queue as market closing or after square off time..'
     )
   }
-    try{
-     const totalPoints=await orders.reduce(async (acc,curentVal)=>
-     {  
-        const accm=await(acc);
-        if (curentVal.status==='COMPLETE' && curentVal.transaction_type==='SELL')
-        {
-          accm.currentOrders.push(curentVal);
-          accm.points+=curentVal.average_price!;
-            //return {points:previousVal.average_price!+(curentVal.average_price!);
-        }
-        else if (curentVal.status==='COMPLETE' && curentVal.transaction_type==='BUY')
-        {
-          accm.currentOrders.push(curentVal);
-          accm.points-=curentVal.average_price!;
-           //return await(previousVal) - curentVal.average_price!;
-        }
-        else
-        {
-            const completedOrder= await withRemoteRetry(async () => getCompletedOrderFromOrderHistoryById(kite,curentVal.order_id));
-            if (completedOrder===undefined)
-            {
-                const underlyingLTP = await withRemoteRetry(async () =>
-                getInstrumentPrice(kite,curentVal.tradingsymbol, 'NFO')
-              )
-              accm.areAllOrdersCompleted=false;
-              accm.points=accm.points+(curentVal.transaction_type==='SELL'?underlyingLTP:-underlyingLTP);
-              accm.pendingorders.push(curentVal);
-              accm.currentOrders.push(curentVal);
-            }
-            else{
-                accm.points=accm.points+ (completedOrder.transaction_type==='SELL'?
-                completedOrder.average_price:-completedOrder.average_price);
-                accm.currentOrders.push(completedOrder);
-            }
-        }
-        return accm;
-        },Promise.resolve(<totalPointsInterface>{points:0,
-            areAllOrdersCompleted:true,
-            pendingorders:[],
-            currentOrders:[]
-            })
-        );
-        totalPoints.points=round(totalPoints.points);
-    
-        //console.log(`[targetPnL] Points: ${totalPoints.points} for tag:  ${orderTag} `);
-        try {
-          await patchDbTrade({
-            id: initialJobData.id!,
-            patchProps: {
-              lastHeartbeatAt: dayjs().format(),
-              currentPoints:totalPoints.points
-            }
-          })
-        } catch (error) {
-          console.log('[targetPnL]error in patchDbTrade', error)
-        }
-        if (totalPoints.areAllOrdersCompleted)
+  const kite = _kite || syncGetKiteInstance(initialJobData.user)
+  const completedOrders:COMPLETED_BY_TAG[]= await getCompletedOrdersbyTag(orderTag!, kite)
+
+  const totalPoints=await completedOrders.reduce(async (prev,current)=>{
+    let currentPosition=await (prev);
+    if (current.quantity==0)
+      currentPosition.points+=current.points;
+    else
+    {
+      const underlyingLTP = await withRemoteRetry(async () =>
+                getInstrumentPrice(kite,current.tradingsymbol, 'NFO'));
+      currentPosition.points+=current.points+ (current.quantity>0?underlyingLTP:-1*underlyingLTP); 
+      currentPosition.areAllOrdersCompleted=false;
+
+    }
+    return currentPosition;
+  },Promise.resolve({points:0,
+    areAllOrdersCompleted:true
+    }));
+
+    totalPoints.points=round(totalPoints.points);
+  try {
+    await patchDbTrade({
+      id: initialJobData.id!,
+      patchProps: {
+        lastTargetAt: dayjs().format(),
+        currentPoints:totalPoints.points
+      }
+    })
+  } catch (error) {
+    console.log('[targetPnL]error in patchDbTrade', error)
+  }
+  if (totalPoints.areAllOrdersCompleted)
         {
          console.log(`[targetPnL] ${orderTag} all orders are completed`);
          return Promise.resolve('[targetPnL] all orders are completed')
         }
-        else if (totalPoints.currentOrders.filter(order => order.status==='COMPLETE').length>
-            orders.filter(order => order.status==='COMPLETE').length)
-        {
-          console.log(`[targetPnL] Points: ${totalPoints.points} for tag:  ${orderTag} ; Adding to queue again`);
-          await addToNextQueue(initialJobData, {
-            _nextTradingQueue: TARGETPNL_Q_NAME,
-             orders:totalPoints.currentOrders
-          });
-
-          return Promise.resolve('[targetPnL] Some more orders are completed')
-        }
-        else if ( (isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))
-                  ||
-                  (isMaxLossEnabled && totalPoints.points<-1*(maxLossPoints!)))
-        {
-          try {
-            console.log('[targetPnL] maxLoss or maxProfit is breached, so converting to market order')
-            totalPoints.pendingorders.forEach(async openOrder=>{
-              await withRemoteRetry( () =>
-              kite.modifyOrder(openOrder.variety, openOrder.order_id, {
-                order_type: kite.ORDER_TYPE_MARKET
-              }))
-            })
-
-            return Promise.resolve('[targetPnL] squared off')
-        } catch (error) {
-          console.log(
-            `🔴 [targetPnL] error squaring off the orders`
-          )
-          return Promise.resolve(
-            `🔴 [targetPnL] error squaring off`
-          )
-        }
-           
-        }
-      //   else if (isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))   {
-      //     await autoSquareOffStrat({rawKiteOrdersResponse:totalPoints.pendingorders,
-      //                               deletePendingOrders:true,
-      //                               initialJobData});
-      //     // await doDeletePendingOrders(totalPoints.pendingorders, kite)
-      //     // await doSquareOffPositions(totalPoints.pendingorders, kite,
-      //     //      {orderTag:initialJobData.orderTag})
-      //     console.log(`[targetPnL] squared off ${orderTag} as max profit is reached`);
-      //    return Promise.resolve('[targetPnL] squared off')
-      // }
-        else
-        {
-          const rejectMsg = `🟢[targetPnL] retry for tag: ${orderTag} Points: ${totalPoints.points} `;
-          return Promise.reject(new Error(rejectMsg));
-        }
-    
+  else if ((isMaxProfitEnabled && totalPoints.points>(maxProfitPoints!))
+  ||
+  (isMaxLossEnabled && totalPoints.points<-1*(maxLossPoints!)))
+  {
+    try{
+        await squareOffTag(orderTag!, kite)
     }
-    catch (e)
-    {
-        console.log(e.message,"🔴 [targetPnL] error in exception block")
-        return Promise.resolve(
-            `🔴 [targetPnL] error in exception block `
-        )
+    catch (error) {
+      console.log('[targetPnL]error in squaring Off', error)
+
     }
+    return Promise.resolve('[targetPnL] orders are squared off as loss/profit has been breached');
+    //Square off the tag
+  }
+  else
+  {
+  const rejectMsg = `🟢[targetPnL] retry for tag: ${orderTag} Points: ${totalPoints.points} `;
+    return Promise.reject(new Error(rejectMsg));
+  }
   }
 export default targetPnL;

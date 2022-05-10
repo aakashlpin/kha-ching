@@ -2,7 +2,7 @@ import axios from 'axios'
 import csv from 'csvtojson'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
-import Bluebird, { Promise } from 'bluebird'
+import Bluebird, { any, Promise } from 'bluebird'
 import { allSettled, allSettledInterface } from './es6-promise'
 
 import {
@@ -13,13 +13,15 @@ import {
   INSTRUMENT_DETAILS,
   KITE_INSTRUMENT_INFO,
   STRATEGIES,
-  USER_OVERRIDE
+  USER_OVERRIDE,
+  COMPLETED_BY_TAG,
 } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
 import { SignalXUser } from '../types/misc'
 import { KiteOrder } from '../types/kite'
+import {SUPPORTED_TRADE_CONFIG} from '../types/trade'
 
 Promise.config({ cancellation: true, warnings: true })
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
@@ -917,7 +919,7 @@ export const withRemoteRetry = async (
             }
           }
 
-          console.log('withRemoteRetry attempt failed', e)
+          console.log(`withRemoteRetry attempt failed for ${remoteFn}`, e)
           await Promise.delay(ms(2))
           return fn()
         }
@@ -1280,6 +1282,53 @@ export const patchDbTrade = async ({
 
   return data
 }
+/*
+Points: sell - buy
+Quantity: Sell is positive, buy is negative similar to kite positions
+*/
+export const getCompletedOrdersbyTag= async(orderTag:string,kite:any):
+Promise<COMPLETED_BY_TAG[]>=>
+{
+
+  const orders = await withRemoteRetry(
+    () => kite.getOrders()
+  )
+  
+ const pendingorders= orders.filter(order=>(order.status==='COMPLETE' && order.tag===orderTag))
+ .reduce((prev:{[key: string]: {
+  points:number,
+  quantity:number
+}}, curr) =>
+  {
+    if (!prev[curr.tradingsymbol])
+     {
+         prev[curr.tradingsymbol]={
+             "points":curr.transaction_type==='SELL'?curr.average_price:-1*curr.average_price,
+             "quantity":curr.transaction_type==='SELL'?-1*curr.quantity:curr.quantity
+         }
+     }
+     else
+     {
+        prev[curr.tradingsymbol].points+=curr.transaction_type==='SELL'?curr.average_price:-1*curr.average_price;
+        prev[curr.tradingsymbol].quantity+=curr.transaction_type==='SELL'?-1*curr.quantity:curr.quantity; 
+     }
+     return prev;
+
+     } ,{}
+  )
+  const completeOrdersBytag:COMPLETED_BY_TAG[]=Object.keys(pendingorders).map
+  (key=>
+  { return {
+      "tradingsymbol":key,
+      "quantity":pendingorders[key].quantity,
+      "points":pendingorders[key].points
+    }
+  }
+    )
+  /* console.log(`[getCompletedOrdersbyTag] completedOrders by tag are`, completeOrdersBytag) */
+    return completeOrdersBytag;
+
+    }
 
 export const attemptBrokerOrders = async (
   ordersPr: Array<Promise<any>>

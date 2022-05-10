@@ -206,6 +206,8 @@ async function atmStraddle ({
   takeTradeIrrespectiveSkew,
   isHedgeEnabled,
   hedgeDistance,
+  isMaxLossEnabled,
+  isMaxProfitEnabled,
   productType = PRODUCT_TYPE.MIS,
   volatilityType = VOLATILITY_TYPE.SHORT,
   expiryType = EXPIRY_TYPE.CURRENT,
@@ -213,7 +215,8 @@ async function atmStraddle ({
 }: ATM_STRADDLE_TRADE): Promise<
   | {
       _nextTradingQueue: string
-      straddle: Record<string, unknown>
+      straddle: Record<string, unknown>,
+      isTargetEnabled: boolean,
       rawKiteOrdersResponse: KiteOrder[]
       squareOffOrders: KiteOrder[]
     }
@@ -350,10 +353,11 @@ async function atmStraddle ({
     return {
       _nextTradingQueue,
       straddle,
+      isTargetEnabled:isMaxLossEnabled||isMaxProfitEnabled ,
       rawKiteOrdersResponse: statefulOrders,
       squareOffOrders: allOrders
     }
-  } catch (e) {
+    } catch (e) {
     console.log(e)
     throw e
   }
