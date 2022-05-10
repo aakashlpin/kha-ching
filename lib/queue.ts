@@ -159,7 +159,7 @@ export async function addToNextQueue (
       case TARGETPNL_Q_NAME: {  
         console.log(`[queue] added to ${TARGETPNL_Q_NAME}`)
         return targetPnLQueue.add(
-          `${TARGETPNL_Q_NAME}_${uuidv4() as string}`,
+          `${TARGETPNL_Q_NAME}_${uuidv4() as string}`, //Job name
           {
             initialJobData: jobData,
             jobResponse
@@ -168,7 +168,7 @@ export async function addToNextQueue (
             attempts: Math.ceil(getTimeLeftInMarketClosingMs() / ms(3)),
             backoff: {
               type: 'fixed',
-              delay: ms(3)
+              delay: ms(4)
             }
           }
         )

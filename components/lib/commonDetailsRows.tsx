@@ -27,6 +27,7 @@ const CommonDetailsRows = ({
   liveTrailingSl,
   lastTrailingSlSetAt,
   lastHeartbeatAt,
+  lastTargetAt,
   expiryType
 }) => {
   const getAlgoStatus = useCallback(
@@ -51,6 +52,10 @@ const CommonDetailsRows = ({
   const lastTrailedAtString = !lastTrailingSlSetAt
     ? '-'
     : dayjs(lastTrailingSlSetAt).format('hh:mma')
+    const lastTargetAtString = !lastTargetAt
+    ? '-'
+    : dayjs(lastTargetAt).format('hh:mma')
+    
   const lastHeartbeatAtString = !lastHeartbeatAt
     ? '-'
     : dayjs(lastHeartbeatAt).format('hh:mma')
@@ -75,13 +80,16 @@ const CommonDetailsRows = ({
     (isMaxLossEnabled||isMaxProfitEnabled)
     ? [{ value: 'Current Points' }, { value: currentPoints }]
     : null,
+    (isMaxLossEnabled||isMaxProfitEnabled)
+    ? [{ value: 'Last Targetsl at' }, { value: lastTargetAtString }]
+    : null,
+    
     [{ value: scheduleString }, { value: humanTime }],
     [{ value: 'Auto Square-off' }, { value: squareOffString }],
     exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
       ? [{ value: 'Last Trail time' }, { value: lastTrailedAtString }]
       : null,
-    (exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD||
-    isMaxLossEnabled||isMaxProfitEnabled)
+    exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD
       ? [{ value: 'Last Heartbeat' }, { value: lastHeartbeatAtString }]
       : null,
     exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD

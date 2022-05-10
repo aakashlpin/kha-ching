@@ -5,14 +5,14 @@ import {
   ATM_STRANGLE_TRADE,
   SUPPORTED_TRADE_CONFIG
 } from '../../types/trade'
-import { USER_OVERRIDE } from '../constants'
+import { USER_OVERRIDE,COMPLETED_BY_TAG } from '../constants'
 import console from '../logging'
 import {
   // logDeep,
   patchDbTrade,
   remoteOrderSuccessEnsurer,
   syncGetKiteInstance,
-  withRemoteRetry
+  withRemoteRetry,getCompletedOrdersbyTag
 } from '../utils'
 
 const ORCL_HOST_URL=process.env.ORCL_HOST_URL
@@ -27,8 +27,8 @@ export async function doDeletePendingOrders (orders: KiteOrder[], kite: any) {
     .map(order =>
       openOrders.find(
         openOrder =>
-          openOrder.product === order.product &&
-          openOrder.exchange === order.exchange &&
+          openOrder.product === order.product && //MIS or NRML
+          openOrder.exchange === order.exchange && //NRML
           openOrder.tradingsymbol === order.tradingsymbol &&
           // reverse trade on same exchange + tradingsybol is not possible,
           // so doing `abs`
@@ -127,6 +127,85 @@ export async function doSquareOffPositions (
   return remoteRes
 }
 
+//Squares off the order after checking if the position is open
+async function squareOffOrder(order: KiteOrder,kite:any)
+{
+  const openPositions = await withRemoteRetry(() => kite.getPositions())
+  const { net } = openPositions
+  const openPositionsforOrders=net.filter(position=>
+          position.tradingsymbol===order.tradingsymbol && position.exchange === order.exchange &&
+          position.product === order.product && (position.quantity < 0
+            ? // openPosition is short order
+              order.transaction_type=='SELL'
+            : // long order
+            order.transaction_type=='BUY'))
+
+if (openPositionsforOrders.length==0)
+{
+  return Promise.resolve("No open positions.")
+}
+
+                const exitOrder = {
+                  tradingsymbol: order.tradingsymbol,
+                  quantity: Math.min(order.quantity,Math.abs(openPositionsforOrders[0].quantity)),
+                  exchange: order.exchange,
+                  transaction_type:
+                    order.transaction_type===kite.TRANSACTION_TYPE_SELL
+                      ? kite.TRANSACTION_TYPE_BUY
+                      : kite.TRANSACTION_TYPE_SELL,
+                  order_type: kite.ORDER_TYPE_MARKET,
+                  product: order.product,
+                  tag: order.tag
+                }
+      await withRemoteRetry(() => kite.placeOrder(kite.VARIETY_REGULAR, exitOrder))
+        Promise.resolve('Order is squared off');    
+      
+
+}
+
+
+//Squares off the tag
+export async function squareOffTag(orderTag:string,kite:any)
+:Promise<any>
+{
+  /*
+  1. Do not square off it's aborted
+  2. Check if there are orders which are yet to be squared off
+  2. Cancel Pending orders if any
+  3. Square off the orders
+  */
+   console.log(`[autoSquareOff] squareOfforders ${orderTag} `)
+  const endpoint = `${ORCL_HOST_URL}/soda/latest/dailyplan/?q={"orderTag":"${orderTag}"}`
+  const {data:{items:[{value:{user_override}}]}}=await axios(endpoint);
+  if (user_override===USER_OVERRIDE.ABORT)
+  {
+    console.log('Not squaring off as user aborted');
+    Promise.resolve('Not suqaring off');
+  }
+  const orderSummarybyTag=await getCompletedOrdersbyTag(orderTag,kite);
+  const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders());
+                  
+  orderSummarybyTag.filter(summary=>(summary.quantity!=0))
+                    .forEach(summary=>
+                      {
+                        allOrders.filter(order=>
+                          (order.status==='TRIGGER PENDING' && order.tag===orderTag))
+                          .forEach(async openOrder=>{
+                            await withRemoteRetry(() =>
+                            kite.cancelOrder(openOrder.variety, openOrder.order_id) )
+                          })
+                        allOrders.filter(order=>
+                          (order.status==='COMPLETE' && order.tag===orderTag && order.tradingsymbol===summary.tradingsymbol
+                          && (summary.quantity>0?(order.transaction_type==='BUY'):(order.transaction_type==='SELL'))))
+                          .forEach(async order=>
+                            await squareOffOrder(order,kite))
+
+                      })
+
+  return Promise.resolve('Orders squared off');
+
+}
+/* Squares off the orders */
 async function autoSquareOffStrat ({
   rawKiteOrdersResponse,
   deletePendingOrders,

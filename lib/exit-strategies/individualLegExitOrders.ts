@@ -64,14 +64,13 @@ async function individualLegExitOrders ({
     rollback,
     slLimitPricePercent = 1,
     instrument,
-    isMaxLossEnabled,
-    isMaxProfitEnabled
+    // isMaxLossEnabled,
+    // isMaxProfitEnabled
   } = initialJobData
 
   const slOrderType = SL_ORDER_TYPE.SLL
   const kite = _kite || syncGetKiteInstance(user)
   
-  const totalOrders: KiteOrder []=[]
   const exitOrders = completedOrders.map(order => {
     const {
       tradingsymbol,
@@ -81,8 +80,8 @@ async function individualLegExitOrders ({
       quantity,
       average_price: avgOrderPrice
     } = order
-    if (isMaxLossEnabled ||isMaxProfitEnabled)
-    totalOrders.push (order);
+    // if (isMaxLossEnabled ||isMaxProfitEnabled)
+    // totalOrders.push (order);
     let exitOrderTransactionType
     let exitOrderTriggerPrice
 
@@ -139,31 +138,22 @@ async function individualLegExitOrders ({
   }
 
   if (slOrderType === SL_ORDER_TYPE.SLL) {
-    const watcherQueueJobs = statefulOrders.map(async exitOrder => {
-      if (isMaxLossEnabled ||isMaxProfitEnabled)
-        totalOrders.push (exitOrder)
-      logDeep(totalOrders);
-      // return addToNextQueue(initialJobData, {
-      //   _nextTradingQueue: WATCHER_Q_NAME,
-      //   rawKiteOrderResponse: exitOrder
-      // })
-    })
 
     try {
-      await Promise.all(watcherQueueJobs)
+      await Promise.all(statefulOrders)
     } catch (e) {
       console.log('error adding to `watcherQueueJobs`')
       console.log(e.message ? e.message : e)
     }
   }
-  if (isMaxLossEnabled ||isMaxProfitEnabled)
-  {
-   await addToNextQueue(initialJobData, {
-    _nextTradingQueue: TARGETPNL_Q_NAME,
-     orders:totalOrders
-  })
-  console.log('Added to TargetPNLQueue') ;
-  }
+  // if (isMaxLossEnabled ||isMaxProfitEnabled)
+  // {
+  //  await addToNextQueue(initialJobData, {
+  //   _nextTradingQueue: TARGETPNL_Q_NAME,
+  //    orders:totalOrders
+  // })
+  // console.log('Added to TargetPNLQueue') ;
+  // }
 
   return statefulOrders
 }

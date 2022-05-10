@@ -6,11 +6,11 @@ import { ms } from '../utils'
 import targetPnL from '../targetPnL'
 
 async function processJob (jobData) {
-  const { initialJobData, jobResponse } = jobData
-  const { orders } = jobResponse
+  const { initialJobData, jobResponse:{rawKiteOrdersResponse} } = jobData
+  //const { orders } = jobResponse
   return targetPnL ({
     initialJobData,
-    orders
+    rawKiteOrdersResponse
   })  
 }
 

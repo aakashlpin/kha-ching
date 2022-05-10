@@ -220,75 +220,72 @@ const TradeSetupForm = ({
             hedgeDistance={state.hedgeDistance}
             onChange={onChange}
           />
-          {state.exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X?(
-            <>
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup>
-                <FormControlLabel
-                  key='maxLossPoints'
-                  label='Square off if losses breach (in points)'
-                  control={
-                    <Checkbox
-                      checked={state.isMaxLossEnabled}
-                      onChange={() =>
-                        onChange({
-                          isMaxLossEnabled: !state.isMaxLossEnabled
-                        })
-                      }
-                    />
-                  }
-                />
-                {state.isMaxLossEnabled ? (
-            <TextField
-            fullWidth
-            name='maxLossPoints'
-            value={state.maxLossPoints}
-            onChange={e =>
-              onChange({
-                maxLossPoints: +e.target.value || undefined
-              })
-            }
-            label='Max Loss in points'
-          />
-                ) : null}
-              </FormGroup>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup>
-                <FormControlLabel
-                  key='maxProfitPoints'
-                  label='Square off if profits breach (in points)'
-                  control={
-                    <Checkbox
-                      checked={state.isMaxProfitEnabled}
-                      onChange={() =>
-                        onChange({
-                          isMaxProfitEnabled: !state.isMaxProfitEnabled
-                        })
-                      }
-                    />
-                  }
-                />
-                {state.isMaxProfitEnabled ? (
-            <TextField
-            fullWidth
-            name='maxProfitPoints'
-            value={state.maxProfitPoints}
-            onChange={e =>
-              onChange({
-                maxProfitPoints: +e.target.value || undefined
-              })
-            }
-            label='Max Profit in points'
-          />
-                ) : null}
-              </FormGroup>
-            </FormControl>
-          </Grid>
-</>):null}
+  <Grid item xs={12}>
+    <FormControl component='fieldset'>
+      <FormGroup>
+        <FormControlLabel
+          key='maxLossPoints'
+          label='Square off if losses breach (in points)'
+          control={
+            <Checkbox
+              checked={state.isMaxLossEnabled}
+              onChange={() =>
+                onChange({
+                  isMaxLossEnabled: !state.isMaxLossEnabled
+                })
+              }
+            />
+          }
+        />
+        {state.isMaxLossEnabled ? (
+    <TextField
+    fullWidth
+    name='maxLossPoints'
+    value={state.maxLossPoints}
+    onChange={e =>
+      onChange({
+        maxLossPoints: +e.target.value || undefined
+      })
+    }
+    label='Max Loss in points'
+  />
+        ) : null}
+      </FormGroup>
+    </FormControl>
+  </Grid>
+  <Grid item xs={12}>
+    <FormControl component='fieldset'>
+      <FormGroup>
+        <FormControlLabel
+          key='maxProfitPoints'
+          label='Square off if profits breach (in points)'
+          control={
+            <Checkbox
+              checked={state.isMaxProfitEnabled}
+              onChange={() =>
+                onChange({
+                  isMaxProfitEnabled: !state.isMaxProfitEnabled
+                })
+              }
+            />
+          }
+        />
+        {state.isMaxProfitEnabled ? (
+    <TextField
+    fullWidth
+    name='maxProfitPoints'
+    value={state.maxProfitPoints}
+    onChange={e =>
+      onChange({
+        maxProfitPoints: +e.target.value || undefined
+      })
+    }
+    label='Max Profit in points'
+  />
+        ) : null}
+      </FormGroup>
+    </FormControl>
+  </Grid>
           <Grid item xs={12}>
             <FormControl component='fieldset'>
               <FormGroup>
