@@ -46,7 +46,7 @@ const targetPnL = async ({
   const completedOrders:COMPLETED_BY_TAG[]= await getCompletedOrdersbyTag(orderTag!, kite)
 
   const totalPoints=await completedOrders.reduce(async (prev,current)=>{
-    let currentPosition=await (prev);
+    const currentPosition=await (prev);
     if (current.quantity==0)
       currentPosition.points+=current.points;
     else
