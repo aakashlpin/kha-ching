@@ -4,6 +4,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import { KiteConnect } from 'kiteconnect'
 import Bluebird, { any, Promise } from 'bluebird'
 import { allSettled, allSettledInterface } from './es6-promise'
+import { redisConnection,QID } from './queue'
 
 import {
   ERROR_STRINGS,
@@ -15,6 +16,8 @@ import {
   STRATEGIES,
   USER_OVERRIDE,
   COMPLETED_BY_TAG,
+  ACCESSTOKEN,
+  TRADES
 } from './constants'
 // const redisClient = require('redis').createClient(process.env.REDIS_URL);
 // export const memoizer = require('redis-memoizer')(redisClient);
@@ -348,6 +351,8 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
 
 export function syncGetKiteInstance (user) {
   const accessToken = user?.session?.access_token
+  logDeep(user);
+  console.log(`Accesstoken is ${accessToken}`)
   if (!accessToken) {
     throw new Error(
       'missing access_token in `user` object, or `user` is undefined'
@@ -1442,3 +1447,24 @@ export function round (value: number, step = 0.5): number {
   const inv = 1.0 / step
   return Math.round(value * inv) / inv
 }
+
+export async function cleanupTradesAndAccessToken()
+{
+  await redisConnection.hdel(QID,ACCESSTOKEN) ;
+  await redisConnection.hdel(QID,TRADES) ;
+}
+
+export async function storeAccessTokeninRedis(access_token:string)
+{
+  await redisConnection.hset(QID,ACCESSTOKEN,access_token) 
+}
+
+export const checksameTokeninRedis = async (access_token: string) => {
+  const currentToken:string|null=await redisConnection.hget(QID,ACCESSTOKEN);
+  if (!currentToken && currentToken===access_token)
+  {
+    return true;
+  }
+  else 
+    return false;
+  }
