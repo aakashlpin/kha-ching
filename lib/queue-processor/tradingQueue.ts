@@ -1,16 +1,10 @@
 import { Job, Worker } from 'bullmq'
 // import { omit } from 'lodash'
 
-import { ANCILLARY_TASKS, STRATEGIES } from '../constants'
-import { ancillaryQueue } from '../queue'
+import { STRATEGIES } from '../constants'
 import console from '../logging'
-import {
-  addToAutoSquareOffQueue,
-  addToNextQueue,
-  ANCILLARY_Q_NAME,
-  redisConnection,
-  TRADING_Q_NAME,
-  TARGETPNL_Q_NAME
+import { addToAutoSquareOffQueue,
+  addToNextQueue, redisConnection, TARGETPNL_Q_NAME, TRADING_Q_NAME
 } from '../queue'
 import atmStraddle from '../strategies/atmStraddle'
 import directionalOptionSelling from '../strategies/directionalOptionSelling'
@@ -49,26 +43,6 @@ const worker = new Worker(
     // console.log(`processing tradingQueue id ${job.id}`, omit(job.data, ['user']))
     const result = await processJob(job)
     // console.log(`processed tradingQueue id ${job.id}`, result)
-
-    try {
-      // schedule a task to sync orderbook by orderTag end of day
-      const { orderTag, user } = job.data
-      const numberOfJobs:number=await ancillaryQueue.count()
-      console.log(`Jobs in ancillaryQueue=${numberOfJobs}`);
-      if (numberOfJobs ===0)
-        await addToNextQueue(
-          {
-            ancillaryTask: ANCILLARY_TASKS.ORDERBOOKSYNC,
-            orderTag,
-            user
-          },
-          {
-            _nextTradingQueue: ANCILLARY_Q_NAME
-          }
-        )
-    } catch (e) {
-      console.log('[error] enabling orderbook sync by tag...', e)
-    }
 
     const { isAutoSquareOffEnabled, strategy } = job.data
     // can't enable auto square off for DOS
