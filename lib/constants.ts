@@ -288,26 +288,26 @@ export const STRATEGIES_DETAILS = {
       .format(),
     schedule: [
       {
-        afterTime: () =>
+        afterTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 9)
             .set('minutes', 30)
             .set('seconds', 0)
             .subtract(1, 'second'),
-        beforeTime: () =>
+        beforeTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 11)
             .set('minutes', 0)
             .set('seconds', 0)
       },
       {
-        afterTime: () =>
+        afterTime: () :dayjs.Dayjs=>
           dayjs()
             .set('hour', 13)
             .set('minutes', 0)
             .set('seconds', 0)
             .subtract(1, 'second'),
-        beforeTime: () =>
+        beforeTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 15)
             .set('minutes', 0)
@@ -533,5 +533,5 @@ export const SUBSCRIBER_TYPE = {
   CLUB: 'CLUB'
 }
 
-export const ACCESSTOKEN:string="accessToken"
-export const TRADES:string="trades"
+export const ACCESSTOKEN="accessToken"
+export const TRADES="trades"
