@@ -89,7 +89,8 @@ export enum EXIT_STRATEGIES {
   INDIVIDUAL_LEG_SLM_1X = 'INDIVIDUAL_LEG_SLM_1X',
   MULTI_LEG_PREMIUM_THRESHOLD = 'MULTI_LEG_PREMIUM_THRESHOLD',
   MIN_XPERCENT_OR_SUPERTREND = 'MIN_XPERCENT_OR_SUPERTREND',
-  OBS_TRAIL_SL = 'OBS_TRAIL_SL'
+  OBS_TRAIL_SL = 'OBS_TRAIL_SL',
+  NO_SL='NO_SL'
 }
 
 export enum DOS_ENTRY_STRATEGIES {
@@ -213,7 +214,7 @@ export const STRATEGIES_DETAILS = {
       volatilityType: VOLATILITY_TYPE.SHORT,
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
-      exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      exitStrategy: EXIT_STRATEGIES.NO_SL,
       slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
@@ -335,6 +336,9 @@ export const EXIT_STRATEGIES_DETAILS = {
   },
   [EXIT_STRATEGIES.OBS_TRAIL_SL]: {
     label: 'Initial 30%, then trail SL on every higher close (1min TF)'
+  },
+  [EXIT_STRATEGIES.NO_SL]: {
+    label: 'No SL'
   }
 }
 
@@ -528,3 +532,6 @@ export const SUBSCRIBER_TYPE = {
   PREMIUM: 'PREMIUM',
   CLUB: 'CLUB'
 }
+
+export const ACCESSTOKEN:string="accessToken"
+export const TRADES:string="trades"

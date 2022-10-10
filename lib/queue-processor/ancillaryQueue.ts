@@ -1,36 +1,52 @@
-import { Worker } from 'bullmq'
-import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
+import { Worker } from 'bullmq';
 
-import orderbookSyncByTag from '../ancillary-tasks/orderbookSyncByTag'
-import orderbookSync from '../ancillary-tasks/orderbookSync'
-import { ANCILLARY_TASKS } from '../constants'
 //import console from '../logging'
-import logger from '../logger'
-import { ANCILLARY_Q_NAME, redisConnection } from '../queue'
+import logger from '../logger';
+import { ANCILLARY_Q_NAME, redisConnection } from '../queue';
+import orderbookSync from './../../lib/ancillary-tasks/orderbookSync';
+  // function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
+  //   const { initialJobData } = jobData
+  //   const { ancillaryTask, orderTag, user } = initialJobData
+  //   switch (ancillaryTask) {
+  //     case ANCILLARY_TASKS.ORDERBOOK_SYNC_BY_TAG: {
+  //       return orderbookSyncByTag({
+  //         orderTag: orderTag!,
+  //         user: user!
+  //       })
+  //     }
+  //     case ANCILLARY_TASKS.ORDERBOOKSYNC: {
+  //       logger.info(' [ancillaryQueue] ProcessJob started');
+  //       return orderbookSync({
+  //         user: user!
+  //       })
+  //     }
+  //     default: {
+  //       return null
+  //     }
+  //   }
+  // }
+  // const worker = new Worker(
+  //   ANCILLARY_Q_NAME,
+  //   async job => {
+  //     try {
+  //       return processJob(job.data)
+  //     } catch (e) {
+  //       console.log(e)
+  //       throw new Error(e)
+  //     }
+  //   },
+  //   {
+  //     connection: redisConnection,
+  //     concurrency: 20
+  //   }
+  // )
+  function processJob(user) {
 
-function processJob (jobData: { initialJobData: SUPPORTED_TRADE_CONFIG }) {
-  const { initialJobData } = jobData
-
-  const { ancillaryTask, orderTag, user } = initialJobData
-  switch (ancillaryTask) {
-    case ANCILLARY_TASKS.ORDERBOOK_SYNC_BY_TAG: {
-      return orderbookSyncByTag({
-        orderTag: orderTag!,
-        user: user!
-      })
-    }
-    case ANCILLARY_TASKS.ORDERBOOKSYNC: {
-      logger.info(' [ancillaryQueue] ProcessJob started');
-      return orderbookSync({
-        user: user!
-      })
-    }
-    default: {
-      return null
-    }
-  }
-}
-
+     logger.info(' [ancillaryQueue] ProcessJob started');
+    return orderbookSync({
+      user: user!
+    });
+  };
 const worker = new Worker(
   ANCILLARY_Q_NAME,
   async job => {
@@ -42,8 +58,7 @@ const worker = new Worker(
     }
   },
   {
-    connection: redisConnection,
-    concurrency: 20
+    connection: redisConnection
   }
 )
 
