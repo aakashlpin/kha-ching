@@ -351,8 +351,6 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
 
 export function syncGetKiteInstance (user) {
   const accessToken = user?.session?.access_token
-  logDeep(user);
-  console.log(`Accesstoken is ${accessToken}`)
   if (!accessToken) {
     throw new Error(
       'missing access_token in `user` object, or `user` is undefined'
