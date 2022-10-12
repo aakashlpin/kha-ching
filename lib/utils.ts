@@ -1452,14 +1452,14 @@ export async function cleanupTradesAndAccessToken()
   await redisConnection.hdel(QID,TRADES) ;
 }
 
-export async function storeAccessTokeninRedis(access_token:string)
+export async function storeAccessTokeninRedis(access_token:string):Promise<void>
 {
   await redisConnection.hset(QID,ACCESSTOKEN,access_token) 
 }
 
-export const checksameTokeninRedis = async (access_token: string) => {
+export const checksameTokeninRedis = async (access_token: string):Promise<boolean> => {
   const currentToken:string|null=await redisConnection.hget(QID,ACCESSTOKEN);
-  if (!currentToken && currentToken===access_token)
+  if (currentToken===access_token)
   {
     return true;
   }
