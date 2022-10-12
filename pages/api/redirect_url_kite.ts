@@ -41,13 +41,9 @@ export default withSession(async (req, res) => {
       console.log(e)
     })
 
-    // const existingAccessToken = await checkHasSameAccessToken(
-    //   user.session.access_token!
-    // )
     const existingAccessToken = await checksameTokeninRedis(
       user.session.access_token!
     )
-    
     if (!existingAccessToken) {
       // first login, or revoked login
       // cleanup queue in both cases
