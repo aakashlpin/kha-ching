@@ -3,7 +3,8 @@ import { DBMeta, SignalXUser } from './misc'
 import {
   ATM_STRADDLE_CONFIG,
   ATM_STRANGLE_CONFIG,
-  DIRECTIONAL_OPTION_SELLING_CONFIG
+  DIRECTIONAL_OPTION_SELLING_CONFIG,
+  OTS_CONFIG
 } from './plans'
 
 export interface TradeMeta extends DBMeta {
@@ -23,6 +24,7 @@ export interface TradeMeta extends DBMeta {
 
 export interface ATM_STRADDLE_TRADE extends TradeMeta, ATM_STRADDLE_CONFIG {}
 export interface ATM_STRANGLE_TRADE extends TradeMeta, ATM_STRANGLE_CONFIG {}
+export interface OTS_TRADE extends TradeMeta, OTS_CONFIG {}
 export interface DIRECTIONAL_OPTION_SELLING_TRADE
   extends TradeMeta,
     DIRECTIONAL_OPTION_SELLING_CONFIG {}
@@ -34,3 +36,4 @@ export type SUPPORTED_TRADE_CONFIG =
   | ATM_STRADDLE_TRADE
   | ATM_STRANGLE_TRADE
   | DIRECTIONAL_OPTION_SELLING_TRADE
+  |OTS_TRADE

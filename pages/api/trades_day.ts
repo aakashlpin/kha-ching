@@ -13,7 +13,8 @@ import {
   isMarketOpen,
   isMockOrder,
   premiumAuthCheck,
-  orclsodaUrl
+  orclsodaUrl,
+  logDeep
 } from '../../lib/utils'
 import { SUPPORTED_TRADE_CONFIG } from '../../types/trade'
 import { SignalXUser } from '../../types/misc'
@@ -31,33 +32,32 @@ async function createJob ({
   user: SignalXUser
 }) {
   const { runAt, runNow, strategy } = jobData
-  
-  if (STRATEGIES_DETAILS[strategy].premium) {
-    if (!process.env.SIGNALX_API_KEY?.length) {
-      return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
-    }
+  // if (STRATEGIES_DETAILS[strategy].premium) {
+  //   if (!process.env.SIGNALX_API_KEY?.length) {
+  //     return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
+  //   }
 
-    try {
-      // multifold objective
-      // 1. stop the non premium members trying this out super early
-      // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
-      const res = await premiumAuthCheck()
-      if (!res) {
-        return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
-      }
-    } catch (e) {
-      if (e.isAxiosError) {
-        if (e.response.status === 401) {
-          return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
-        }
-        return Promise.reject(new Error(e.response.data))
-      }
-    }
-  }
+  //   try {
+  //     // multifold objective
+  //     // 1. stop the non premium members trying this out super early
+  //     // 2. memoize the auth key in the SIGNALX_URL service making the first indicator request real fast
+  //     const res = await premiumAuthCheck()
+  //     if (!res) {
+  //       return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
+  //     }
+  //   } catch (e) {
+  //     if (e.isAxiosError) {
+  //       if (e.response.status === 401) {
+  //         return Promise.reject(new Error(ERROR_STRINGS.PAID_STRATEGY))
+  //       }
+  //       return Promise.reject(new Error(e.response.data))
+  //     }
+  //   }
+  // }
 
-  if (!isMockOrder() && runNow && !isMarketOpen()) {
-    return Promise.reject(new Error('Exchange is offline right now.'))
-  }
+  // if (!isMockOrder() && runNow && !isMarketOpen()) {
+  //   return Promise.reject(new Error('Exchange is offline right now.'))
+  // }
 
   if (!isMockOrder() && !runNow && runAt && !isMarketOpen(dayjs(runAt))) {
     return Promise.reject(
@@ -100,7 +100,7 @@ export default withSession(async (req, res) => {
 
   const orclEndpoint=`${orclsodaUrl}/dailyplan`
   //const orclGetPoint=`${orclsodaUrl}/custom-actions/query/dailyplan`
-  /*ANILTODO: 1. Check if that colletions exist
+  /*ANILTODO: 1. Check if that collections exist
   2. If it exists, keep posting , else crete a collection
   */
 
@@ -108,6 +108,7 @@ export default withSession(async (req, res) => {
     let data: SUPPORTED_TRADE_CONFIG
     const orderTag = nanoid()
     try {
+      logDeep(req.body);
       //Check if collection is already created
       // for every new job, first create a db entry
       const postData = {

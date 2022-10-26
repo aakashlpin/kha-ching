@@ -82,6 +82,7 @@ export enum STRATEGIES {
   ATM_STRADDLE = 'ATM_STRADDLE',
   ATM_STRANGLE = 'ATM_STRANGLE',
   DIRECTIONAL_OPTION_SELLING = 'DIRECTIONAL_OPTION_SELLING',
+  OVERNIGHT_TREND_STATEGY = 'OVERNIGHT_TREND_STATEGY',
   OPTION_BUYING_STRATEGY = 'OPTION_BUYING_STRATEGY'
 }
 
@@ -124,6 +125,9 @@ export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES',
   PERCENT_FROM_ATM='PERCENT_FROM_ATM'
+}
+export enum OTS_ENTRY_STRATEGIES {
+  DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM'
 }
 
 export enum ANCILLARY_TASKS {
@@ -234,6 +238,49 @@ export const STRATEGIES_DETAILS = {
       },
       [STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM]: {
         label: 'by percent from ATM%'
+      }
+    }
+  },
+  [STRATEGIES.OVERNIGHT_TREND_STATEGY]: {
+    premium: false,
+    heading: 'Overnight Trend Sell',
+    defaultRunAt: dayjs()
+      .set('hour', 15)
+      .set('minutes', 10)
+      .set('seconds', 0)
+      .format(),
+    margin1x: {
+      [INSTRUMENTS.NIFTY]: 420000,
+      [INSTRUMENTS.BANKNIFTY]: 425000
+    },
+    defaultFormState: {
+      instruments: getInstrumentsDefaultState(),
+      lots: NEXT_PUBLIC_DEFAULT_LOTS,
+      slmPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      trailEveryPercentageChangeValue: 2,
+      trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      inverted: false,
+      entryStrategy: OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
+      distanceFromAtm: 1,
+      deltaStrikes: 20,
+      productType: PRODUCT_TYPE.NRML,
+      volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
+      runNow: false,
+      exitStrategy: EXIT_STRATEGIES.NO_SL,
+      slOrderType: SL_ORDER_TYPE.SLL,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      rollback: {
+        onBrokenHedgeOrders: false,
+        onBrokenPrimaryOrders: false,
+        onBrokenExitOrders: false
+      }
+    },
+    ENTRY_STRATEGIES: STRANGLE_ENTRY_STRATEGIES,
+    ENTRY_STRATEGY_DETAILS: {
+      [OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM]: {
+        label: 'by distance from ATM strike'
       }
     }
   },

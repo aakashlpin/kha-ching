@@ -143,7 +143,49 @@ const getSortedMatchingIntrumentsData = async ({
   return rows
 }
 
-// export const getOpenPositionsbyTag=async
+export async function getOHLC({kite,symbol,instrument}):Promise<any>
+ {
+  try
+  {
+  
+  //console.log(`Checking ${await kite.getOHLC([NIFTY,BANKNIFTY])}`);
+  const data=await kite.getOHLC(symbol);
+  //console.log(`checking ${await kite.getOHLC(["NSE:NIFTY 50","NSE:NIFTY BANK"])}`);
+  console.log (data);
+  if (data[symbol].last_price<data[symbol].ohlc.open)
+  data[symbol].trend="CE"
+else
+data[symbol].trend="PE"
+
+  return ({
+      "trend":data[symbol].trend,
+      "last_price":data[symbol].last_price
+  })
+  //  data=await kite.getOHLC("NSE:NIFTY BANK");
+  // //console.log(`checking ${await kite.getOHLC(["NSE:NIFTY 50","NSE:NIFTY BANK"])}`);
+  // console.log(`Another ${data}`);
+  // logDeep(data);
+  
+ }
+ catch (  e)
+ {
+  console.log(`Excpetion is coming: ${e}`);
+  
+ }
+
+
+ /* export async function getInstrumentPrice (
+    kite,
+    underlying: string,
+    exchange: string
+  ): Promise<number> {
+    const instrumentString = `${exchange}:${underlying}`
+    const underlyingRes = await kite.getLTP(instrumentString)
+    return Number(underlyingRes[instrumentString].last_price)
+  }
+  */
+}
+
 
 export const getExpiryTradingSymbol = async ({
   nfoSymbol,
@@ -349,7 +391,7 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
   }
 }
 
-export function syncGetKiteInstance (user) {
+export function syncGetKiteInstance (user):KiteConnect {
   const accessToken = user?.session?.access_token
   if (!accessToken) {
     throw new Error(
@@ -1341,7 +1383,6 @@ export const attemptBrokerOrders = async (
 }> => {
   try {
     const brokerOrderResolutions = await allSettled(ordersPr)
-    console.log('[attemptBrokerOrders] resolutions')
     logDeep(brokerOrderResolutions)
     const rejectedLegs = (brokerOrderResolutions as any).filter(
       (res: allSettledInterface) => res.status === 'rejected'
