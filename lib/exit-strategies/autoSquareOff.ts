@@ -182,25 +182,35 @@ export async function squareOffTag(orderTag:string,kite:any)
     console.log('Not squaring off as user aborted');
     Promise.resolve('Not suqaring off');
   }
-  const orderSummarybyTag=await getCompletedOrdersbyTag(orderTag,kite);
+  const orderSummarybyTag=(await getCompletedOrdersbyTag(orderTag,kite)).filter(summary=>summary.quantity!=0);
   const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders());
-                  
-  orderSummarybyTag.filter(summary=>(summary.quantity!=0))
-                    .forEach(summary=>
+                  for (const summary of orderSummarybyTag)
+  // orderSummarybyTag.filter(summary=>(summary.quantity!=0))
+  //                   .forEach(async summary=>
                       {
-                        allOrders.filter(order=>
-                          (order.status==='TRIGGER PENDING' && order.tag===orderTag))
-                          .forEach(async openOrder=>{
-                            await withRemoteRetry(() =>
-                            kite.cancelOrder(openOrder.variety, openOrder.order_id) )
-                          })
-                        allOrders.filter(order=>
+
+                        for (const openOrder of allOrders.filter(order => (order.status === 'TRIGGER PENDING' && order.tag === orderTag)))
+                        {
+                        await withRemoteRetry(() => kite.cancelOrder(openOrder.variety, openOrder.order_id))
+                        }
+                        /*allOrders.filter(order => (order.status === 'TRIGGER PENDING' && order.tag === orderTag))
+                        .forEach(async (openOrder) => {
+                          await withRemoteRetry(() => kite.cancelOrder(openOrder.variety, openOrder.order_id))
+                        })*/
+                        for (const order of allOrders.filter(order=>
+                          (order.status==='COMPLETE' && order.tag===orderTag && order.tradingsymbol===summary.tradingsymbol
+                          && (summary.quantity>0?(order.transaction_type==='BUY'):(order.transaction_type==='SELL')))))
+                        {
+                          await squareOffOrder(order,kite)
+                        }
+                        /*allOrders.filter(order=>
                           (order.status==='COMPLETE' && order.tag===orderTag && order.tradingsymbol===summary.tradingsymbol
                           && (summary.quantity>0?(order.transaction_type==='BUY'):(order.transaction_type==='SELL'))))
                           .forEach(async order=>
                             await squareOffOrder(order,kite))
-
-                      })
+                            */
+                    }
+                    
 
   return Promise.resolve('Orders squared off');
 

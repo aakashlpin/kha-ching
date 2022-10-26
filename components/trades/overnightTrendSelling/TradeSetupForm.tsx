@@ -27,36 +27,35 @@ import {
   INSTRUMENTS,
   STRATEGIES,
   STRANGLE_ENTRY_STRATEGIES,
-  STRATEGIES_DETAILS
+  STRATEGIES_DETAILS,
+  OTS_ENTRY_STRATEGIES
 } from '../../../lib/constants'
-import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
-import HedgeComponent from '../../lib/HedgeComponent'
+import { OTS_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import VolatilityTypeComponent from '../../lib/VolatilityTypeComponent'
 import ProductTypeComponent from '../../lib/ProductTypeComponent'
-import RollbackComponent from '../../lib/RollbackComponent'
 import DiscreteSlider from '../../lib/Slider'
 import SlManagerComponent from '../../lib/SlManagerComponent'
 import ExpiryTypeComponent from '../../lib/ExpiryTypeComponent'
 
-interface ATMStrangleTradeSetupFormProps {
+interface OTSTradeSetupFormProps {
   formHeading?: string
   strategy: STRATEGIES
-  state: ATM_STRANGLE_CONFIG
+  state: OTS_CONFIG
   isRunnable?: boolean
-  onChange: (changedProps: Partial<ATM_STRANGLE_CONFIG>) => void
+  onChange: (changedProps: Partial<OTS_CONFIG>) => void
   onCancel: () => void
   onSubmit: (data: AvailablePlansConfig | null) => void
 }
 
 const TradeSetupForm = ({
   formHeading,
-  strategy = STRATEGIES.ATM_STRANGLE,
+  strategy = STRATEGIES.OVERNIGHT_TREND_STATEGY,
   state,
   onChange,
   onSubmit,
   onCancel,
   isRunnable = true
-}: ATMStrangleTradeSetupFormProps) => {
+}: OTSTradeSetupFormProps) => {
   const isSchedulingDisabled = false
 
   const enabledInstruments = [
@@ -65,9 +64,7 @@ const TradeSetupForm = ({
     INSTRUMENTS.FINNIFTY
   ]
   const entryStrategies = [
-    STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
-    STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES,
-    STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM
+    OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM
   ]
   const exitStrategies = [
     EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -79,7 +76,7 @@ const TradeSetupForm = ({
     e.preventDefault()
     onSubmit(formatFormDataForApi({ strategy, data: state }))
   }
-  
+  console.log(state);
   return (
     <form noValidate>
       <Paper style={{ padding: 16 }}>
@@ -140,7 +137,7 @@ const TradeSetupForm = ({
                 value={state.entryStrategy}
                 onChange={e =>
                   onChange({
-                    entryStrategy: e.target.value as STRANGLE_ENTRY_STRATEGIES
+                    entryStrategy: e.target.value as OTS_ENTRY_STRATEGIES
                   })
                 }
               >
@@ -152,7 +149,7 @@ const TradeSetupForm = ({
                     label={
                       <Typography variant='body2'>
                         {
-                          STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE]
+                          STRATEGIES_DETAILS[STRATEGIES.OVERNIGHT_TREND_STATEGY]
                             .ENTRY_STRATEGY_DETAILS[entryStrategy].label
                         }
                       </Typography>
@@ -164,42 +161,18 @@ const TradeSetupForm = ({
           </Grid>
 
           <Grid item>
-            {state.entryStrategy ===
-            STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM ? (
+           
               <DiscreteSlider
                 label={'Strikes away from ATM strike'}
                 defaultValue={1}
                 step={1}
-                min={1}
-                max={20}
+                min={0}
+                max={10}
                 value={state.distanceFromAtm}
                 onChange={(e, newValue) =>
                   onChange({ distanceFromAtm: newValue })
                 }
               />
-            ) : state.entryStrategy ===
-            STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES ?
-             (
-              <TextField
-                fullWidth
-                name='deltaStrikes'
-                value={state.deltaStrikes}
-                onChange={e =>
-                  onChange({ deltaStrikes: +e.target.value || undefined })
-                }
-                label='Strike delta'
-              />
-            ):
-            ( <TextField
-              fullWidth
-              name='percentStrikes'
-              value={state.percentfromAtm}
-              defaultValue={2}
-              onChange={(e) =>
-                onChange({ percentfromAtm:  +e.target.value || undefined })
-              }
-              label='Percent from ATM%'
-            />)}
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 8 }}>
@@ -217,70 +190,6 @@ const TradeSetupForm = ({
             onChange={onChange}
             exitStrategies={exitStrategies}
           />
-
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup row>
-                <FormControlLabel
-                  label='Inverted Strangle'
-                  control={
-                    <Checkbox
-                      name='instruments'
-                      checked={state.inverted}
-                      onChange={() => onChange({ inverted: !state.inverted })}
-                    />
-                  }
-                />
-              </FormGroup>
-            </FormControl>
-          </Grid>
-
-          <HedgeComponent
-            volatilityType={state.volatilityType}
-            isHedgeEnabled={state.isHedgeEnabled}
-            hedgeDistance={state.hedgeDistance}
-            onChange={onChange}
-          />
-
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormGroup>
-                <FormControlLabel
-                  key='autoSquareOff'
-                  label='Auto Square off'
-                  control={
-                    <Checkbox
-                      checked={state.isAutoSquareOffEnabled}
-                      onChange={() =>
-                        onChange({
-                          isAutoSquareOffEnabled: !state.isAutoSquareOffEnabled
-                        })
-                      }
-                    />
-                  }
-                />
-                {state.isAutoSquareOffEnabled ? (
-                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                    <KeyboardTimePicker
-                      margin='normal'
-                      id='time-picker'
-                      label='Square off time'
-                      value={state.squareOffTime}
-                      onChange={selectedDate => {
-                        onChange({ squareOffTime: ensureIST(selectedDate) })
-                      }}
-                      KeyboardButtonProps={{
-                        'aria-label': 'change square off time'
-                      }}
-                    />
-                  </MuiPickersUtilsProvider>
-                ) : null}
-              </FormGroup>
-            </FormControl>
-          </Grid>
-
-          <RollbackComponent rollback={state.rollback!} onChange={onChange} />
-
           {isRunnable ? (
             <Grid item xs={12}>
               <Button

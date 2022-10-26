@@ -9,6 +9,7 @@ import { addToAutoSquareOffQueue,
 import atmStraddle from '../strategies/atmStraddle'
 import directionalOptionSelling from '../strategies/directionalOptionSelling'
 import optionBuyingStrategy from '../strategies/optionBuyingStrategy'
+import overnightTrend from '../strategies/overnightTrend'
 import strangle from '../strategies/strangle'
 import { getCustomBackoffStrategies, logDeep, ms } from '../utils'
 
@@ -31,6 +32,9 @@ async function processJob (job: Job) {
     case STRATEGIES.OPTION_BUYING_STRATEGY: {
       return optionBuyingStrategy(data)
     }
+    case STRATEGIES.OVERNIGHT_TREND_STATEGY: {
+      return overnightTrend(data)
+    }
     default: {
       return null
     }
@@ -43,7 +47,6 @@ const worker = new Worker(
     // console.log(`processing tradingQueue id ${job.id}`, omit(job.data, ['user']))
     const result = await processJob(job)
     // console.log(`processed tradingQueue id ${job.id}`, result)
-
     const { isAutoSquareOffEnabled, strategy } = job.data
     // can't enable auto square off for DOS
     // because we don't know upfront how many orders would get punched
