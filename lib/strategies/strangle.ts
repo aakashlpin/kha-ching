@@ -21,13 +21,17 @@ import {
   remoteOrderSuccessEnsurer,
   SIGNALX_URL,
   syncGetKiteInstance,
-  TradingSymbolInterface
+  TradingSymbolInterface,
+  getTradingSymbolsByOptionPrice,
+  withRemoteRetry
+  //getTradingSymbolsByPrice
 } from '../utils'
 import { createOrder, getATMStraddle as getATMStrikes } from './atmStraddle'
 import { doSquareOffPositions } from '../exit-strategies/autoSquareOff'
 import dayjs, { Dayjs } from 'dayjs'
 import { KiteOrder } from '../../types/kite'
 import axios from 'axios'
+import { SignalXUser } from '../../types/misc'
 
 export const getNearestContractDate = async (
   atmStrike: number,
@@ -50,6 +54,7 @@ export const getNearestContractDate = async (
 }
 
 const getStrangleStrikes = async ({
+  user,
   atmStrike,
   instrument,
   inverted = false,
@@ -57,8 +62,10 @@ const getStrangleStrikes = async ({
   distanceFromAtm = 1,
   percentfromAtm=2,
   deltaStrikes,
-  expiryType
+  expiryType,
+  price=20
 }: {
+  user?:SignalXUser
   atmStrike: number
   instrument: INSTRUMENTS
   inverted?: boolean
@@ -67,6 +74,7 @@ const getStrangleStrikes = async ({
   percentfromAtm?:number
   deltaStrikes?: number
   expiryType?: EXPIRY_TYPE
+  price?:number
 }) => {
   const { nfoSymbol, strikeStepSize } = INSTRUMENT_DETAILS[instrument]
 
@@ -111,10 +119,59 @@ const getStrangleStrikes = async ({
     lowerLegPEStrike =  Math.round((1-(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
     higherLegCEStrike = Math.round((1+(percentfromAtm/100))* atmStrike / strikeStepSize!) * strikeStepSize! 
   }
-  else
+  else if (entryStrategy === STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM)
   {
     lowerLegPEStrike = atmStrike - distanceFromAtm * strikeStepSize
     higherLegCEStrike = atmStrike + distanceFromAtm * strikeStepSize
+  }
+  else 
+  {
+    const {
+      tradingsymbol: CE_STRING,
+      strike: higherLegCEStrike
+    }=await withRemoteRetry(async () =>
+        getTradingSymbolsByOptionPrice({
+          nfoSymbol,
+          price: price,
+          pivotStrike: atmStrike,
+          instrumentType:'CE',
+          user: user!,
+          expiry: expiryType
+        })
+      )
+
+      const {
+        tradingsymbol: PE_STRING,
+        strike: lowerLegPEStrike
+      }=await withRemoteRetry(async () =>
+          getTradingSymbolsByOptionPrice({
+            nfoSymbol,
+            price: price,
+            pivotStrike: atmStrike,
+            instrumentType:'PE',
+            user: user!,
+            expiry: expiryType
+          })
+        )
+
+      console.log(`Price Strangle ${PE_STRING},ce STRIKE:${CE_STRING}` )
+      return {
+        peStrike: !inverted ? lowerLegPEStrike : higherLegCEStrike,
+        ceStrike: !inverted ? higherLegCEStrike : lowerLegPEStrike,
+        PE_STRING,
+        CE_STRING
+      }
+    // const {
+    //   :lowerLegPEStrike,
+    //   :higherLegCEStrike
+    // } = await getTradingSymbolsByPrice({ nfoSymbol,
+    //   price,
+    //   pivotStrike:atmStrike,
+    //   tradingPrefix,
+    //   kite})
+   
+    
+    //Fetch based on price
   }
 
   const { tradingsymbol: LOWER_LEG_PE_STRING } = (await getExpiryTradingSymbol({
@@ -166,7 +223,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       productType = PRODUCT_TYPE.MIS,
       volatilityType = VOLATILITY_TYPE.SHORT,
       expiryType,
-      _nextTradingQueue = EXIT_TRADING_Q_NAME
+      _nextTradingQueue = EXIT_TRADING_Q_NAME,
+      optionPrice
     } = args
     const {
       lotSize,
@@ -178,7 +236,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
 
     const sourceData = await getIndexInstruments()
 
-    const { atmStrike } = await getATMStrikes({
+    const { atmStrike,CE_STRING:atmCEString } = await getATMStrikes({
       ...args,
       takeTradeIrrespectiveSkew: true,
       instrumentsData: sourceData,
@@ -194,12 +252,14 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     } as any)
 //If percent, get distancefromATM
 
+   // const tradingPrefix=atmCEString.substring(0,atmCEString.length-(2+atmStrike.toString().length))
     const {
       peStrike,
       ceStrike,
       PE_STRING,
       CE_STRING
     } = await getStrangleStrikes({
+      user,
       atmStrike,
       instrument,
       inverted,
@@ -207,7 +267,8 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
       percentfromAtm,
       entryStrategy,
       deltaStrikes,
-      expiryType
+      expiryType,
+      price:optionPrice
     })
 
     const kite = syncGetKiteInstance(user)
@@ -291,7 +352,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
 
       allOrders = [...statefulOrders]
     }
-
+    
     const brokerOrdersPr = orders.map(async order =>
       remoteOrderSuccessEnsurer({
         _kite: kite,
