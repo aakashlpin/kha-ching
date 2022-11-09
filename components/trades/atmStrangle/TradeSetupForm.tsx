@@ -67,7 +67,8 @@ const TradeSetupForm = ({
   const entryStrategies = [
     STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
     STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES,
-    STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM
+    STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM,
+    STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE
   ]
   const exitStrategies = [
     EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
@@ -189,7 +190,8 @@ const TradeSetupForm = ({
                 }
                 label='Strike delta'
               />
-            ):
+            ):state.entryStrategy ===
+            STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM?
             ( <TextField
               fullWidth
               name='percentStrikes'
@@ -199,7 +201,19 @@ const TradeSetupForm = ({
                 onChange({ percentfromAtm:  +e.target.value || undefined })
               }
               label='Percent from ATM%'
-            />)}
+            />
+            ):   ( <TextField
+              fullWidth
+              name='optionPrice'
+              value={state.optionPrice}
+              defaultValue={20}
+              onChange={(e) =>
+                onChange({ optionPrice:  +e.target.value || undefined })
+              }
+              label='Option Price'
+            />
+            )
+            }
           </Grid>
 
           <Grid item xs={12} style={{ marginBottom: 8 }}>
