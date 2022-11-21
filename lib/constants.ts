@@ -66,7 +66,7 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     underlyingSymbol: 'NIFTY FIN SERVICE',
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
-    strikeStepSize: 100,
+    strikeStepSize: 50,
     // [17251-27500]
     freezeQty: 1800
   }
