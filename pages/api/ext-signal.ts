@@ -9,22 +9,26 @@
     validityType: VALIDITY_TYPE.DAY,
     positionType: liveBias,
     weightagePercent: 100,
-    price:
-      triggerPrice +
-      (liveBias === POSITION_TYPE.BUY
-        ? initConfig.triggerBufferPoints
-        : -1 * initConfig.triggerBufferPoints),
+    price,
     triggerPrice,
   };
 
   const signal = {
     state: SLS_STATE.INVALIDATED,
-    // [TODO] remove these when backend supports
     orderType: ORDER_TYPE.MARKET,
     productType: PRODUCT_TYPE.NRML,
     validityType: VALIDITY_TYPE.DAY,
-    positionType:
-      prevBias === POSITION_TYPE.BUY ? POSITION_TYPE.SELL : POSITION_TYPE.BUY,
+    positionType: BUY/SELL
+  };
+
+  const signal = {
+    state: SLS_STATE.EXIT,
+    orderType: ORDER_TYPE.MARKET,
+    productType: PRODUCT_TYPE.NRML,
+    validityType: VALIDITY_TYPE.DAY,
+    price: close,
+    exitReason: EXIT_REASON.EOL,
+    positionType: BUY/SELL,
   };
 
   const signal = {
@@ -32,13 +36,9 @@
     orderType: ORDER_TYPE.SL,
     productType: PRODUCT_TYPE.NRML,
     validityType: VALIDITY_TYPE.DAY,
-    positionType:
-      prevBias === POSITION_TYPE.BUY ? POSITION_TYPE.SELL : POSITION_TYPE.BUY,
+    positionType: BUY/SELL,
     triggerPrice: slValue,
-    price:
-      prevBias === POSITION_TYPE.BUY
-        ? slValue - riderConfig.triggerBufferPoints
-        : slValue + riderConfig.triggerBufferPoints,
+    price: number,
   };
 
 
@@ -47,15 +47,9 @@
     orderType: ORDER_TYPE.SL,
     productType: PRODUCT_TYPE.NRML,
     validityType: VALIDITY_TYPE.DAY,
-    positionType:
-      positionType === POSITION_TYPE.BUY
-        ? POSITION_TYPE.SELL
-        : POSITION_TYPE.BUY,
+    positionType: BUY/SELL
     triggerPrice: newSlValue,
-    price:
-      positionType === POSITION_TYPE.BUY
-        ? newSlValue - riderConfig.triggerBufferPoints
-        : newSlValue + riderConfig.triggerBufferPoints,
+    price: number,
   };
 
  */
@@ -63,12 +57,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { syncGetKiteInstance } from '../../lib/utils'
 
-// Q - how do I get the session when request initiated from external source
-
 export default async function handler (req: NextApiRequest, res: NextApiResponse) {
   // const user = req.session.get('user')
 
-  const accessToken = req.headers['broker-access-token']
+  const accessToken = req.headers['x-broker-access-token']
 
   if (!accessToken) {
     return res.status(401).send('Unauthorized')
@@ -148,6 +140,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
           price,
           trigger_price: triggerPrice,
         })
+
         break;
       }
 
@@ -156,14 +149,42 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
         const triggerPendingOrder = orders.find(order => order.tag === 'investmint_nr' && order.status === 'TRIGGER PENDING')
         if (triggerPendingOrder) {
           await kc.cancelOrder(kc.VARIETY_REGULAR, triggerPendingOrder.order_id)
+        } else {
+          console.log(`INVALIDATED: didn't find any NR in this list`)
+          console.log(orders)
         }
+        break;
+      }
+
+      case 'EXIT': {
+        const { modelConfig } = req.body
+        const { tradingsymbol } = riderPosition
+        const { lots } = modelConfig
+
+        const {
+          orderType,
+          productType,
+          validityType,
+          positionType,
+        } = req.body.signal
+
+        await kc.placeOrder(kc.VARIETY_REGULAR, {
+          tradingsymbol,
+          quantity: lots * 50,
+          exchange: 'NFO',
+          transaction_type: positionType,
+          order_type: orderType,
+          product: productType,
+          validity: validityType,
+        })
         break;
       }
       default: {
         break;
-
       }
     }
+
+    return res.json({ status: 'ok' })
 
     // if (!riderPosition) {
     //   return res.json({ status: 'no rider position'})
