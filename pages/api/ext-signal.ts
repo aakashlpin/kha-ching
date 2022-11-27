@@ -186,10 +186,6 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
 
     return res.json({ status: 'ok' })
 
-    // if (!riderPosition) {
-    //   return res.json({ status: 'no rider position'})
-    // }
-
   } catch (e) {
     return res.status(401).send('Unauthorized')
   }
