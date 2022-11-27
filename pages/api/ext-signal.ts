@@ -118,6 +118,10 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
       case 'SL_CREATE':
       case 'SL_UPDATE': {
         const { modelConfig } = req.body
+        if (!riderPosition) {
+          console.log(`${req.body.signal?.state}: didn't find any NR position`)
+          break;
+        }
         const { tradingsymbol } = riderPosition
         const { lots } = modelConfig
 
