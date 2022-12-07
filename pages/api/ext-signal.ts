@@ -83,7 +83,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
         position.tradingsymbol.startsWith('NIFTY') &&
         position.tradingsymbol.endsWith('FUT') &&
         position.product === 'NRML' &&
-        position.quantity > 0
+        Math.abs(position.quantity) > 0
       )
 
     switch (req.body.signal?.state) {
