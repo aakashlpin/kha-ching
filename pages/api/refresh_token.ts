@@ -22,7 +22,8 @@ const runner = async (req, res) => {
   try {
     // see if we're able to fetch profile with the access token
     // in case access token is expired, then log out the user
-    await kc.getProfile()
+    // await kc.getProfile()
+    throw 'error'
   } catch (e) {
     console.log('access token expired')
     const responseOnRenew = await kc.renewAccessToken(refresh_token, KITE_API_SECRET)
