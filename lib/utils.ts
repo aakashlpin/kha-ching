@@ -598,16 +598,22 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
   }
 }
 
-export const storeAccessTokenRemotely = async accessToken => {
+export const storeAccessTokenRemotely = async (accessToken: string, refreshToken?: string) => {
   const ACCESS_TOKEN_URL = `${withoutFwdSlash(
     DATABASE_HOST_URL as string
   )}/pvt_${DATABASE_USER_KEY as string}/tokens`
+  const data = {
+    access_token: accessToken
+  }
+
+  if (refreshToken) {
+    data['refresh_token'] = refreshToken
+  }
+
   try {
     await axios.post(
       ACCESS_TOKEN_URL,
-      {
-        access_token: accessToken
-      },
+      data,
       SIGNALX_AXIOS_DB_AUTH
     )
   } catch (e) {
