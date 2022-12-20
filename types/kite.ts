@@ -10,6 +10,7 @@ export interface KiteProfile {
   order_types: string[]
   api_key?: string
   access_token?: string
+  refresh_token?: string
   login_time?: string
   avatar_url: string
 }

@@ -54,7 +54,7 @@ export default withSession(async (req, res) => {
         console.log(e)
       })
       // then store access token remotely for other services to use it
-      storeAccessTokenRemotely(user.session.access_token)
+      storeAccessTokenRemotely(user.session.access_token as string, user.session.refresh_token)
     }
 
     // then redirect
