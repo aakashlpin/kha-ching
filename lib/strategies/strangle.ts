@@ -23,7 +23,9 @@ import {
   syncGetKiteInstance,
   TradingSymbolInterface,
   getTradingSymbolsByOptionPrice,
-  withRemoteRetry
+  getOTMStrangleByOptionPrice,
+  withRemoteRetry,
+  isMarketOpen
   //getTradingSymbolsByPrice
 } from '../utils'
 import { createOrder, getATMStraddle as getATMStrikes } from './atmStraddle'
@@ -126,6 +128,51 @@ const getStrangleStrikes = async ({
   }
   else 
   {
+    console.log(`[strangle] symbol:${nfoSymbol} price:${price} strike:${atmStrike}`)
+    const strangleOptions=await withRemoteRetry(async () => getOTMStrangleByOptionPrice  ({
+      nfoSymbol,
+      price,
+      pivotStrike:atmStrike,
+      user:user!,
+      greaterThanEqualToPrice : false,
+      expiry :expiryType
+    }))
+    /*
+     tradingsymbol: tradingSymbol,
+      strike: getStrike(tradingSymbol),
+      instrument_token: instrumentToken,
+      last_price: lastPrice
+    }*/
+    return strangleOptions.reduce(( accm,currVal)=>
+      {
+        let currentVal={}
+        if (currVal.tradingsymbol.substring(currVal.tradingsymbol-2)==="CE")
+        {
+           currentVal= {
+            ...accm,
+            ceStrike:currVal.strike,
+            CE_STRING:currVal.tradingsymbol
+          };
+        }
+        else //if (currVal.tradingsymbol.substring(currVal.tradingsymbol-2)==="PE")
+        {
+           currentVal= {
+            ...accm,
+            peStrike:currVal.strike,
+            PE_STRING:currVal.tradingsymbol
+          };
+        }
+        console.log(`[strangle] tradingSymbol is ${currVal.tradingsymbol}`)
+       return currentVal;
+      },{}
+      )
+
+      /*peStrike,
+      ceStrike,
+      PE_STRING,
+      CE_STRING
+
+    
     const {
       tradingsymbol: CE_STRING,
       strike: higherLegCEStrike
@@ -172,6 +219,8 @@ const getStrangleStrikes = async ({
    
     
     //Fetch based on price
+
+    */
   }
 
   const { tradingsymbol: LOWER_LEG_PE_STRING } = (await getExpiryTradingSymbol({
@@ -272,7 +321,10 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
     })
 
     const kite = syncGetKiteInstance(user)
-
+    if (!isMarketOpen())
+    {
+      throw new Error('Market is closed now');
+    }
     let allOrdersLocal: KiteOrder[] = []
     let hedgeOrdersLocal: KiteOrder[] = []
     let allOrders: KiteOrder[] = []
@@ -296,7 +348,7 @@ async function atmStrangle (args: ATM_STRANGLE_TRADE) {
 
       hedgeOrdersLocal = [putHedge, callHedge].map(symbol =>
         createOrder({
-          symbol,
+          symbol:symbol!,
           lots,
           lotSize,
           user: user!,

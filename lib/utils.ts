@@ -34,6 +34,22 @@ import https from 'https'
 import fs from 'fs'
 import memoizer from 'memoizee'
 
+export type TradingSymbolInterface = KITE_INSTRUMENT_INFO
+export interface StrikeInterface {
+  PE_STRING: string
+  CE_STRING: string
+}
+
+interface GET_LTP_ARGS {
+  exchange: string
+  tradingSymbol: string
+}
+
+export interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
+  instrumentToken: string
+  lastPrice: number
+}
+
 const MOCK_ORDERS = process.env.MOCK_ORDERS
   ? JSON.parse(process.env.MOCK_ORDERS)
   : false
@@ -97,6 +113,39 @@ export const getIndexInstruments = memoizer(asyncGetIndexInstruments, {
   promise: true
 })
 
+
+const getOptionExpiries = async (
+  nfoSymbol='NIFTY', //NIFTY,BANKNIFTY,FINNIFTY
+  instrumentType='CE' //CE,PE,FUT
+): Promise<string[]> => {
+  console.log(`[utils.getOptionExpiries] nfoSymbol:${nfoSymbol};instrumentType=${instrumentType} `)
+  const instrumentsData = await getIndexInstruments()
+
+  const rows: KITE_INSTRUMENT_INFO[] = instrumentsData
+    .filter(
+      item =>
+        (nfoSymbol ? item.name === nfoSymbol : true) &&
+        (instrumentType ? item.instrument_type === instrumentType : true)
+    )
+    .sort((row1, row2) =>
+      dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
+    );
+    const expiryDateSet = new Set();
+    for (const row of rows )
+    {
+      expiryDateSet.add((row.expiry));
+      if (expiryDateSet.size==20)
+         break;
+    
+    }
+    return Array.from(expiryDateSet) as string[];
+
+}
+export const getNiftyOptionExpiries = memoizer(getOptionExpiries, {
+  maxAge: dayjs().get('hours') >= 8 ? ms(9 * 60 * 60) : ms(5 * 60),
+  promise: true
+})
+
 export const delay = ms =>
   new Promise(resolve =>
     setTimeout(() => {
@@ -111,16 +160,10 @@ export const getMisOrderLastSquareOffTime = () =>
     .set('seconds', 0)
     .format()
 
-export type TradingSymbolInterface = KITE_INSTRUMENT_INFO
-export interface StrikeInterface {
-  PE_STRING: string
-  CE_STRING: string
-}
-
 const getSortedMatchingIntrumentsData = async ({
-  nfoSymbol,
+  nfoSymbol, //NIFTY,BANKNIFTY,FINNIFTY
   strike,
-  instrumentType,
+  instrumentType, //CE,PE,FUT
   tradingsymbol
 }: {
   nfoSymbol?: string
@@ -139,6 +182,35 @@ const getSortedMatchingIntrumentsData = async ({
     )
     .sort((row1, row2) =>
       dayjs(row1.expiry).isSameOrBefore(dayjs(row2.expiry)) ? -1 : 1
+    )
+  return rows
+}
+/*
+Returns array of OTM Options
+*/
+const getOTMOptions = async ({
+  nfoSymbol, //NIFTY,BANKNIFTY,FINNIFTY
+  strike,
+  instrumentType, //CE,PE,FUT
+  expiry
+}: {
+  nfoSymbol?: string
+  strike?: number
+  instrumentType?: string
+  expiry?: string
+}): Promise<KITE_INSTRUMENT_INFO[]> => {
+  const instrumentsData = await getIndexInstruments()
+  const rows: KITE_INSTRUMENT_INFO[] = instrumentsData
+    .filter(
+      item =>
+        (nfoSymbol ? item.name === nfoSymbol : true) &&
+        (strike?(instrumentType==="CE"?item.strike>strike:item.strike<strike):true) &&
+      //  (strike ? item.strike == strike : true) && // eslint-disable-line
+        (instrumentType ? item.instrument_type === instrumentType : true) &&
+        (expiry ? item.expiry === expiry : true) 
+    )
+    .sort((row1, row2) =>
+      row1.strike<row2.strike ? -1 : 1
     )
   return rows
 }
@@ -325,7 +397,7 @@ export const getMonthlyExpiryTradingSymbol = async ({
     item => dayjs().get('month') === dayjs(item.expiry).get('month')
   )
 
-  // // get next calendar month expiries
+  //get next calendar month expiries
   if (!rows.length) {
     const month = dayjs().get('month') === 11 ? 0 : dayjs().get('month') // to handle December current year & Jan next year cases
     rows = instrumentsData.filter(
@@ -620,6 +692,7 @@ export const isDateHoliday = (date: Dayjs) => {
     return true
   }
   const day = date.format('dddd')
+  console.log(`[utils.isDateHoliday] Day of the week is ${day}`)
   const isWeeklyHoliday = day === 'Saturday' || day === 'Sunday'
   return isWeeklyHoliday
 }
@@ -779,16 +852,6 @@ interface TRADING_SYMBOL_BY_OPTION_PRICE_TYPE {
   expiry?: EXPIRY_TYPE
 }
 
-interface GET_LTP_ARGS {
-  exchange: string
-  tradingSymbol: string
-}
-
-export interface GET_LTP_RESPONSE extends GET_LTP_ARGS {
-  instrumentToken: string
-  lastPrice: number
-}
-
 export const getMultipleInstrumentPrices = async (
   instruments: GET_LTP_ARGS[],
   user: SignalXUser
@@ -809,7 +872,6 @@ export const getMultipleInstrumentPrices = async (
       }
     )
   )
-
   const formattedResponse = Object.keys(pricesDetailsof).reduce(
     (accum, exchangeTradingSymbol) => {
       const [exchange, tradingSymbol] = exchangeTradingSymbol.split(':')
@@ -833,6 +895,129 @@ export const getMultipleInstrumentPrices = async (
   return formattedResponse
 }
 
+export const getOTMStrangleByOptionPrice = async ({
+  nfoSymbol,
+  price,
+  pivotStrike,
+  user,
+  greaterThanEqualToPrice = false,
+  expiry = EXPIRY_TYPE.CURRENT
+}: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE):Promise<Partial<KITE_INSTRUMENT_INFO>[]> => {
+  console.log(`[utils.getOTMStrangleByOptionPrice] nfoSymbol ${nfoSymbol}, price:${price}, pivotStrike:${pivotStrike}`)
+  const kite = syncGetKiteInstance(user)
+  const expiryArray=await getNiftyOptionExpiries();
+  let expiryDate:string;
+  if (expiry===EXPIRY_TYPE.CURRENT)
+     expiryDate=expiryArray[0];
+  else  if (expiry===EXPIRY_TYPE.NEXT)
+     expiryDate=expiryArray[1];
+  else
+  {
+    const month=dayjs(expiryArray[0]).month();
+    expiryDate=expiryArray[0];
+    for (let i=1;i<10;i++)
+    {
+      if (!(month===dayjs(expiryArray[i]).month()))
+        {
+          expiryDate=expiryArray[i-1];
+          break;
+        }
+
+    }
+  }
+
+  const otmCEOptions=await getOTMOptions({nfoSymbol,
+    strike:pivotStrike,
+   instrumentType: "CE",
+    expiry:expiryDate
+  })
+  const otmPEOptions=await getOTMOptions({nfoSymbol,
+    strike:pivotStrike,
+   instrumentType: "PE",
+    expiry:expiryDate
+  })
+
+  const otmCEInstruments = 
+  otmCEOptions.map((row)=>
+    (
+    {
+      exchange: kite.EXCHANGE_NFO,
+      tradingSymbol: row.tradingsymbol
+    })
+    )
+
+  const otmPEInstruments = 
+  otmPEOptions.map((row)=>
+    (
+    {
+      exchange: kite.EXCHANGE_NFO,
+      tradingSymbol: row.tradingsymbol
+    })
+    )
+
+
+//   await Promise.map(strikes, async strike => {
+//     const tradingSymbolInterface= (await getExpiryTradingSymbol({
+//       nfoSymbol,
+//       strike,
+//       instrumentType,
+//       expiry
+//     })) as TradingSymbolInterface
+//     const tradingsymbol=tradingSymbolInterface?.tradingsymbol
+//  console.log(`[getTradingSymbolsByOptionPrice] Trading symbol is ${tradingsymbol}`)
+//     return {
+//       exchange: kite.EXCHANGE_NFO,
+//       tradingSymbol: tradingsymbol
+//     }
+//   })
+
+  const otmCEPrices = await getMultipleInstrumentPrices(
+    otmCEInstruments,
+    user
+  );
+
+  const otmPEPrices = await getMultipleInstrumentPrices(
+    otmPEInstruments,
+    user
+  )
+
+  const getStrike = inst => {
+    const withoutNfoSymbol = inst.replace(nfoSymbol, '')
+    const withoutExpiryDetails = withoutNfoSymbol.substr(5, 5)
+    return Number(withoutExpiryDetails)
+  }
+
+  const CEformattedPrices: LTP_TYPE[] = otmCEInstruments.map(({ tradingSymbol }) => {
+    const { instrumentToken, lastPrice } = otmCEPrices[
+      tradingSymbol
+    ]
+    return {
+      tradingsymbol: tradingSymbol,
+      strike: getStrike(tradingSymbol),
+      instrument_token: instrumentToken,
+      last_price: lastPrice
+    }
+  })
+
+  const PEformattedPrices: LTP_TYPE[] = otmPEInstruments.map(({ tradingSymbol }) => {
+    const { instrumentToken, lastPrice } = otmPEPrices[
+      tradingSymbol
+    ]
+    return {
+      tradingsymbol: tradingSymbol,
+      strike: getStrike(tradingSymbol),
+      instrument_token: instrumentToken,
+      last_price: lastPrice
+    }
+  })
+  
+  const CEInstrument:Partial<KITE_INSTRUMENT_INFO>=closest(price, CEformattedPrices, 'last_price', greaterThanEqualToPrice)
+  const PEInstrument:Partial<KITE_INSTRUMENT_INFO>=closest(price, PEformattedPrices, 'last_price', greaterThanEqualToPrice)
+return [CEInstrument,PEInstrument];
+
+}
+
+
 export const getTradingSymbolsByOptionPrice = async ({
   nfoSymbol,
   price,
@@ -841,7 +1026,7 @@ export const getTradingSymbolsByOptionPrice = async ({
   user,
   greaterThanEqualToPrice = false,
   expiry = EXPIRY_TYPE.CURRENT
-}: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE) => {
+}: TRADING_SYMBOL_BY_OPTION_PRICE_TYPE):Promise<Partial<KITE_INSTRUMENT_INFO>> => {
   const kite = syncGetKiteInstance(user)
   const totalStrikes = 61 // pivot and 30 on each side
   const { strikeStepSize } = INSTRUMENT_DETAILS[nfoSymbol!]
@@ -857,13 +1042,14 @@ export const getTradingSymbolsByOptionPrice = async ({
     .sort((a, b) => a - b)
 
   const instruments = await Promise.map(strikes, async strike => {
-    const { tradingsymbol } = (await getExpiryTradingSymbol({
+    const tradingSymbolInterface= (await getExpiryTradingSymbol({
       nfoSymbol,
       strike,
       instrumentType,
       expiry
     })) as TradingSymbolInterface
-
+    const tradingsymbol=tradingSymbolInterface?.tradingsymbol
+ console.log(`[getTradingSymbolsByOptionPrice] Trading symbol is ${tradingsymbol}`)
     return {
       exchange: kite.EXCHANGE_NFO,
       tradingSymbol: tradingsymbol
@@ -1433,7 +1619,7 @@ export const getHedgeForStrike = async ({
   type: string
   nfoSymbol: string
   expiryType: EXPIRY_TYPE
-}): Promise<string> => {
+}): Promise<string|undefined> => {
   const hedgeStrike = strike + distance * (type === 'PE' ? -1 : 1)
 
   const { tradingsymbol } = (await getExpiryTradingSymbol({

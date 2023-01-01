@@ -261,7 +261,7 @@ const Plan = () => {
       //   }),
       //   {}
       // )
-      console.log(newStrategyConfig)
+      console.log('[plan.tsx]:',newStrategyConfig)
       updatedConfig = { [newStrategyConfig.id]: newStrategyConfig }
       //updatedConfig[newStrategyConfig.id]=newStrategyConfig
     }

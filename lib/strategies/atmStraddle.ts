@@ -271,7 +271,7 @@ async function atmStraddle ({
       )
       hedgeOrdersLocal = [putHedge, callHedge].map(symbol =>
         createOrder({
-          symbol,
+          symbol:symbol!,
           lots,
           lotSize,
           user: user!,

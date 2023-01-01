@@ -215,6 +215,7 @@ export const STRATEGIES_DETAILS = {
       entryStrategy: STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm: 1,
       deltaStrikes: 20,
+      optionPrice:20,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
       expiryType: EXPIRY_TYPE.CURRENT,
