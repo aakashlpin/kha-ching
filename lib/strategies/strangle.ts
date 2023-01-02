@@ -146,7 +146,7 @@ const getStrangleStrikes = async ({
     return strangleOptions.reduce(( accm,currVal)=>
       {
         let currentVal={}
-        if (currVal.tradingsymbol.substring(currVal.tradingsymbol-2)==="CE")
+        if (currVal.tradingsymbol.substring(currVal.tradingsymbol.length-2)==="CE")
         {
            currentVal= {
             ...accm,
