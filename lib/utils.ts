@@ -692,7 +692,6 @@ export const isDateHoliday = (date: Dayjs) => {
     return true
   }
   const day = date.format('dddd')
-  console.log(`[utils.isDateHoliday] Day of the week is ${day}`)
   const isWeeklyHoliday = day === 'Saturday' || day === 'Sunday'
   return isWeeklyHoliday
 }

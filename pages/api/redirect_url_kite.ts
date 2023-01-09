@@ -1,6 +1,6 @@
 //import { AxiosResponse } from 'axios'
 import { KiteConnect } from 'kiteconnect';
-import { addToAncillaryQueue, cleanupQueues } from '../../lib/queue';
+import { addToAncillaryQueue, cleanupQueues,addToCoSquareOff } from '../../lib/queue';
 
 import withSession from '../../lib/session';
 import {
@@ -56,6 +56,7 @@ export default withSession(async (req, res) => {
 
       
       addToAncillaryQueue(user);
+      addToCoSquareOff(user);
       
 
       // then store access token remotely for other services to use it
