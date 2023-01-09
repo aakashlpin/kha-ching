@@ -221,7 +221,7 @@ export async function cancelCoOrders(user):Promise<any> {
   const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders())
   const openOrders: KiteOrder[] = allOrders.filter(
     order => order.status === 'TRIGGER PENDING' && order.variety===kite.VARIETY_CO)
-  for (let order of openOrders)
+  for (const order of openOrders)
     await withRemoteRetry(() => kite.cancelOrder(kite.VARIETY_CO, order.order_id))
 
 }
