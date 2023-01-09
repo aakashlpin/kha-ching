@@ -214,6 +214,23 @@ export async function addToAutoSquareOffQueue ({
   )
 }
 
+export async function addToCoSquareOff(user)
+{
+  const marketClosingforEquity = dayjs()
+  .set('hours', 15)
+  .set('minutes', 10)
+  .set('seconds', 0)
+  return autoSquareOffQueue.add(
+    `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
+    {
+     user
+    },
+    {
+      delay: marketClosingforEquity.diff(dayjs())
+    }
+  )
+
+}
 export async function addToAncillaryQueue (user) {
   const marketClosing = dayjs()
   .set('hours', 15)

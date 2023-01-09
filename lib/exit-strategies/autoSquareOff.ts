@@ -215,6 +215,16 @@ export async function squareOffTag(orderTag:string,kite:any)
   return Promise.resolve('Orders squared off');
 
 }
+
+export async function cancelCoOrders(user):Promise<any> {
+  const kite = syncGetKiteInstance(user)
+  const allOrders: KiteOrder[] = await withRemoteRetry(() => kite.getOrders())
+  const openOrders: KiteOrder[] = allOrders.filter(
+    order => order.status === 'TRIGGER PENDING' && order.variety===kite.VARIETY_CO)
+  for (let order of openOrders)
+    await withRemoteRetry(() => kite.cancelOrder(kite.VARIETY_CO, order.order_id))
+
+}
 /* Squares off the orders */
 async function autoSquareOffStrat ({
   rawKiteOrdersResponse,
