@@ -557,7 +557,23 @@ const marketHolidays = [
   ['October 05,2022', 'Wednesday'],
   ['October 24,2022', 'Monday'],
   ['October 26,2022', 'Wednesday'],
-  ['November 08,2022', 'Tuesday']
+  ['November 08,2022', 'Tuesday'],
+  // new entries
+  ['January 26,2023', 'Thursday'],
+  ['March 07,2023', 'Tuesday'],
+  ['March 30,2023', 'Thursday'],
+  ['April 04,2023', 'Tuesday'],
+  ['April 07,2023', 'Friday'],
+  ['April 14,2023', 'Friday'],
+  ['May 01,2023', 'Monday'],
+  ['June 28,2023', 'Wednesday'],
+  ['August 15,2023', 'Tuesday'],
+  ['September 19,2023', 'Tuesday'],
+  ['October 02,2023', 'Monday'],
+  ['October 24,2023', 'Tuesday'],
+  ['November 14,2023', 'Tuesday'],
+  ['November 27,2023', 'Monday'],
+  ['December 25,2023', 'Monday'],
 ]
 
 export const isDateHoliday = (date: Dayjs) => {
