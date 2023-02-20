@@ -92,6 +92,11 @@ export enum EXIT_STRATEGIES {
   OBS_TRAIL_SL = 'OBS_TRAIL_SL'
 }
 
+export enum ENTRY_ORDER {
+  MARKET_ORDER = 'MARKET_ORDER',
+  STOP_LOSS_MARKET_ORDER = 'STOP_LOSS_MARKET_ORDER'
+}
+
 export enum DOS_ENTRY_STRATEGIES {
   FIXED_TIME = 'FIXED_TIME',
   ST_CHANGE = 'ST_CHANGE'
@@ -234,8 +239,15 @@ export const STRATEGIES_DETAILS = {
       [STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM]: {
         label: 'by percent from ATM%'
       }
-    }
-  },
+    },
+    ENTRY_ORDER:{
+    [ENTRY_ORDER.MARKET_ORDER]:{
+      label: 'Market Order'
+    },
+    [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]:
+    {label: 'Stop Loss market/limit order'}
+  }
+},
   [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: {
     premium: true,
     heading: 'Directional Option Selling',
