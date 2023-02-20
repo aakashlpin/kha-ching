@@ -163,6 +163,11 @@ const Dashboard = ({
               </Link>
             </ListItem>
             <ListItem>
+              <Link href='/strat/ots'>
+                {STRATEGIES_DETAILS[STRATEGIES.OVERNIGHT_TREND_STATEGY].heading}
+              </Link>
+            </ListItem>
+            <ListItem>
               <Link href='/strat/dos'>
                 {
                   STRATEGIES_DETAILS[STRATEGIES.DIRECTIONAL_OPTION_SELLING]

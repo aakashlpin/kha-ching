@@ -1,18 +1,18 @@
 //import { AxiosResponse } from 'axios'
-import { KiteConnect } from 'kiteconnect'
-import { cleanupQueues,addToNextQueue,ANCILLARY_Q_NAME } from '../../lib/queue'
+import { KiteConnect } from 'kiteconnect';
+import { addToAncillaryQueue, cleanupQueues,addToCoSquareOff } from '../../lib/queue';
 
-import withSession from '../../lib/session'
+import withSession from '../../lib/session';
 import {
-  getIndexInstruments,
+  checkHasSameAccessToken, getIndexInstruments, logDeep,
   //premiumAuthCheck,
   storeAccessTokenRemotely,
-  checkHasSameAccessToken
-} from '../../lib/utils'
-import { KiteProfile } from '../../types/kite'
-import { SignalXUser } from '../../types/misc'
+  cleanupTradesAndAccessToken,storeAccessTokeninRedis,checksameTokeninRedis
+} from '../../lib/utils';
+import { KiteProfile } from '../../types/kite';
+import { SignalXUser } from '../../types/misc';
 //import {ANCILLARY_TASKS} from '../../lib/constants'
-import logger from '../../lib/logger'
+import logger from '../../lib/logger';
 
 const apiKey = process.env.KITE_API_KEY
 const kiteSecret = process.env.KITE_API_SECRET
@@ -41,18 +41,27 @@ export default withSession(async (req, res) => {
       console.log(e)
     })
 
-    const existingAccessToken = await checkHasSameAccessToken(
+    const existingAccessToken = await checksameTokeninRedis(
       user.session.access_token!
     )
     if (!existingAccessToken) {
       // first login, or revoked login
       // cleanup queue in both cases
       logger.info('[redirect_url_kite_logger] cleaning up queues...');
-      cleanupQueues().catch(e => {
-        console.log(e)
-      })
+      // cleanupQueues().catch(e => {
+      //   console.log(e)
+      // })
+      await cleanupQueues();
+      await cleanupTradesAndAccessToken();
+
+      
+      addToAncillaryQueue(user);
+      addToCoSquareOff(user);
+      
+
       // then store access token remotely for other services to use it
-      storeAccessTokenRemotely(user.session.access_token)
+      //storeAccessTokenRemotely(user.session.access_token)
+      storeAccessTokeninRedis(user.session.access_token!)
     }
 
     // then redirect
