@@ -29,6 +29,8 @@ import {
   STRANGLE_ENTRY_STRATEGIES,
   STRATEGIES_DETAILS,
   ENTRY_ORDER
+  STRATEGIES_DETAILS,
+  ENTRY_ORDER
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
@@ -229,38 +231,6 @@ const TradeSetupForm = ({
               onChange={e => onChange({ lots: +e.target.value || undefined })}
               label='# Lots'
             />
-          </Grid>
-
-          <Grid item xs={12}>
-            <FormControl component='fieldset'>
-              <FormLabel component='legend'>Order Type</FormLabel>
-              <RadioGroup
-                aria-label='orderType'
-                name='orderType'
-                value={state.orderType}
-                onChange={e =>
-                  onChange({
-                    orderType: e.target.value as ENTRY_ORDER
-                  })
-                }
-              >
-                {orderTypes.map(orderType => (
-                  <FormControlLabel
-                    key={orderType}
-                    value={orderType}
-                    control={<Radio size='small' />}
-                    label={
-                      <Typography variant='body2'>
-                        {
-                          STRATEGIES_DETAILS[STRATEGIES.ATM_STRANGLE]
-                            .ENTRY_ORDER[orderType].label
-                        }
-                      </Typography>
-                    }
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
           </Grid>
 
           <SlManagerComponent
