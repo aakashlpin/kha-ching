@@ -566,7 +566,7 @@ const marketHolidays = [
   ['April 07,2023', 'Friday'],
   ['April 14,2023', 'Friday'],
   ['May 01,2023', 'Monday'],
-  ['June 28,2023', 'Wednesday'],
+  ['June 29,2023', 'Wednesday'],
   ['August 15,2023', 'Tuesday'],
   ['September 19,2023', 'Tuesday'],
   ['October 02,2023', 'Monday'],
