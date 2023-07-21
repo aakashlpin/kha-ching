@@ -50,7 +50,7 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     freezeQty: 1800
   },
   [INSTRUMENTS.BANKNIFTY]: {
-    lotSize: 25,
+    lotSize: 15,
     displayName: 'BANKNIFTY',
     underlyingSymbol: 'NIFTY BANK',
     nfoSymbol: 'BANKNIFTY',
