@@ -226,6 +226,7 @@ export const STRATEGIES_DETAILS = {
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.NO_SL,
+      orderType:ENTRY_ORDER.MARKET_ORDER,
       slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
@@ -248,6 +249,15 @@ export const STRATEGIES_DETAILS = {
       },
       [STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE]:{
         label: 'by option price'
+      }
+    },
+    ENTRY_ORDER:
+    {
+      [ENTRY_ORDER.MARKET_ORDER]: {
+        label: 'Market Order'
+      },
+      [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]: {
+        label: 'Stop Loss Market/Limit Order'
       }
     }
   },

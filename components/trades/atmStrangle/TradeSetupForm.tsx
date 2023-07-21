@@ -71,6 +71,10 @@ const TradeSetupForm = ({
     STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM,
     STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE
   ]
+  const orderTypes=[
+    ENTRY_ORDER.MARKET_ORDER,
+    ENTRY_ORDER.STOP_LOSS_MARKET_ORDER
+  ]
   const exitStrategies = [
     EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
     EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD,
@@ -240,7 +244,7 @@ const TradeSetupForm = ({
                   })
                 }
               >
-                {entryStrategies.map(orderType => (
+                {orderTypes.map(orderType => (
                   <FormControlLabel
                     key={orderType}
                     value={orderType}
