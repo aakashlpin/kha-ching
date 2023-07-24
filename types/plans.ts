@@ -7,7 +7,8 @@ import {
   OTS_ENTRY_STRATEGIES,
   PRODUCT_TYPE,
   VOLATILITY_TYPE,
-  EXPIRY_TYPE
+  EXPIRY_TYPE,
+  ENTRY_ORDER
 } from '../lib/constants'
 
 interface COMMON_TRADE_PROPS {
@@ -78,6 +79,7 @@ export interface ATM_STRANGLE_CONFIG extends SavedPlanMeta {
   slmPercent: number
   inverted: boolean
   entryStrategy: STRANGLE_ENTRY_STRATEGIES
+  orderType: ENTRY_ORDER
   exitStrategy: EXIT_STRATEGIES
   strategy: STRATEGIES.ATM_STRANGLE
   instrument: INSTRUMENTS

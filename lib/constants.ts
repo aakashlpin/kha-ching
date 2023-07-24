@@ -51,8 +51,6 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     nfoSymbol: 'NIFTY',
     exchange: 'NSE',
     strikeStepSize: 50,
-    // [11501-17250]
-    // freezeQty: 200
     freezeQty: 1800
   },
   [INSTRUMENTS.BANKNIFTY]: {
@@ -62,8 +60,6 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     nfoSymbol: 'BANKNIFTY',
     exchange: 'NSE',
     strikeStepSize: 100,
-    // [27501-40000]
-    // freezeQty: 100
     freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {
@@ -73,7 +69,6 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
     strikeStepSize: 100,
-    // [17251-27500]
     freezeQty: 1800
   }
 }
@@ -92,6 +87,11 @@ export enum EXIT_STRATEGIES {
   MIN_XPERCENT_OR_SUPERTREND = 'MIN_XPERCENT_OR_SUPERTREND',
   OBS_TRAIL_SL = 'OBS_TRAIL_SL',
   NO_SL='NO_SL'
+}
+
+export enum ENTRY_ORDER {
+  MARKET_ORDER = 'MARKET_ORDER',
+  STOP_LOSS_MARKET_ORDER = 'STOP_LOSS_MARKET_ORDER'
 }
 
 export enum DOS_ENTRY_STRATEGIES {
@@ -221,6 +221,7 @@ export const STRATEGIES_DETAILS = {
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
       exitStrategy: EXIT_STRATEGIES.NO_SL,
+      orderType:ENTRY_ORDER.MARKET_ORDER,
       slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
@@ -243,6 +244,15 @@ export const STRATEGIES_DETAILS = {
       },
       [STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE]:{
         label: 'by option price'
+      }
+    },
+    ENTRY_ORDER:
+    {
+      [ENTRY_ORDER.MARKET_ORDER]: {
+        label: 'Market Order'
+      },
+      [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]: {
+        label: 'Stop Loss Market/Limit Order'
       }
     }
   },
@@ -287,8 +297,15 @@ export const STRATEGIES_DETAILS = {
       [OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM]: {
         label: 'by distance from ATM strike'
       }
-    }
-  },
+    },
+    ENTRY_ORDER:{
+    [ENTRY_ORDER.MARKET_ORDER]:{
+      label: 'Market Order'
+    },
+    [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]:
+    {label: 'Stop Loss market/limit order'}
+  }
+},
   [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: {
     premium: true,
     heading: 'Directional Option Selling',

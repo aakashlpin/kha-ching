@@ -27,7 +27,8 @@ import {
   INSTRUMENTS,
   STRATEGIES,
   STRANGLE_ENTRY_STRATEGIES,
-  STRATEGIES_DETAILS
+  STRATEGIES_DETAILS,
+  ENTRY_ORDER
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
@@ -69,6 +70,10 @@ const TradeSetupForm = ({
     STRANGLE_ENTRY_STRATEGIES.DELTA_STIKES,
     STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM,
     STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE
+  ]
+  const orderTypes=[
+    ENTRY_ORDER.MARKET_ORDER,
+    ENTRY_ORDER.STOP_LOSS_MARKET_ORDER
   ]
   const exitStrategies = [
     EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,

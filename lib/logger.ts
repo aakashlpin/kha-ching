@@ -4,7 +4,7 @@ import  'winston-daily-rotate-file';
 const transport = new transports.DailyRotateFile({
   filename: 'application-%DATE%.log',
   datePattern: 'YYYYMMDD',
-  maxFiles: '10d',
+  maxFiles: '5d',
   dirname:'./logs/'
 });
 const formatMeta = (meta) => {
