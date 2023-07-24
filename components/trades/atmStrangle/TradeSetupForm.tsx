@@ -29,8 +29,6 @@ import {
   STRANGLE_ENTRY_STRATEGIES,
   STRATEGIES_DETAILS,
   ENTRY_ORDER
-  STRATEGIES_DETAILS,
-  ENTRY_ORDER
 } from '../../../lib/constants'
 import { ATM_STRANGLE_CONFIG, AvailablePlansConfig } from '../../../types/plans'
 import HedgeComponent from '../../lib/HedgeComponent'
