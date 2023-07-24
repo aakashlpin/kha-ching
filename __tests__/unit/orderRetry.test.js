@@ -163,7 +163,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
             transaction_type: 'SELL',
             validity: 'DAY',
             product: 'MIS',
-            quantity: 250,
+            quantity: 150,
             tag: 'X0uE0cKR'
           }
         ])
@@ -192,7 +192,7 @@ test('should handle `placeOrder` NetworkException and then find an existing comp
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
+      quantity: 150,
       product: 'MIS',
       transaction_type: 'SELL',
       exchange: 'NFO'
@@ -251,7 +251,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry w
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
+      quantity: 150,
       product: 'MIS',
       transaction_type: 'SELL',
       exchange: 'NFO'
@@ -300,7 +300,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
             order_id: '210722200262556',
             orderTag: 'X0uE0cKR',
             tradingsymbol: 'BANKNIFTY2172234500PE',
-            quantity: 250,
+            quantity: 150,
             product: 'MIS',
             transaction_type: 'SELL',
             exchange: 'NFO'
@@ -312,7 +312,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
           order_id: '210722200262556',
           orderTag: 'X0uE0cKR',
           tradingsymbol: 'BANKNIFTY2172234500PE',
-          quantity: 250,
+          quantity: 150,
           product: 'MIS',
           transaction_type: 'SELL',
           exchange: 'NFO'
@@ -341,7 +341,7 @@ test('should handle `placeOrder` NetworkException, and then successfully retry a
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
+      quantity: 150,
       product: 'MIS',
       transaction_type: 'SELL',
       exchange: 'NFO'
@@ -416,7 +416,7 @@ test('freeze qty should work', async () => {
           order_id: '210722200262556',
           orderTag: 'X0uE0cKR',
           tradingsymbol: 'BANKNIFTY2172234500PE',
-          quantity: 250,
+          quantity: 150,
           product: 'MIS',
           transaction_type: 'SELL',
           exchange: 'NFO'
@@ -440,7 +440,7 @@ test('freeze qty should work', async () => {
     orderProps: {
       orderTag: 'X0uE0cKR',
       tradingsymbol: 'BANKNIFTY2172234500PE',
-      quantity: 250,
+      quantity: 150,
       product: 'MIS',
       transaction_type: 'SELL',
       exchange: 'NFO'

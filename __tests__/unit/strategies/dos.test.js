@@ -34,7 +34,7 @@ test('it should work without hedge order', async () => {
         transaction_type: 'BUY',
         validity: 'DAY',
         product: 'MIS',
-        quantity: 25,
+        quantity: 15,
         tag: 'X0uE0cKR'
       }
     ])
@@ -53,7 +53,7 @@ test('it should work without hedge order', async () => {
         transaction_type: 'SELL',
         validity: 'DAY',
         product: 'MIS',
-        quantity: 25,
+        quantity: 15,
         tag: 'X0uE0cKR'
       }
     ])
