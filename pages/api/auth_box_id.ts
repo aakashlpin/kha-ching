@@ -1,4 +1,5 @@
 import axios from 'axios'
+import csv from 'csvtojson'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -10,21 +11,13 @@ const authBoxId = async (
   res: NextApiResponse
 ): Promise<any> => {
   try {
-    const { data } = await axios(
-      `https://api.airtable.com/v0/${
-        process.env.AIRTABLE_USERS_BASE_ID
-      }/Members?filterByFormula=${encodeURIComponent(
-        `{API Key} = '${req.body.box}'`
-      )}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
-        }
-      }
-    )
+    const { data } = await axios(process.env.SUBSCRIPTIONS_CSV_URL!)
+    const records = await csv().fromString(data);
 
-    const { records = [] } = data
-    if (!records.length) {
+    const requestedBoxId = req.body.box
+    const userRecord = records.find(record => record.api_key === requestedBoxId)
+
+    if (!userRecord) {
       return res.json({
         type: SUBSCRIPTION_TYPE.NOT_SUBSCRIBER,
         allowed: false,
@@ -32,18 +25,17 @@ const authBoxId = async (
       })
     }
 
-    const [user] = records
     const {
-      fields: { Expires }
-    } = user
+      expires, paid_subscriber, xtra_subscriber
+    } = userRecord
 
-    const isPremiumUser = user.fields['Paid Subscriber']
-    const isClubUser = user.fields['Xtra Subscriber']
+    const isPremiumUser = paid_subscriber === "checked"
+    const isClubUser = xtra_subscriber === 'checked'
 
     return res.json({
       type: SUBSCRIPTION_TYPE.SUBSCRIBER,
-      expireOn: Expires,
-      allowed: dayjs().isSameOrBefore(dayjs(Expires, 'YYYY-MM-DD'), 'day'),
+      expireOn: expires,
+      allowed: dayjs().isSameOrBefore(dayjs(expires, 'YYYY-MM-DD'), 'day'),
       isPremiumUser,
       isClubUser
     })
