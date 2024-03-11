@@ -11,7 +11,7 @@ import { ROLLBACK_TYPE } from '../../types/plans'
 
 interface RollbackComponentProps {
   rollback: ROLLBACK_TYPE
-  onChange: ({ rollback }) => void
+  onChange: ({rollback}:{ rollback: ROLLBACK_TYPE }) => void
 }
 
 const RollbackComponent = ({ rollback, onChange }: RollbackComponentProps) => {

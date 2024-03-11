@@ -32,9 +32,9 @@ export interface SavedPlanMeta extends COMMON_TRADE_PROPS {
 }
 
 export interface ROLLBACK_TYPE {
-  onBrokenHedgeOrders: boolean
-  onBrokenPrimaryOrders: boolean
-  onBrokenExitOrders: boolean
+  onBrokenHedgeOrders?: boolean
+  onBrokenPrimaryOrders?: boolean
+  onBrokenExitOrders?: boolean
 }
 
 export enum SL_ORDER_TYPE {
