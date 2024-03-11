@@ -1,20 +1,13 @@
-import React from 'react'
 import {
   FormControl,
-  FormControlLabel,
-  Typography,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  Grid,
-  TextField
+  FormControlLabel, FormLabel, Grid, Radio, RadioGroup, TextField, Typography
 } from '@material-ui/core'
-import { COMBINED_SL_EXIT_STRATEGY, SL_ORDER_TYPE } from '../../types/plans'
 import {
   COMBINED_SL_EXIT_STRATEGY_LABEL,
   EXIT_STRATEGIES,
   EXIT_STRATEGIES_DETAILS
 } from '../../lib/constants'
+import { COMBINED_SL_EXIT_STRATEGY, SL_ORDER_TYPE } from '../../types/plans'
 
 const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
   const slOrderTypes = [SL_ORDER_TYPE.SLL]
@@ -110,8 +103,11 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
           </Grid>
         </>
       ) : null}
-
-      <Grid item xs={12} style={{ marginBottom: '16px' }}>
+      {state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD||
+        state.exitStrategy === EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X 
+         ? (
+        <>
+         <Grid item xs={12} style={{ marginBottom: '16px' }}>
         <TextField
           fullWidth
           name='slmPercent'
@@ -124,7 +120,10 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
           }
         />
       </Grid>
-
+      </>
+        ):null}
+    
+{/* 
       {state.exitStrategy !== EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD ||
       (state.exitStrategy === EXIT_STRATEGIES.MULTI_LEG_PREMIUM_THRESHOLD &&
         state.combinedExitStrategy ===
@@ -171,7 +170,7 @@ const SlManagerComponent = ({ state, onChange, exitStrategies }) => {
             ) : null}
           </FormControl>
         </Grid>
-      ) : null}
+      ) : null} */}
     </>
   )
 }

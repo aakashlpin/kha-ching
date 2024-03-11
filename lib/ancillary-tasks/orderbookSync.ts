@@ -13,7 +13,7 @@ async function orderbookSync ({
   user
 }: {
   user: SignalXUser
-}) {
+}):Promise<any> {
   try {
     const kite = syncGetKiteInstance(user)
     const allOrders = await withRemoteRetry(() => kite.getOrders())
@@ -25,7 +25,7 @@ async function orderbookSync ({
         `${ORCL_HOST_URL}/rest-v1/trades`,
         completedOrders,
       )
-      return res
+      return Promise.resolve(res)
     } 
     else
       return null;

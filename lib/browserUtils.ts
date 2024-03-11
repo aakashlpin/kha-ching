@@ -5,7 +5,8 @@ import {
   ATM_STRANGLE_CONFIG,
   AvailablePlansConfig,
   COMBINED_SL_EXIT_STRATEGY,
-  DIRECTIONAL_OPTION_SELLING_CONFIG
+  DIRECTIONAL_OPTION_SELLING_CONFIG,
+  OTS_CONFIG
 } from '../types/plans'
 import {
   ATM_STRADDLE_TRADE,
@@ -55,7 +56,7 @@ export function getDefaultSquareOffTime () {
 export function getSchedulingStateProps (strategy: STRATEGIES) {
   return {
     runNow: false,
-    isAutoSquareOffEnabled: true,
+    isAutoSquareOffEnabled: strategy===STRATEGIES.OVERNIGHT_TREND_STATEGY?false:true,
     runAt: getScheduleableTradeTime(strategy),
     squareOffTime: getDefaultSquareOffTime()
   }
@@ -233,6 +234,48 @@ export const formatFormDataForApi = ({
         }),
         expiryType,
         inverted: Boolean(inverted),
+        ...getSchedulingApiProps({
+          isAutoSquareOffEnabled,
+          squareOffTime,
+          exitStrategy,
+          expireIfUnsuccessfulInMins,
+          runAt,
+          runNow
+        })
+      }
+
+      return apiProps
+    }
+
+    case STRATEGIES.OVERNIGHT_TREND_STATEGY: {
+      const {
+        lots,
+        runNow,
+        runAt,
+        isAutoSquareOffEnabled=false,
+        squareOffTime,
+        slmPercent,
+        trailEveryPercentageChangeValue,
+        trailingSlPercent,
+        exitStrategy,
+        expireIfUnsuccessfulInMins,
+        combinedExitStrategy,
+        expiryType
+      } = data as OTS_CONFIG
+
+      const apiProps: OTS_CONFIG = {
+        ...(data as OTS_CONFIG),
+        lots: Number(lots),
+        slmPercent: Number(slmPercent),
+        trailEveryPercentageChangeValue: Number(
+          trailEveryPercentageChangeValue
+        ),
+        trailingSlPercent: Number(trailingSlPercent),
+        onSquareOffSetAborted: getOnSquareOffSetAborted({
+          exitStrategy,
+          combinedExitStrategy
+        }),
+        expiryType,
         ...getSchedulingApiProps({
           isAutoSquareOffEnabled,
           squareOffTime,

@@ -51,19 +51,15 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     nfoSymbol: 'NIFTY',
     exchange: 'NSE',
     strikeStepSize: 50,
-    // [11501-17250]
-    // freezeQty: 200
     freezeQty: 1800
   },
   [INSTRUMENTS.BANKNIFTY]: {
-    lotSize: 25,
+    lotSize: 15,
     displayName: 'BANKNIFTY',
     underlyingSymbol: 'NIFTY BANK',
     nfoSymbol: 'BANKNIFTY',
     exchange: 'NSE',
     strikeStepSize: 100,
-    // [27501-40000]
-    // freezeQty: 100
     freezeQty: 1200
   },
   [INSTRUMENTS.FINNIFTY]: {
@@ -73,7 +69,6 @@ export const INSTRUMENT_DETAILS: Record<INSTRUMENTS, INSTRUMENT_PROPERTIES> = {
     nfoSymbol: 'FINNIFTY',
     exchange: 'NSE',
     strikeStepSize: 100,
-    // [17251-27500]
     freezeQty: 1800
   }
 }
@@ -82,6 +77,7 @@ export enum STRATEGIES {
   ATM_STRADDLE = 'ATM_STRADDLE',
   ATM_STRANGLE = 'ATM_STRANGLE',
   DIRECTIONAL_OPTION_SELLING = 'DIRECTIONAL_OPTION_SELLING',
+  OVERNIGHT_TREND_STATEGY = 'OVERNIGHT_TREND_STATEGY',
   OPTION_BUYING_STRATEGY = 'OPTION_BUYING_STRATEGY'
 }
 
@@ -89,7 +85,13 @@ export enum EXIT_STRATEGIES {
   INDIVIDUAL_LEG_SLM_1X = 'INDIVIDUAL_LEG_SLM_1X',
   MULTI_LEG_PREMIUM_THRESHOLD = 'MULTI_LEG_PREMIUM_THRESHOLD',
   MIN_XPERCENT_OR_SUPERTREND = 'MIN_XPERCENT_OR_SUPERTREND',
-  OBS_TRAIL_SL = 'OBS_TRAIL_SL'
+  OBS_TRAIL_SL = 'OBS_TRAIL_SL',
+  NO_SL='NO_SL'
+}
+
+export enum ENTRY_ORDER {
+  MARKET_ORDER = 'MARKET_ORDER',
+  STOP_LOSS_MARKET_ORDER = 'STOP_LOSS_MARKET_ORDER'
 }
 
 export enum DOS_ENTRY_STRATEGIES {
@@ -122,7 +124,11 @@ export const EXPIRY_TYPE_HUMAN = {
 export enum STRANGLE_ENTRY_STRATEGIES {
   DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM',
   DELTA_STIKES = 'DELTA_STIKES',
-  PERCENT_FROM_ATM='PERCENT_FROM_ATM'
+  PERCENT_FROM_ATM='PERCENT_FROM_ATM',
+  ENTRY_PRICE='ENTRY_PRICE'
+}
+export enum OTS_ENTRY_STRATEGIES {
+  DISTANCE_FROM_ATM = 'DISTANCE_FROM_ATM'
 }
 
 export enum ANCILLARY_TASKS {
@@ -209,11 +215,13 @@ export const STRATEGIES_DETAILS = {
       entryStrategy: STRANGLE_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
       distanceFromAtm: 1,
       deltaStrikes: 20,
+      optionPrice:20,
       productType: PRODUCT_TYPE.MIS,
       volatilityType: VOLATILITY_TYPE.SHORT,
       expiryType: EXPIRY_TYPE.CURRENT,
       runNow: false,
-      exitStrategy: EXIT_STRATEGIES.INDIVIDUAL_LEG_SLM_1X,
+      exitStrategy: EXIT_STRATEGIES.NO_SL,
+      orderType:ENTRY_ORDER.MARKET_ORDER,
       slOrderType: SL_ORDER_TYPE.SLL,
       slLimitPricePercent: 1,
       combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
@@ -233,9 +241,71 @@ export const STRATEGIES_DETAILS = {
       },
       [STRANGLE_ENTRY_STRATEGIES.PERCENT_FROM_ATM]: {
         label: 'by percent from ATM%'
+      },
+      [STRANGLE_ENTRY_STRATEGIES.ENTRY_PRICE]:{
+        label: 'by option price'
+      }
+    },
+    ENTRY_ORDER:
+    {
+      [ENTRY_ORDER.MARKET_ORDER]: {
+        label: 'Market Order'
+      },
+      [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]: {
+        label: 'Stop Loss Market/Limit Order'
       }
     }
   },
+  [STRATEGIES.OVERNIGHT_TREND_STATEGY]: {
+    premium: false,
+    heading: 'Overnight Trend Sell',
+    defaultRunAt: dayjs()
+      .set('hour', 15)
+      .set('minutes', 10)
+      .set('seconds', 0)
+      .format(),
+    margin1x: {
+      [INSTRUMENTS.NIFTY]: 420000,
+      [INSTRUMENTS.BANKNIFTY]: 425000
+    },
+    defaultFormState: {
+      instruments: getInstrumentsDefaultState(),
+      lots: NEXT_PUBLIC_DEFAULT_LOTS,
+      slmPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      trailEveryPercentageChangeValue: 2,
+      trailingSlPercent: NEXT_PUBLIC_DEFAULT_SLM_PERCENT,
+      inverted: false,
+      entryStrategy: OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM,
+      distanceFromAtm: 1,
+      deltaStrikes: 20,
+      productType: PRODUCT_TYPE.NRML,
+      volatilityType: VOLATILITY_TYPE.SHORT,
+      expiryType: EXPIRY_TYPE.CURRENT,
+      runNow: false,
+      exitStrategy: EXIT_STRATEGIES.NO_SL,
+      slOrderType: SL_ORDER_TYPE.SLL,
+      slLimitPricePercent: 1,
+      combinedExitStrategy: COMBINED_SL_EXIT_STRATEGY.EXIT_ALL,
+      rollback: {
+        onBrokenHedgeOrders: false,
+        onBrokenPrimaryOrders: false,
+        onBrokenExitOrders: false
+      }
+    },
+    ENTRY_STRATEGIES: STRANGLE_ENTRY_STRATEGIES,
+    ENTRY_STRATEGY_DETAILS: {
+      [OTS_ENTRY_STRATEGIES.DISTANCE_FROM_ATM]: {
+        label: 'by distance from ATM strike'
+      }
+    },
+    ENTRY_ORDER:{
+    [ENTRY_ORDER.MARKET_ORDER]:{
+      label: 'Market Order'
+    },
+    [ENTRY_ORDER.STOP_LOSS_MARKET_ORDER]:
+    {label: 'Stop Loss market/limit order'}
+  }
+},
   [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: {
     premium: true,
     heading: 'Directional Option Selling',
@@ -287,26 +357,26 @@ export const STRATEGIES_DETAILS = {
       .format(),
     schedule: [
       {
-        afterTime: () =>
+        afterTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 9)
             .set('minutes', 30)
             .set('seconds', 0)
             .subtract(1, 'second'),
-        beforeTime: () =>
+        beforeTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 11)
             .set('minutes', 0)
             .set('seconds', 0)
       },
       {
-        afterTime: () =>
+        afterTime: () :dayjs.Dayjs=>
           dayjs()
             .set('hour', 13)
             .set('minutes', 0)
             .set('seconds', 0)
             .subtract(1, 'second'),
-        beforeTime: () =>
+        beforeTime: ():dayjs.Dayjs =>
           dayjs()
             .set('hour', 15)
             .set('minutes', 0)
@@ -335,6 +405,9 @@ export const EXIT_STRATEGIES_DETAILS = {
   },
   [EXIT_STRATEGIES.OBS_TRAIL_SL]: {
     label: 'Initial 30%, then trail SL on every higher close (1min TF)'
+  },
+  [EXIT_STRATEGIES.NO_SL]: {
+    label: 'No SL'
   }
 }
 
@@ -528,3 +601,6 @@ export const SUBSCRIBER_TYPE = {
   PREMIUM: 'PREMIUM',
   CLUB: 'CLUB'
 }
+
+export const ACCESSTOKEN="accessToken"
+export const TRADES="trades"

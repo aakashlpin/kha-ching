@@ -22,6 +22,7 @@ import Layout from '../components/Layout'
 import ATMStraddleTradeForm from '../components/trades/atmStraddle/TradeSetupForm'
 import ATMStrangleTradeForm from '../components/trades/atmStrangle/TradeSetupForm'
 import DOSTradeForm from '../components/trades/directionalOptionSelling/TradeSetupForm'
+import OTSTradeForm from '../components/trades/overnightTrendSelling/TradeSetupForm'
 import { getSchedulingStateProps } from '../lib/browserUtils'
 import {
   INSTRUMENTS,
@@ -34,7 +35,8 @@ import {
   ATM_STRADDLE_CONFIG,
   ATM_STRANGLE_CONFIG,
   AvailablePlansConfig,
-  DIRECTIONAL_OPTION_SELLING_CONFIG
+  DIRECTIONAL_OPTION_SELLING_CONFIG,
+  OTS_CONFIG
 } from '../types/plans'
 
 const useStyles = makeStyles(theme => ({
@@ -106,6 +108,9 @@ const resetDefaultStratState = (): Record<STRATEGIES, AvailablePlansConfig> => {
     [STRATEGIES.ATM_STRANGLE]: getDefaultState(STRATEGIES.ATM_STRANGLE),
     [STRATEGIES.DIRECTIONAL_OPTION_SELLING]: getDefaultState(
       STRATEGIES.DIRECTIONAL_OPTION_SELLING
+    ),
+    [STRATEGIES.OVERNIGHT_TREND_STATEGY]: getDefaultState(
+      STRATEGIES.OVERNIGHT_TREND_STATEGY
     )
   } as Record<STRATEGIES, AvailablePlansConfig>
 }
@@ -256,10 +261,9 @@ const Plan = () => {
       //   }),
       //   {}
       // )
-      console.log(newStrategyConfig)
+      console.log('[plan.tsx]:',newStrategyConfig)
       updatedConfig = { [newStrategyConfig.id]: newStrategyConfig }
       //updatedConfig[newStrategyConfig.id]=newStrategyConfig
-      console.log(updatedConfig)  
     }
 
     setDayState({
@@ -412,7 +416,6 @@ const Plan = () => {
                       )
                       .map(strategyKey => {
                         const config = dayProps.strategies[strategyKey]
-                        console.log(config.name);
                         return (
                           <Chip
                             color='secondary'
@@ -456,7 +459,8 @@ const Plan = () => {
                     {[
                       STRATEGIES.ATM_STRADDLE,
                       STRATEGIES.ATM_STRANGLE,
-                      STRATEGIES.DIRECTIONAL_OPTION_SELLING
+                      STRATEGIES.DIRECTIONAL_OPTION_SELLING,
+                      STRATEGIES.OVERNIGHT_TREND_STATEGY
                     ].map(strategyKey => (
                       <MenuItem
                         value={strategyKey}
@@ -572,6 +576,26 @@ const Plan = () => {
                     onCancel={commonOnCancelHandler}
                     isRunnable={false}
                     strategy={STRATEGIES.ATM_STRANGLE}
+                  />
+                )
+                :currentEditStrategy === STRATEGIES.OVERNIGHT_TREND_STATEGY ? (
+                  <OTSTradeForm
+                    formHeading={`Editing ${
+                      STRATEGIES_DETAILS[currentEditStrategy].heading
+                    } for ${dayState[currentEditDay!].heading}`}
+                    state={
+                      stratState[STRATEGIES.OVERNIGHT_TREND_STATEGY] as OTS_CONFIG
+                    }
+                    onChange={changedProps =>
+                      stratOnChangeHandler(
+                        changedProps,
+                        STRATEGIES.OVERNIGHT_TREND_STATEGY
+                      )
+                    }
+                    onSubmit={commonOnSubmitHandler}
+                    onCancel={commonOnCancelHandler}
+                    isRunnable={false}
+                    strategy={STRATEGIES.OVERNIGHT_TREND_STATEGY}
                   />
                 ) : null}
               </Box>

@@ -1,9 +1,9 @@
-import { Queue, QueueScheduler, JobsOptions, Job } from 'bullmq'
-import dayjs from 'dayjs'
-import IORedis from 'ioredis'
-import { v4 as uuidv4 } from 'uuid'
+import { Job, JobsOptions, Queue, QueueScheduler } from 'bullmq';
+import dayjs from 'dayjs';
+import IORedis from 'ioredis';
+import { v4 as uuidv4 } from 'uuid';
 
-import console from './logging'
+import console from './logging';
 import {
   getBackoffStrategy,
   getEntryAttemptsCount,
@@ -12,12 +12,12 @@ import {
   getTimeLeftInMarketClosingMs,
   isMockOrder,
   ms
-} from './utils'
+} from './utils';
 
 const redisUrl = `${process.env.REDIS_URL as string}?enableReadyCheck=false&maxRetriesPerRequest=null`
 
 // just a hack to ensure if someone left a placeholder in env variables
-const QID = process.env.KITE_API_KEY
+export const QID:string = process.env.KITE_API_KEY!
 export const TRADING_Q_NAME = `tradingQueue_${QID}`
 export const EXIT_TRADING_Q_NAME = `exitTradingQueue_${QID}`
 export const AUTO_SQUARE_OFF_Q_NAME = `autoSquareOffQueue_${QID}`
@@ -214,5 +214,44 @@ export async function addToAutoSquareOffQueue ({
   )
 }
 
+export async function addToCoSquareOff(user)
+{
+  const marketClosingforEquity = dayjs()
+  .set('hours', 15)
+  .set('minutes', 10)
+  .set('seconds', 0)
+  return autoSquareOffQueue.add(
+    `${AUTO_SQUARE_OFF_Q_NAME}_${uuidv4() as string}`,
+    {
+     user
+    },
+    {
+      delay: marketClosingforEquity.diff(dayjs())
+    }
+  )
+
+}
+export async function addToAncillaryQueue (user) {
+  const marketClosing = dayjs()
+  .set('hours', 15)
+  .set('minutes', 30)
+  .set('seconds', 0)
+  const numberofJobs=await ancillaryQueue.count();
+  if (numberofJobs==0)
+  {
+    return ancillaryQueue.add(
+    `${ANCILLARY_Q_NAME}_${uuidv4() as string}`,
+  user,
+    {
+    delay: marketClosing.diff(dayjs())
+    })
+  }
+  else
+  {
+  console.log('Not added to Ancllary');
+  return Promise.resolve("Not added to queue");
+  }
+}
+
 export const cleanupQueues = async () =>
-  await Promise.all(allQueues.map(async queue => await queue.obliterate()))
+  await Promise.all(allQueues.map(async queue => await queue.obliterate({force:true})))
