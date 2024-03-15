@@ -157,6 +157,7 @@ if (openPositionsforOrders.length==0)
                   product: order.product,
                   tag: order.tag
                 }
+    console.log(`Placing order ${exitOrder.tradingsymbol} and quantity - ${exitOrder.quantity}`)
       await withRemoteRetry(() => kite.placeOrder(kite.VARIETY_REGULAR, exitOrder))
         Promise.resolve('Order is squared off');    
       
@@ -189,9 +190,16 @@ export async function squareOffTag(orderTag:string,kite:any)
   //                   .forEach(async summary=>
                       {
 
-                        for (const openOrder of allOrders.filter(order => (order.status === 'TRIGGER PENDING' && order.tag === orderTag)))
+                        for (const openOrder of allOrders.filter(order => (order.status === 'TRIGGER PENDING' && order.tag === orderTag
+                        && order.tradingsymbol===summary.tradingsymbol)))
                         {
+                       console.log(`Cancelling orderId ${openOrder.order_id} ; variety ${openOrder.variety}`)
                         await withRemoteRetry(() => kite.cancelOrder(openOrder.variety, openOrder.order_id))
+                        /*
+                        await withRemoteRetry(async () =>
+                getInstrumentPrice(kite,current.tradingsymbol, 'NFO'));
+                */
+                            //kite.cancelOrder(openOrder.variety, openOrder.order_id);
                         }
                         /*allOrders.filter(order => (order.status === 'TRIGGER PENDING' && order.tag === orderTag))
                         .forEach(async (openOrder) => {
