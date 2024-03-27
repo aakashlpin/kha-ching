@@ -1,4 +1,3 @@
-import { AxiosResponse } from 'axios'
 import { KiteConnect } from 'kiteconnect'
 import { cleanupQueues } from '../../lib/queue'
 
@@ -7,10 +6,10 @@ import {
   getIndexInstruments,
   premiumAuthCheck,
   storeAccessTokenRemotely,
-  checkHasSameAccessToken
+  checkHasSameAccessToken,
+  setUserSession
 } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
-import { SignalXUser } from '../../types/misc'
 
 const apiKey = process.env.KITE_API_KEY
 const kiteSecret = process.env.KITE_API_SECRET
@@ -30,9 +29,7 @@ export default withSession(async (req, res) => {
       requestToken,
       kiteSecret
     )
-    const user: SignalXUser = { isLoggedIn: true, session: sessionData }
-    req.session.set('user', user)
-    await req.session.save()
+    const user = await setUserSession(req, sessionData)
 
     // prepare the day
     // fire and forget

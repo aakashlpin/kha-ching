@@ -179,6 +179,7 @@ export default withSession(async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
+    console.log('delete request recieved for: ', req.body._id)
     try {
       const { data } = await axios(`${endpoint}/${req.body._id as string}`)
       if (data.queue?.id) {

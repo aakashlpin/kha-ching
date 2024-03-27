@@ -19,7 +19,7 @@ import {
 // export const memoizer = require('redis-memoizer')(redisClient);
 import { COMPLETED_ORDER_RESPONSE } from './strategies/mockData/orderResponse'
 import { SignalXUser } from '../types/misc'
-import { KiteOrder } from '../types/kite'
+import { KiteOrder, KiteProfile } from '../types/kite'
 
 Promise.config({ cancellation: true, warnings: true })
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
@@ -1429,6 +1429,19 @@ export const getStrikeByDelta = (
     putStrike,
     callStrike
   }
+}
+
+export const setUserSession = async (
+  req,
+  userData: KiteProfile
+): Promise<SignalXUser> => {
+  const user: SignalXUser = {
+    isLoggedIn: true,
+    session: userData
+  }
+  req.session.set('user', user)
+  await req.session.save()
+  return user
 }
 
 export function round (value: number, step = 0.5): number {
