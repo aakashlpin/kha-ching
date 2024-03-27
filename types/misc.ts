@@ -1,5 +1,6 @@
+import { SessionInformation } from 'inves-broker'
 import { STRATEGIES } from '../lib/constants'
-import { KiteOrder, KiteProfile } from './kite'
+import { KiteOrder } from './kite'
 import { AvailablePlansConfig } from './plans'
 
 export type DailyPlansDayKey =
@@ -22,7 +23,7 @@ export interface SignalXOrder extends KiteOrder {
 }
 
 export interface SignalXUser {
-  session: KiteProfile
+  session: SessionInformation
   isLoggedIn: boolean
 }
 

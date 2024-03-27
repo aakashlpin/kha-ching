@@ -345,7 +345,7 @@ export async function getSkew (kite, instrument1, instrument2, exchange) {
 }
 
 export function syncGetKiteInstance (user) {
-  const accessToken = user?.session?.access_token
+  const accessToken = user?.session?.accessToken
   if (!accessToken) {
     throw new Error(
       'missing access_token in `user` object, or `user` is undefined'
@@ -621,7 +621,7 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
     const {
       data: [token]
     } = await axios(ACCESS_TOKEN_URL)
-    const { access_token: dbAccessToken } = token
+    const { accessToken: dbAccessToken } = token
     return dbAccessToken === accessToken
   } catch (e) {
     console.log('🔴 [storeAccessTokenRemotely] error', e)
@@ -629,24 +629,21 @@ export const checkHasSameAccessToken = async (accessToken: string) => {
   }
 }
 
-export const storeAccessTokenRemotely = async (accessToken: string, refreshToken?: string) => {
+export const storeAccessTokenRemotely = async (
+  accessToken: string,
+  refreshToken?: string
+) => {
   const ACCESS_TOKEN_URL = `${withoutFwdSlash(
     DATABASE_HOST_URL as string
   )}/pvt_${DATABASE_USER_KEY as string}/tokens`
   const data = {
     access_token: accessToken
   }
-
   if (refreshToken) {
     data['refresh_token'] = refreshToken
   }
-
   try {
-    await axios.post(
-      ACCESS_TOKEN_URL,
-      data,
-      SIGNALX_AXIOS_DB_AUTH
-    )
+    await axios.post(ACCESS_TOKEN_URL, data, SIGNALX_AXIOS_DB_AUTH)
   } catch (e) {
     console.log('🔴 [storeAccessTokenRemotely] error', e)
   }
@@ -792,7 +789,7 @@ export const getMultipleInstrumentPrices = async (
         headers: {
           'X-Kite-Version': 3,
           Authorization: `token ${KITE_API_KEY as string}:${user.session
-            .access_token as string}`
+            .accessToken as string}`
         }
       }
     )

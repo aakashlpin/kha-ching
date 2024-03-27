@@ -11,12 +11,8 @@ import {
 } from '../../lib/utils'
 import { KiteProfile } from '../../types/kite'
 import { SignalXUser } from '../../types/misc'
-
-const apiKey = process.env.KITE_API_KEY
-const kiteSecret = process.env.KITE_API_SECRET
-const kc = new KiteConnect({
-  api_key: apiKey
-})
+import getInvesBrokerInstance from '../../lib/invesBroker'
+import { BrokerName } from 'inves-broker'
 
 export default withSession(async (req, res) => {
   const { request_token: requestToken } = req.query
@@ -26,10 +22,10 @@ export default withSession(async (req, res) => {
   }
 
   try {
-    const sessionData: KiteProfile = await kc.generateSession(
-      requestToken,
-      kiteSecret
-    )
+    const invesBrokerInstance = await getInvesBrokerInstance(BrokerName.KITE)
+    const sessionData = await invesBrokerInstance.generateSession({
+      kiteRequestToken: requestToken
+    })
     const user: SignalXUser = { isLoggedIn: true, session: sessionData }
     req.session.set('user', user)
     await req.session.save()
@@ -44,7 +40,7 @@ export default withSession(async (req, res) => {
     })
 
     const existingAccessToken = await checkHasSameAccessToken(
-      user.session.access_token!
+      user.session.accessToken!
     )
     if (!existingAccessToken) {
       // first login, or revoked login
@@ -54,7 +50,10 @@ export default withSession(async (req, res) => {
         console.log(e)
       })
       // then store access token remotely for other services to use it
-      storeAccessTokenRemotely(user.session.access_token as string, user.session.refresh_token)
+      storeAccessTokenRemotely(
+        user.session.accessToken as string,
+        user.session.refreshToken
+      )
     }
 
     // then redirect
