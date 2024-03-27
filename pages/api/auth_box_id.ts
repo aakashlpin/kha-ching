@@ -12,7 +12,7 @@ const authBoxId = async (
 ): Promise<any> => {
   try {
     const { data } = await axios(process.env.SUBSCRIPTIONS_CSV_URL!)
-    const records = await csv().fromString(data);
+    const records = await csv().fromString(data)
 
     const requestedBoxId = req.body.box
     const userRecord = records.find(record => record.api_key === requestedBoxId)
@@ -25,11 +25,9 @@ const authBoxId = async (
       })
     }
 
-    const {
-      expires, paid_subscriber, xtra_subscriber
-    } = userRecord
+    const { expires, paid_subscriber, xtra_subscriber } = userRecord
 
-    const isPremiumUser = paid_subscriber === "checked"
+    const isPremiumUser = paid_subscriber === 'checked'
     const isClubUser = xtra_subscriber === 'checked'
 
     return res.json({
